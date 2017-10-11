@@ -1,16 +1,22 @@
-/** \file
- *  \author Matthias Balzer, ITWM
- *  \date 2012-11
- *  \copyright Fraunhofer ITWM
+/*
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2017
  *
- *  \brief template functions for serializing / deserializing data
+ * This file is part of GaspiCxx.
  *
- *  \details template functions for serializing data to memory buffer
- *  		 or stream, and deserialization respectively
+ * GaspiCxx is free software; you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License
+ * version 3 as published by the Free Software Foundation.
  *
- *  \note data types must not include pointers or references for the
- *  	  routines to work correctly (std::vector<T>, std::string and
- *  	  seisfile are handled by special conversion functions)
+ * GaspiCxx is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * serialization.hpp
+ *
  */
 
 #include <utility/Macros.hpp>
