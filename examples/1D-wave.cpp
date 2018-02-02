@@ -242,7 +242,7 @@ class Field1D {
 int
 main
   ( int /*argc*/
-  , char *[] /*argv*/) {
+  , char *[] /*argv*/) try {
 
   gaspi::Runtime runtime;
 
@@ -298,4 +298,6 @@ main
   }
 
   return EXIT_SUCCESS;
+} catch(...) {
+  return EXIT_FAILURE;
 }
