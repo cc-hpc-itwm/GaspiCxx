@@ -19,8 +19,8 @@
  *
  */
 
-#include <Context.hpp>
-#include <utility/Macros.hpp>
+#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
 
 namespace gaspi {
 

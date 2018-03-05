@@ -20,8 +20,8 @@
  */
 
 #include <iostream>
-#include <utility/LockGuard.hpp>
-#include <segment/MemoryManager.hpp>
+#include <GaspiCxx/utility/LockGuard.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
 #include <sstream>
 
 namespace gaspi {

@@ -2,13 +2,13 @@
 #include <memory>
 #include <vector>
 
-#include <Runtime.hpp>
-#include <Context.hpp>
-#include <group/Group.hpp>
-#include <segment/Segment.hpp>
-#include <singlesided/write/SourceBuffer.hpp>
-#include <singlesided/write/TargetBuffer.hpp>
-#include <utility/ScopedAllocation.hpp>
+#include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/utility/ScopedAllocation.hpp>
 
 namespace parameter {
 

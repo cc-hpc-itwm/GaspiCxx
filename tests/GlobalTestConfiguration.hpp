@@ -21,7 +21,7 @@
 #define GLOBALTESTCONFIGURATION_HPP
 
 #include <GASPI.h>
-#include <Runtime.hpp>
+#include <GaspiCxx/Runtime.hpp>
 
 const gaspi_size_t DEFAULT_SEGMENT_SIZE = 1024*10;
 const int DEFAULT_NUM_THREADS = 4;

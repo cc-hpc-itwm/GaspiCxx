@@ -15,23 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * Alltoall.hpp
+ * Allgather.hpp
  *
  */
 
-#ifndef COLLECTIVES_ALLTOALL_HPP_
-#define COLLECTIVES_ALLTOALL_HPP_
+#ifndef COLLECTIVES_ALLGATHER_HPP_
+#define COLLECTIVES_ALLGATHER_HPP_
 
-#include <Context.hpp>
-#include <segment/Segment.hpp>
+#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
 
 namespace gaspi {
 namespace collectives {
 
-// allgather: every process with process id iProc sends its  data of size size
+// allgather: every process with process id iProc sends his  data of size size
 //            from source buffer into the target buffer at location iProc * size
 void
-alltoall
+allgather
   ( void * const gSource
   , segment::Segment & sourceSegment
   , void * const gTarget
@@ -40,13 +40,12 @@ alltoall
   , Context & context );
 
 void
-alltoallv
+allgatherv
   ( void * const gSource
   , segment::Segment & sourceSegment
-  , std::size_t const * const sourceSizes
   , void * const gTarget
   , segment::Segment & targetSegment
-  , std::size_t const * const targetSizes
+  , std::size_t const * const sizes
   , Context & context );
 
 }

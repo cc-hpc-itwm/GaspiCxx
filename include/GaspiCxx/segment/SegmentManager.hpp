@@ -22,9 +22,9 @@
 #ifndef SEGMENT_MANAGER_HPP_
 #define SEGMENT_MANAGER_HPP_
 
-#include <segment/Allocator.hpp>
-#include <segment/MemoryManager.hpp>
-#include <segment/NotificationManager.hpp>
+#include <GaspiCxx/segment/Allocator.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 
 namespace gaspi {
 namespace segment {

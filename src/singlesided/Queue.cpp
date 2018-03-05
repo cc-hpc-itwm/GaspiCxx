@@ -19,8 +19,8 @@
  *
  */
 
-#include <singlesided/Queue.hpp>
-#include <utility/Macros.hpp>
+#include <GaspiCxx/singlesided/Queue.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
 
 namespace gaspi {
 namespace singlesided {

@@ -20,8 +20,8 @@
  */
 
 
-#include <Runtime.hpp>
-#include <utility/Macros.hpp>
+#include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
 
 namespace gaspi {
 

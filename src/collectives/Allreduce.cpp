@@ -19,15 +19,9 @@
  *
  */
 
-#include <collectives/Allreduce.hpp>
-#include <utility/Macros.hpp>
-//#include <passive/Passive.hpp>
-//#include <Runtime.hpp>
-//#include <singlesided/write/TargetBuffer.hpp>
-//#include <utility/serialization.hpp>
-//
-//#include <vector>
-//#include <memory>
+#include <GaspiCxx/collectives/Allreduce.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
+
 #include <complex>
 
 namespace gaspi {

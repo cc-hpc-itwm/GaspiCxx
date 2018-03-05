@@ -19,12 +19,12 @@
 
 #include <gtest/gtest.h>
 
-#include <Runtime.hpp>
+#include <GaspiCxx/Runtime.hpp>
 #include <GlobalTestConfiguration.hpp>
-#include <passive/Passive.hpp>
-#include <utility/serialization.hpp>
-#include <singlesided/BufferDescription.hpp>
-#include <singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/utility/serialization.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 
 extern GlobalTestConfiguration *globalTestConf;
 

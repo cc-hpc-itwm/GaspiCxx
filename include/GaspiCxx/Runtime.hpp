@@ -21,9 +21,9 @@
 
 #include <cstring>
 #include <memory>
-#include <Context.hpp>
-#include <passive/Passive.hpp>
-#include <segment/Segment.hpp>
+#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
 
 extern "C" {
 #include <GASPI.h>

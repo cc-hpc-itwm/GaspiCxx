@@ -15,52 +15,51 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * SourceBuffer.hpp
+ * TargetBuffer.hpp
  *
  */
 
-#ifndef SOURCEBUFFER_HPP_
-#define SOURCEBUFFER_HPP_
+#ifndef TARGETBUFFER_HPP_
+#define TARGETBUFFER_HPP_
 
-#include <cstdlib>
-#include <Context.hpp>
-#include <group/Rank.hpp>
-#include <segment/Segment.hpp>
-#include <singlesided/BufferDescription.hpp>
+#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/group/Rank.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
 
 namespace gaspi {
 namespace singlesided {
 namespace write {
 
-class SourceBuffer {
+class TargetBuffer {
 
   public:
 
     using Tag = int;
 
-    SourceBuffer
+    // Allocates a buffer of
+    TargetBuffer
       ( segment::Segment & segment
       , std::size_t size );
 
-    SourceBuffer
+    TargetBuffer
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
 
-    SourceBuffer
+    TargetBuffer
       ( segment::Segment & segment
       , std::size_t size
       , segment::Segment
           ::Notification notification );
 
-    SourceBuffer
+    TargetBuffer
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
       , segment::Segment
           ::Notification notification );
 
-    ~SourceBuffer
+    ~TargetBuffer
       ();
 
     BufferDescription
@@ -74,15 +73,19 @@ class SourceBuffer {
     // bilateral function
     // needs to be invoked by the correspondent
     // WriteTargetBuffer having the same size
-    void
-    connectToRemoteTarget
+    std::unique_ptr<TargetBuffer>
+    connectToRemoteSource
       ( Context & context
       , group::Rank & rank
       , Tag & tag );
 
     void
-    initTransfer
-      ( Context & context );
+    waitForCompletion
+      ();
+
+    bool
+    checkForCompletion
+      ();
 
   private:
 
@@ -93,9 +96,8 @@ class SourceBuffer {
     std::size_t         _size;
     segment::Segment
       ::Notification    _notification;
-    segment::Segment &  _segment;
 
-    BufferDescription   _targetBufferDesc;
+    segment::Segment &  _segment;
 
 };
 
@@ -103,4 +105,4 @@ class SourceBuffer {
 } // namespace singlesided
 } // namespace gaspi
 
-#endif /* SOURCEBUFFER_HPP_ */
+#endif /* TARGETBUFFER_HPP_ */

@@ -23,10 +23,10 @@
 #define COMMUNICATOR_HPP_
 
 #include <memory>
-#include <group/Group.hpp>
-#include <singlesided/BufferDescription.hpp>
-#include <singlesided/Queue.hpp>
-#include <type_defs.hpp>
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/singlesided/Queue.hpp>
+#include <GaspiCxx/type_defs.hpp>
 
 namespace gaspi {
 

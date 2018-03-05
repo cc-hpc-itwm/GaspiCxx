@@ -1,5 +1,5 @@
-#include <segment/NotificationManager.hpp>
-#include <segment/Allocator.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
+#include <GaspiCxx/segment/Allocator.hpp>
 #include <iostream>
 
 #include <vector>

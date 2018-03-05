@@ -20,11 +20,11 @@
 #include <gtest/gtest.h>
 
 #include <GlobalTestConfiguration.hpp>
-#include <Context.hpp>
-#include <segment/Segment.hpp>
-#include <singlesided/write/SourceBuffer.hpp>
-#include <singlesided/write/TargetBuffer.hpp>
-#include <utility/Macros.hpp>
+#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
 
 extern GlobalTestConfiguration *globalTestConf;
 

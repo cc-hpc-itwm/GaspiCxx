@@ -19,9 +19,9 @@
 
 #include <gtest/gtest.h>
 
-#include <Runtime.hpp>
+#include <GaspiCxx/Runtime.hpp>
 #include <GlobalTestConfiguration.hpp>
-#include <collectives/Allreduce.hpp>
+#include <GaspiCxx/collectives/Allreduce.hpp>
 
 extern GlobalTestConfiguration *globalTestConf;
 

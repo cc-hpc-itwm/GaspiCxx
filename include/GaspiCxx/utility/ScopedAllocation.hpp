@@ -26,7 +26,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <segment/Segment.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
 
 namespace gaspi {
 

@@ -22,7 +22,7 @@
 #ifndef SEGMENTALLOCATOR_HPP_
 #define SEGMENTALLOCATOR_HPP_
 
-#include <segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
 #include <type_traits>
 
 namespace gaspi {

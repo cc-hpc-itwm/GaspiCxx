@@ -21,8 +21,8 @@
 
 #include <stdexcept>
 #include <sstream>
-#include <segment/SegmentManager.hpp>
-#include <utility/Macros.hpp>
+#include <GaspiCxx/segment/SegmentManager.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
 
 extern "C" {
 #include <GASPI.h>

@@ -19,10 +19,10 @@
  *
  */
 
-#include <passive/Passive.hpp>
-#include <singlesided/write/TargetBuffer.hpp>
-#include <utility/Macros.hpp>
-#include <utility/serialization.hpp>
+#include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
+#include <GaspiCxx/utility/serialization.hpp>
 
 extern "C" {
 #include <GASPI.h>

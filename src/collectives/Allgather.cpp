@@ -19,11 +19,11 @@
  *
  */
 
-#include <collectives/Allgather.hpp>
-#include <passive/Passive.hpp>
-#include <Runtime.hpp>
-#include <singlesided/write/TargetBuffer.hpp>
-#include <utility/serialization.hpp>
+#include <GaspiCxx/collectives/Allgather.hpp>
+#include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/utility/serialization.hpp>
 
 #include <vector>
 #include <memory>

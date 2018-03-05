@@ -19,7 +19,7 @@
  *
  */
 
-#include <utility/Macros.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
 
 #include <iostream>
 #include <string>

@@ -19,9 +19,9 @@
  *
  */
 
-#include <segment/NotificationManager.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 #include <stdexcept>
-#include <utility/LockGuard.hpp>
+#include <GaspiCxx/utility/LockGuard.hpp>
 
 namespace gaspi {
 namespace segment {

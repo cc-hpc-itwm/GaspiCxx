@@ -19,8 +19,8 @@
  *
  */
 
-#include <group/Group.hpp>
-#include <utility/Macros.hpp>
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
 
 namespace gaspi {
 namespace group {

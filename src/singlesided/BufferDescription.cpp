@@ -19,9 +19,9 @@
  *
  */
 
-#include <singlesided/BufferDescription.hpp>
-#include <utility/Macros.hpp>
-#include <utility/serialization.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
+#include <GaspiCxx/utility/serialization.hpp>
 
 namespace gaspi {
 namespace serialization {

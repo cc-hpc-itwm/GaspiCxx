@@ -19,7 +19,7 @@
  *
  */
 
-#include <utility/LockGuard.hpp>
+#include <GaspiCxx/utility/LockGuard.hpp>
 
 namespace gaspi {
 

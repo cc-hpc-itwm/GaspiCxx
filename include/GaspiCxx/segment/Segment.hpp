@@ -15,34 +15,49 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * Allreduce.hpp
+ * Segment.hpp
  *
  */
 
-#ifndef COLLECTIVES_ALLREDUCE_HPP_
-#define COLLECTIVES_ALLREDUCE_HPP_
+#ifndef SEGMENT_HPP_
+#define SEGMENT_HPP_
 
-#include <Context.hpp>
+#include <GaspiCxx/segment/SegmentManager.hpp>
+#include <GaspiCxx/segment/SegmentResource.hpp>
 
 namespace gaspi {
-namespace collectives {
+namespace segment {
 
-struct Allreduce {
+class Segment : public SegmentResource
+              , public SegmentManager
+{
+  public:
 
-  enum Type { SUM
-            , MAX
-            , MIN };
+    using SegmentID = SegmentManager::SegmentID;
+    using Notification = SegmentManager::Notification;
+
+    Segment
+      () = delete;
+
+    Segment
+      ( std::size_t );
+
+    Segment
+      ( SegmentID
+      , std::size_t );
+
+    SegmentID
+    id
+      () const
+    {
+      return SegmentResource::id();
+    }
+
+private:
 
 };
 
-template <typename T>
-T
-allreduce
-  ( T const &
-  , Allreduce::Type const &
-  , Context & context );
-
 }
 }
 
-#endif
+#endif /* SEGMENT_HPP_ */

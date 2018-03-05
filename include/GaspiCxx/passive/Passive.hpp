@@ -22,11 +22,11 @@
 #ifndef PASSIVE_H
 #define PASSIVE_H
 
-#include <Context.hpp>
+#include <GaspiCxx/Context.hpp>
 #include <memory>
-#include <segment/Segment.hpp>
-#include <singlesided/BufferDescription.hpp>
-#include <utility/ScopedAllocation.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/utility/ScopedAllocation.hpp>
 
 extern "C" {
 #include <GASPI.h>

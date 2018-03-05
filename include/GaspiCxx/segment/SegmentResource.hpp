@@ -22,8 +22,8 @@
 #ifndef SEGMENT_RESOURCE_HPP_
 #define SEGMENT_RESOURCE_HPP_
 
-#include <segment/SegmentManager.hpp>
-#include <type_defs.hpp>
+#include <GaspiCxx/segment/SegmentManager.hpp>
+#include <GaspiCxx/type_defs.hpp>
 
 namespace gaspi {
 namespace segment {

@@ -22,7 +22,7 @@
 #ifndef GROUP_HPP_
 #define GROUP_HPP_
 
-#include <group/Rank.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <memory>
 #include <set>
 

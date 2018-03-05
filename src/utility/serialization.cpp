@@ -19,7 +19,7 @@
  *
  */
 
-#include <utility/serialization.hpp>
+#include <GaspiCxx/utility/serialization.hpp>
 
 #include <cstring>
 #include <memory>

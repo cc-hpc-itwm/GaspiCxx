@@ -19,14 +19,14 @@
  *
  */
 
-#include <group/Group.hpp>
-#include <passive/Passive.hpp>
-#include <Runtime.hpp>
-#include <singlesided/BufferDescription.hpp>
-#include <singlesided/write/SourceBuffer.hpp>
-#include <singlesided/write/TargetBuffer.hpp>
-#include <utility/Macros.hpp>
-#include <utility/serialization.hpp>
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/utility/Macros.hpp>
+#include <GaspiCxx/utility/serialization.hpp>
 
 namespace gaspi {
 namespace singlesided {

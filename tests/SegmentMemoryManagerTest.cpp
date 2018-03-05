@@ -20,7 +20,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <memory>
-#include <segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
 
 namespace gaspi {
 namespace segment {
