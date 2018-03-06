@@ -14,23 +14,13 @@ add_executable ( run_tests
 target_include_directories (run_tests PRIVATE 
 	${CMAKE_CURRENT_SOURCE_DIR} )	
 
-if (GPI2-eth)
-  target_link_libraries( run_tests LINK_PUBLIC  
+target_link_libraries( run_tests LINK_PUBLIC  
   	GTest::GTest 
 	GTest::Main 
 	GaspiCxx 
 	GPI2-dbg 
 	pthread 
 	rt )
-else (GPI2-eth)								
-  target_link_libraries (run_tests LINK_PUBLIC 
-  	GTest::GTest 
-	GTest::Main  
-	GaspiCxx
-	${GPI2_LIBRARIES} 
-	pthread 
-	ibverbs )
-endif (GPI2-eth)
 
 #add_test(unittests ./run_tests.sh GASPI_PATH=${GPI2_LIBRARIES}/../)
 add_custom_command(TARGET run_tests POST_BUILD COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh run_tests)
