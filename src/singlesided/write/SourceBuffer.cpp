@@ -42,6 +42,7 @@ SourceBuffer
 , _size (size)
 , _notification(segment.acquire_notification())
 , _segment(segment)
+, _sourceBufferDesc()
 , _targetBufferDesc()
 {}
 
@@ -56,6 +57,7 @@ SourceBuffer
 , _size (size)
 , _notification(segment.acquire_notification())
 , _segment(segment)
+, _sourceBufferDesc()
 , _targetBufferDesc()
 {}
 
@@ -71,6 +73,7 @@ SourceBuffer
 , _size (size)
 , _notification(notification)
 , _segment(segment)
+, _sourceBufferDesc()
 , _targetBufferDesc()
 {}
 
@@ -87,6 +90,7 @@ SourceBuffer
 , _size (size)
 , _notification(notification)
 , _segment(segment)
+, _sourceBufferDesc()
 , _targetBufferDesc()
 {}
 
@@ -156,6 +160,8 @@ SourceBuffer
   serialization::deserialize
     ( _targetBufferDesc
     , pBuffer->address());
+
+  _sourceBufferDesc = description();
 }
 
 void
@@ -164,7 +170,7 @@ SourceBuffer
    ( Context & context )
 {
   context.write
-    ( this->description()
+    ( _sourceBufferDesc
     , _targetBufferDesc );
 }
 

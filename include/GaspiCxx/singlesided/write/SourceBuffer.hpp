@@ -95,6 +95,7 @@ class SourceBuffer {
       ::Notification    _notification;
     segment::Segment &  _segment;
 
+    BufferDescription   _sourceBufferDesc;
     BufferDescription   _targetBufferDesc;
 
 };
