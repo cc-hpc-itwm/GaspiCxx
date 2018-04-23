@@ -26,7 +26,6 @@
 
 extern "C" {
 #include <GASPI.h>
-#include <GASPI_Ext.h>
 }
 
 #include <unistd.h>

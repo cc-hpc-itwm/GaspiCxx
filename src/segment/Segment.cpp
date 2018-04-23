@@ -24,11 +24,6 @@
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
-extern "C" {
-#include <GASPI.h>
-#include <GASPI_Ext.h>
-}
-
 namespace gaspi {
 namespace segment {
 

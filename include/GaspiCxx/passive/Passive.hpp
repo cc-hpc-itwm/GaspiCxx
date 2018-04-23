@@ -28,11 +28,6 @@
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/utility/ScopedAllocation.hpp>
 
-extern "C" {
-#include <GASPI.h>
-#include <GASPI_Ext.h>
-}
-
 #include <execinfo.h>
 #include <signal.h>
 #include <string.h>

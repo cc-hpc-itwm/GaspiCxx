@@ -25,7 +25,6 @@
 #include <ostream>
 extern "C" {
 #include <GASPI.h>
-#include <GASPI_Ext.h>
 }
 
 namespace gaspi {
