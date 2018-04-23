@@ -23,6 +23,7 @@
 #include <GaspiCxx/utility/LockGuard.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
 #include <sstream>
+#include <stdexcept>
 
 namespace gaspi {
 namespace segment {
