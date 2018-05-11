@@ -56,15 +56,7 @@ Runtime
   }
   pGRuntime = this;
 
-//  gaspi_segment_id_t segmentId(0);
   gaspi_size_t       segmentSize(1024*1024);
-//
-//  GASPI_CHECK
-//      ( gaspi_segment_create( segmentId
-//                            , segmentSize
-//                            , GASPI_GROUP_ALL
-//                            , GASPI_BLOCK
-//                            , GASPI_MEM_INITIALIZED ) );
 
   _psegment.reset
     ( new segment::Segment(segmentSize) );
@@ -80,49 +72,10 @@ Runtime
 {
   _ppassive.reset( nullptr );
 
-//  gaspi_segment_id_t segmentId(_psegment->id() );
-
   _psegment.reset( nullptr );
-
-//  GASPI_CHECK(gaspi_barrier(GASPI_GROUP_ALL,GASPI_BLOCK));
-//
-//  GASPI_CHECK(gaspi_segment_delete(segmentId));
 
   pGRuntime = nullptr;
 }
-
-//Runtime::Rank
-//Runtime
-//  ::proc_rank
-//     () const
-//{
-//  gaspi_rank_t rank;
-//  GASPI_CHECK(gaspi_proc_rank(&rank));
-//
-//  return static_cast<Rank>(rank);
-//}
-//
-//Runtime::Rank
-//Runtime
-//  ::proc_size
-//     () const
-//{
-//  gaspi_rank_t size;
-//  GASPI_CHECK(gaspi_proc_num(&size));
-//
-//  return static_cast<Rank>(size);
-//}
-//
-//void
-//Runtime
-//  ::barrier
-//     () const
-//{
-//  GASPI_CHECK
-//    ( gaspi_barrier
-//        ( GASPI_GROUP_ALL
-//        , GASPI_BLOCK ) );
-//}
 
 Runtime &
 getRuntime()
