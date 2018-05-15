@@ -23,6 +23,7 @@
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/singlesided/write/CommBuffer.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
@@ -36,14 +37,9 @@ SourceBuffer
   ::SourceBuffer
    ( segment::Segment & segment
    , std::size_t size )
-: _allocMemory(true)
-, _allocNotify(true)
-, _pointer( reinterpret_cast<void*>(segment.allocator().allocate(size)) )
-, _size (size)
-, _notification(segment.acquire_notification())
-, _segment(segment)
-, _sourceBufferDesc()
-, _targetBufferDesc()
+: CommBuffer
+  ( segment
+  , size )
 {}
 
 SourceBuffer
@@ -51,14 +47,10 @@ SourceBuffer
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size )
-: _allocMemory(false)
-, _allocNotify(true)
-, _pointer( pointer )
-, _size (size)
-, _notification(segment.acquire_notification())
-, _segment(segment)
-, _sourceBufferDesc()
-, _targetBufferDesc()
+: CommBuffer
+  ( pointer
+  , segment
+  , size )
 {}
 
 SourceBuffer
@@ -67,14 +59,10 @@ SourceBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: _allocMemory(true)
-, _allocNotify(false)
-, _pointer( reinterpret_cast<void*>(segment.allocator().allocate(size)) )
-, _size (size)
-, _notification(notification)
-, _segment(segment)
-, _sourceBufferDesc()
-, _targetBufferDesc()
+: CommBuffer
+  ( segment
+  , size
+  , notification)
 {}
 
 SourceBuffer
@@ -84,54 +72,17 @@ SourceBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: _allocMemory(false)
-, _allocNotify(false)
-, _pointer( pointer )
-, _size (size)
-, _notification(notification)
-, _segment(segment)
-, _sourceBufferDesc()
-, _targetBufferDesc()
+: CommBuffer
+  ( pointer
+  , segment
+  , size
+  , notification)
 {}
 
 SourceBuffer
   ::~SourceBuffer
     ()
-{
-  if( _allocMemory ) {
-    _segment.allocator().deallocate
-          ( reinterpret_cast<char*>(_pointer)
-          , _size );
-  }
-  if( _allocNotify ) {
-    _segment.release_notification(_notification);
-  }
-}
-
-BufferDescription
-SourceBuffer
-  ::description
-   () const
-{
-  BufferDescription desc
-    ( group::groupToGlobalRank( getRuntime().group()
-                              , getRuntime().rank() )
-    , _segment.id()
-    , _segment.pointerToOffset
-        (_pointer)
-    , _size
-    , _notification );
-
-  return desc;
-}
-
-void *
-SourceBuffer
-  ::address
-   () const
-{
-  return _pointer;
-}
+{ }
 
 void
 SourceBuffer
@@ -140,28 +91,10 @@ SourceBuffer
    , group::Rank & rank
    , Tag & tag )
 {
-
-  _segment.remoteRegistration
-    (group::groupToGlobalRank( context.group()
-                             , rank ) );
-
-  std::unique_ptr<TargetBuffer> pBuffer
-    ( new TargetBuffer( _segment
-                      , serialization::size(_targetBufferDesc) ) );
-
-  getRuntime().passive().iRecvTagMessg
-    (group::groupToGlobalRank( context.group()
-                             , rank )
-    ,tag
-    ,*pBuffer);
-
-  pBuffer->waitForCompletion();
-
-  serialization::deserialize
-    ( _targetBufferDesc
-    , pBuffer->address());
-
-  _sourceBufferDesc = description();
+  CommBuffer::connectToRemotePartner
+    ( context
+    , rank
+    , tag ).waitForCompletion();
 }
 
 void
@@ -170,8 +103,24 @@ SourceBuffer
    ( Context & context )
 {
   context.write
-    ( _sourceBufferDesc
-    , _targetBufferDesc );
+     ( CommBuffer::_localBufferDesc
+     , CommBuffer::_otherBufferDesc );
+}
+
+void
+SourceBuffer
+  ::checkForTransferAck
+  (Context & context)
+{
+  context.checkForBufferNotification(CommBuffer::_localBufferDesc);
+}
+
+void
+SourceBuffer
+  ::waitForTransferAck
+  (Context & context)
+{
+  context.waitForBufferNotification(CommBuffer::_localBufferDesc);
 }
 
 

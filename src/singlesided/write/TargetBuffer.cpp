@@ -34,12 +34,9 @@ TargetBuffer
   ::TargetBuffer
    ( segment::Segment & segment
    , std::size_t size )
-: _allocMemory(true)
-, _allocNotify(true)
-, _pointer( reinterpret_cast<void*>(segment.allocator().allocate(size)) )
-, _size (size)
-, _notification(segment.acquire_notification())
-, _segment(segment)
+: CommBuffer
+  ( segment
+  , size )
 {}
 
 TargetBuffer
@@ -47,12 +44,10 @@ TargetBuffer
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size )
-: _allocMemory(false)
-, _allocNotify(true)
-, _pointer( pointer )
-, _size (size)
-, _notification(segment.acquire_notification())
-, _segment(segment)
+: CommBuffer
+  ( pointer
+  , segment
+  , size )
 {}
 
 TargetBuffer
@@ -61,12 +56,10 @@ TargetBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: _allocMemory(true)
-, _allocNotify(false)
-, _pointer( reinterpret_cast<void*>(segment.allocator().allocate(size)) )
-, _size (size)
-, _notification(notification)
-, _segment(segment)
+: CommBuffer
+  ( segment
+  , size
+  , notification )
 {}
 
 TargetBuffer
@@ -76,81 +69,29 @@ TargetBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: _allocMemory(false)
-, _allocNotify(false)
-, _pointer( pointer )
-, _size (size)
-, _notification(notification)
-, _segment(segment)
+: CommBuffer
+  ( pointer
+  , segment
+  , size
+  , notification )
 {}
 
 TargetBuffer
   ::~TargetBuffer
     ()
-{
-  if( _allocMemory ) {
-    _segment.allocator().deallocate
-          ( reinterpret_cast<char*>(_pointer)
-          , _size );
-  }
-  if( _allocNotify ) {
-    _segment.release_notification(_notification);
-  }
-}
+{}
 
-BufferDescription
-TargetBuffer
-  ::description
-   () const
-{
-  BufferDescription desc
-    ( group::groupToGlobalRank( getRuntime().group()
-                              , getRuntime().rank() )
-    , _segment.id()
-    , _segment.pointerToOffset
-        (_pointer)
-    , _size
-    , _notification );
-
-  return desc;
-}
-
-void *
-TargetBuffer
-  ::address
-   () const
-{
-  return _pointer;
-}
-
-std::unique_ptr<TargetBuffer>
+CommBuffer::ConnectHandle
 TargetBuffer
   ::connectToRemoteSource
    ( Context & context
    , group::Rank & rank
    , Tag & tag )
 {
-  _segment.remoteRegistration
-    ( group::groupToGlobalRank( context.group()
-                              , rank ) );
-
-  BufferDescription bufferDesc(description());
-
-  std::unique_ptr<TargetBuffer> pBuffer
-    ( new TargetBuffer( _segment
-                      , serialization::size(bufferDesc) ) );
-
-  serialization::serialize (pBuffer->address(), bufferDesc);
-
-  getRuntime().passive().iSendTagMessg
-    ( group::groupToGlobalRank( context.group()
-                              , rank )
-    ,tag
-    ,*pBuffer );
-
-  return pBuffer;
-//  pBuffer->waitForCompletion();
-
+  return CommBuffer::connectToRemotePartner
+      ( context
+      , rank
+      , tag );
 }
 
 void
@@ -161,12 +102,12 @@ TargetBuffer
   gaspi_notification_id_t id;
   gaspi_notification_t    value;
 
-  GASPI_CHECK(gaspi_notify_waitsome(_segment.id(),
-                                    _notification,
+  GASPI_CHECK(gaspi_notify_waitsome(CommBuffer::_segment.id(),
+                                    CommBuffer::_notification,
                                     1,
                                     &id,
                                     GASPI_BLOCK));
-  GASPI_CHECK(gaspi_notify_reset(_segment.id(), id, &value));
+  GASPI_CHECK(gaspi_notify_reset(CommBuffer::_segment.id(), id, &value));
 }
 
 bool
@@ -180,8 +121,8 @@ TargetBuffer
   gaspi_notification_t    value;
 
   gaspi_return_t gaspi_return
-    ( gaspi_notify_waitsome( _segment.id()
-                           , _notification
+    ( gaspi_notify_waitsome( CommBuffer::_segment.id()
+                           , CommBuffer::_notification
                            , 1
                            , &id
                            , GASPI_TEST ) );
@@ -190,7 +131,7 @@ TargetBuffer
 
     GASPI_CHECK( gaspi_return );
 
-    GASPI_CHECK( gaspi_notify_reset(_segment.id(), id, &value) );
+    GASPI_CHECK( gaspi_notify_reset(CommBuffer::_segment.id(), id, &value) );
 
     if( value != 0 ) {
       ret = true;
@@ -198,6 +139,14 @@ TargetBuffer
   }
 
   return ret;
+}
+
+void
+TargetBuffer
+  ::ackTransfer
+   (Context & context)
+{
+  context.notify(CommBuffer::_otherBufferDesc);
 }
 
 } // namespace write

@@ -19,6 +19,7 @@ add_library ( GaspiCxx
               segment/NotificationManager.cpp
               singlesided/BufferDescription.cpp
               singlesided/Queue.cpp
+	      singlesided/write/CommBuffer.cpp
               singlesided/write/SourceBuffer.cpp
               singlesided/write/TargetBuffer.cpp
               utility/LockGuard.cpp

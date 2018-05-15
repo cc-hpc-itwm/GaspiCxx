@@ -27,12 +27,13 @@
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/singlesided/write/CommBuffer.hpp>
 
 namespace gaspi {
 namespace singlesided {
 namespace write {
 
-class SourceBuffer {
+class SourceBuffer : public CommBuffer {
 
   public:
 
@@ -63,14 +64,6 @@ class SourceBuffer {
     ~SourceBuffer
       ();
 
-    BufferDescription
-    description
-      () const;
-
-    void *
-    address
-      () const;
-
     // bilateral function
     // needs to be invoked by the correspondent
     // WriteTargetBuffer having the same size
@@ -84,19 +77,28 @@ class SourceBuffer {
     initTransfer
       ( Context & context );
 
-  private:
+    void
+    checkForTransferAck
+      ( Context & context );
 
-    bool                _allocMemory;
-    bool                _allocNotify;
+    void
+    waitForTransferAck
+      ( Context & Context );
 
-    void * const        _pointer;
-    std::size_t         _size;
-    segment::Segment
-      ::Notification    _notification;
-    segment::Segment &  _segment;
 
-    BufferDescription   _sourceBufferDesc;
-    BufferDescription   _targetBufferDesc;
+//  private:
+//
+//    bool                _allocMemory;
+//    bool                _allocNotify;
+//
+//    void * const        _pointer;
+//    std::size_t         _size;
+//    segment::Segment
+//      ::Notification    _notification;
+//    segment::Segment &  _segment;
+//
+//    BufferDescription   _sourceBufferDesc;
+//    BufferDescription   _targetBufferDesc;
 
 };
 

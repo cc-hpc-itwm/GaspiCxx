@@ -83,7 +83,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
     target.connectToRemoteSource
         ( context
         , leftNeighbour
-        , tag )->waitForCompletion();
+        , tag ).waitForCompletion();
 
     isource = 1;
 
@@ -98,7 +98,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
     target.connectToRemoteSource
             ( context
             , leftNeighbour
-            , tag )->waitForCompletion();
+            , tag ).waitForCompletion();
 
     source.connectToRemoteTarget
             ( context
@@ -141,7 +141,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
   int & isource ( *reinterpret_cast<int*>(source.address()) ); isource = -1;
   int & itarget ( *reinterpret_cast<int*>(target.address()) ); itarget = -1;
 
-  std::unique_ptr<TargetBuffer> handle
+  CommBuffer::ConnectHandle handle
     ( target.connectToRemoteSource
       ( context
       , leftNeighbour
@@ -152,7 +152,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
           , rightNeighbour
           , tag );
 
-  handle->waitForCompletion();
+  handle.waitForCompletion();
 
   if( context.rank() == group::Rank(0) ) {
 

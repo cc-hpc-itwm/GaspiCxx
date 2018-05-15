@@ -57,7 +57,7 @@ main
   int lb2_tag(3);
   int rb2_tag(4);
 
-  std::unique_ptr<gaspi::singlesided::write::TargetBuffer>
+  gaspi::singlesided::write::CommBuffer::ConnectHandle
     lh1_connect_handle
       ( lh1.connectToRemoteSource
         ( context
@@ -66,7 +66,7 @@ main
         )
       );
 
-  std::unique_ptr<gaspi::singlesided::write::TargetBuffer>
+  gaspi::singlesided::write::CommBuffer::ConnectHandle
     rh1_connect_handle
       ( rh1.connectToRemoteSource
         ( context
@@ -75,7 +75,7 @@ main
         )
       );
 
-  std::unique_ptr<gaspi::singlesided::write::TargetBuffer>
+  gaspi::singlesided::write::CommBuffer::ConnectHandle
     lh2_connect_handle
       ( lh2.connectToRemoteSource
         ( context
@@ -84,7 +84,7 @@ main
         )
       );
 
-  std::unique_ptr<gaspi::singlesided::write::TargetBuffer>
+  gaspi::singlesided::write::CommBuffer::ConnectHandle
     rh2_connect_handle
       ( rh2.connectToRemoteSource
         ( context
@@ -113,10 +113,10 @@ main
     , rightNeighbour
     , rb2_tag );
 
-  lh1_connect_handle->waitForCompletion();
-  rh1_connect_handle->waitForCompletion();
-  lh2_connect_handle->waitForCompletion();
-  rh2_connect_handle->waitForCompletion();
+  lh1_connect_handle.waitForCompletion();
+  rh1_connect_handle.waitForCompletion();
+  lh2_connect_handle.waitForCompletion();
+  rh2_connect_handle.waitForCompletion();
 
   for(int it(0)
      ;    it<1000

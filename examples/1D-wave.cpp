@@ -113,13 +113,13 @@ class Field1D {
       int leftHaloTag(1);
       int rightHaloTag(2);
 
-      std::unique_ptr<gaspi::singlesided::write::TargetBuffer> leftHaloHandle
+      gaspi::singlesided::write::CommBuffer::ConnectHandle leftHaloHandle
           ( _leftHalo.connectToRemoteSource
               ( context
               , leftNeighbour
               , leftHaloTag ) );
 
-      std::unique_ptr<gaspi::singlesided::write::TargetBuffer> rightHaloHandle
+      gaspi::singlesided::write::CommBuffer::ConnectHandle rightHaloHandle
           ( _rightHalo.connectToRemoteSource
               ( context
               , rightNeighbour
@@ -136,8 +136,8 @@ class Field1D {
         , leftHaloTag );
 
 
-      leftHaloHandle->waitForCompletion();
-      rightHaloHandle->waitForCompletion();
+      leftHaloHandle.waitForCompletion();
+      rightHaloHandle.waitForCompletion();
 
       for( int i(0)
          ;     i<(_nInner1D+2*_nBound1D)
