@@ -37,6 +37,8 @@ Queue
 Queue
   ::~Queue()
 {
+  flush();
+
   GASPI_CHECK_NOTHROW
     (gaspi_queue_delete(_queue_id));
 }
