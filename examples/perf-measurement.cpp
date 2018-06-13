@@ -57,7 +57,7 @@ main
   int lb2_tag(3);
   int rb2_tag(4);
 
-  gaspi::singlesided::write::CommBuffer::ConnectHandle
+  gaspi::singlesided::Endpoint::ConnectHandle
     lh1_connect_handle
       ( lh1.connectToRemoteSource
         ( context
@@ -66,7 +66,7 @@ main
         )
       );
 
-  gaspi::singlesided::write::CommBuffer::ConnectHandle
+  gaspi::singlesided::Endpoint::ConnectHandle
     rh1_connect_handle
       ( rh1.connectToRemoteSource
         ( context
@@ -75,7 +75,7 @@ main
         )
       );
 
-  gaspi::singlesided::write::CommBuffer::ConnectHandle
+  gaspi::singlesided::Endpoint::ConnectHandle
     lh2_connect_handle
       ( lh2.connectToRemoteSource
         ( context
@@ -84,7 +84,7 @@ main
         )
       );
 
-  gaspi::singlesided::write::CommBuffer::ConnectHandle
+  gaspi::singlesided::Endpoint::ConnectHandle
     rh2_connect_handle
       ( rh2.connectToRemoteSource
         ( context

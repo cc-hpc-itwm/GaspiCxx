@@ -15,80 +15,89 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * SourceBuffer.hpp
+ * Buffer.hpp
  *
  */
 
-#ifndef SOURCEBUFFER_HPP_
-#define SOURCEBUFFER_HPP_
+#ifndef BUFFER_HPP_
+#define BUFFER_HPP_
 
 #include <cstdlib>
-#include <GaspiCxx/Context.hpp>
-#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
-#include <GaspiCxx/singlesided/Endpoint.hpp>
+#include <GaspiCxx/utility/ScopedAllocation.hpp>
 
 namespace gaspi {
 namespace singlesided {
-namespace write {
 
-class SourceBuffer : public Endpoint {
+class MemoryAllocation;
+class NotifyAllocation;
+
+class Buffer {
 
   public:
 
-    using Tag = int;
-
-    SourceBuffer
+    Buffer
       ( segment::Segment & segment
       , std::size_t size );
 
-    SourceBuffer
+    Buffer
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
 
-    SourceBuffer
+    Buffer
       ( segment::Segment & segment
       , std::size_t size
       , segment::Segment
           ::Notification notification );
 
-    SourceBuffer
+    Buffer
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
       , segment::Segment
           ::Notification notification );
 
-    ~SourceBuffer
+    ~Buffer
       ();
 
-    // bilateral function
-    // needs to be invoked by the correspondent
-    // WriteTargetBuffer having the same size
-    void
-    connectToRemoteTarget
-      ( Context & context
-      , group::Rank & rank
-      , Tag & tag );
+    BufferDescription
+    description
+      () const;
 
-    void
-    initTransfer
-      ( Context & context );
+    void *
+    address
+      () const;
 
+    // Checks for notification
+    // return true if thread got notifcation (only a single thread gets the
+    //        notification)
     bool
-    checkForTransferAck
-      ( );
+    checkForNotification
+      ();
 
+    // Waits for notification
+    // return true if thread got notification (only a single thread gets the
+    //        notification)
     bool
-    waitForTransferAck
-      ( );
+    waitForNotification
+      ();
+
+  protected:
+
+    std::unique_ptr<MemoryAllocation>  _allocMemory;
+    std::unique_ptr<NotifyAllocation>  _allocNotify;
+
+    void * const        _pointer;
+    std::size_t         _size;
+    segment::Segment
+      ::Notification    _notification;
+    segment::Segment &  _segment;
 
 };
 
-} // namespace write
 } // namespace singlesided
 } // namespace gaspi
 
-#endif /* SOURCEBUFFER_HPP_ */
+#endif /* BUFFER_HPP_ */

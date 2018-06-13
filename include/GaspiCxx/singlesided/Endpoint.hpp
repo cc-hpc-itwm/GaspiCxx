@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * CommBuffer.hpp
+ * Enpoint.hpp
  *
  */
 
-#ifndef COMMBUFFER_HPP_
-#define COMMBUFFER_HPP_
+#ifndef ENDPOINT_HPP_
+#define ENDPOINT_HPP_
 
 #include <cstdlib>
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
+
 
 namespace gaspi {
 namespace singlesided {
-namespace write {
 
-class CommBuffer {
+
+class Endpoint : public Buffer {
 
   public:
 
@@ -43,53 +45,46 @@ class CommBuffer {
       public :
 
         ConnectHandle
-          ( CommBuffer & commBuffer
-          , std::unique_ptr<TargetBuffer> pSendBuffer
-          , std::unique_ptr<TargetBuffer> pRecvBuffer );
+          ( Endpoint & commBuffer
+          , std::unique_ptr<Buffer> pSendBuffer
+          , std::unique_ptr<Buffer> pRecvBuffer );
 
         void
         waitForCompletion();
 
       private:
 
-        CommBuffer & _commBuffer;
-        std::unique_ptr<TargetBuffer> _pSendBuffer;
-        std::unique_ptr<TargetBuffer> _pRecvBuffer;
+        Endpoint & _commBuffer;
+        std::unique_ptr<Buffer> _pSendBuffer;
+        std::unique_ptr<Buffer> _pRecvBuffer;
 
     };
 
-    CommBuffer
+    Endpoint
       ( segment::Segment & segment
       , std::size_t size );
 
-    CommBuffer
+    Endpoint
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
 
-    CommBuffer
+    Endpoint
       ( segment::Segment & segment
       , std::size_t size
       , segment::Segment
           ::Notification notification );
 
-    CommBuffer
+    Endpoint
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
       , segment::Segment
           ::Notification notification );
 
-    ~CommBuffer
-      ();
-
-    BufferDescription
-    description
-      () const;
-
-    void *
-    address
-      () const;
+    void
+    setRemotePartner
+      ( BufferDescription const & partnerDescription );
 
     // bilateral function
     // needs to be invoked by the correspondent
@@ -102,21 +97,11 @@ class CommBuffer {
 
   protected:
 
-    bool                _allocMemory;
-    bool                _allocNotify;
-
-    void * const        _pointer;
-    std::size_t         _size;
-    segment::Segment
-      ::Notification    _notification;
-    segment::Segment &  _segment;
-
     BufferDescription   _localBufferDesc;
     BufferDescription   _otherBufferDesc;
 
 };
 
-} // namespace write
 } // namespace singlesided
 } // namespace gaspi
 

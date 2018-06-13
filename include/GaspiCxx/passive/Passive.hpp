@@ -25,6 +25,7 @@
 #include <GaspiCxx/Context.hpp>
 #include <memory>
 #include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/utility/ScopedAllocation.hpp>
 
@@ -98,18 +99,13 @@ class Passive
 		iSendTagMessg
 		  ( const int rank
 		  , const int tag
-		  , singlesided::write::TargetBuffer & );
+		  , singlesided::Buffer & );
 
 		bool
 		iRecvTagMessg
 		  ( const int rank
 		  , const int tag
-		  , singlesided::write::TargetBuffer & );
-
-		singlesided::BufferDescription
-		requestWriteTargetBuffer
-		   ( std::size_t size
-		   , int rank );
+		  , singlesided::Buffer & );
 
 	private:
 
@@ -163,14 +159,13 @@ class Passive
 			           , FNSH	// finish passive communication thread
 			           , DATP   // communicate partial data
 			           , DATE   // communicate end data
-			           , WTBR   // write target buffer request
 			           , RTBD   // receive target buffer description
 		               };
 
 		int                    passive_msg_tag_;
 		int                    passive_msg_size_;
 		int                    passive_msg_rank_;
-		std::unique_ptr<singlesided::write::TargetBuffer> passive_msg_ptr_;
+		std::unique_ptr<singlesided::Buffer> passive_msg_ptr_;
 
 
 		int           MAX_PASSIVE_MESSAGE_SIZE_;

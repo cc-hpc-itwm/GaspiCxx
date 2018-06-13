@@ -34,7 +34,7 @@ TargetBuffer
   ::TargetBuffer
    ( segment::Segment & segment
    , std::size_t size )
-: CommBuffer
+: Endpoint
   ( segment
   , size )
 {}
@@ -44,7 +44,7 @@ TargetBuffer
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size )
-: CommBuffer
+: Endpoint
   ( pointer
   , segment
   , size )
@@ -56,7 +56,7 @@ TargetBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: CommBuffer
+: Endpoint
   ( segment
   , size
   , notification )
@@ -69,45 +69,32 @@ TargetBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: CommBuffer
+: Endpoint
   ( pointer
   , segment
   , size
   , notification )
 {}
 
-TargetBuffer
-  ::~TargetBuffer
-    ()
-{}
-
-CommBuffer::ConnectHandle
+Endpoint::ConnectHandle
 TargetBuffer
   ::connectToRemoteSource
    ( Context & context
    , group::Rank & rank
    , Tag & tag )
 {
-  return CommBuffer::connectToRemotePartner
+  return Endpoint::connectToRemotePartner
       ( context
       , rank
       , tag );
 }
 
-void
+bool
 TargetBuffer
   ::waitForCompletion
    ( )
 {
-  gaspi_notification_id_t id;
-  gaspi_notification_t    value;
-
-  GASPI_CHECK(gaspi_notify_waitsome(CommBuffer::_segment.id(),
-                                    CommBuffer::_notification,
-                                    1,
-                                    &id,
-                                    GASPI_BLOCK));
-  GASPI_CHECK(gaspi_notify_reset(CommBuffer::_segment.id(), id, &value));
+  return Buffer::waitForNotification();
 }
 
 bool
@@ -115,30 +102,7 @@ TargetBuffer
   ::checkForCompletion
    ( )
 {
-  bool ret(false);
-
-  gaspi_notification_id_t id;
-  gaspi_notification_t    value;
-
-  gaspi_return_t gaspi_return
-    ( gaspi_notify_waitsome( CommBuffer::_segment.id()
-                           , CommBuffer::_notification
-                           , 1
-                           , &id
-                           , GASPI_TEST ) );
-
-  if( gaspi_return != GASPI_TIMEOUT) {
-
-    GASPI_CHECK( gaspi_return );
-
-    GASPI_CHECK( gaspi_notify_reset(CommBuffer::_segment.id(), id, &value) );
-
-    if( value != 0 ) {
-      ret = true;
-    }
-  }
-
-  return ret;
+  return Buffer::checkForNotification();
 }
 
 void
@@ -146,7 +110,7 @@ TargetBuffer
   ::ackTransfer
    (Context & context)
 {
-  context.notify(CommBuffer::_otherBufferDesc);
+  context.notify(Endpoint::_otherBufferDesc);
 }
 
 } // namespace write

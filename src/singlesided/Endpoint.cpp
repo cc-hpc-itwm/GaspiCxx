@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
  *
- * CommBuffer.cpp
+ * Endpoint.cpp
  *
  */
 
@@ -23,7 +23,7 @@
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
-#include <GaspiCxx/singlesided/write/CommBuffer.hpp>
+#include <GaspiCxx/singlesided/Endpoint.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
@@ -31,138 +31,101 @@
 
 namespace gaspi {
 namespace singlesided {
-namespace write {
 
-CommBuffer::ConnectHandle
+Endpoint::ConnectHandle
   ::ConnectHandle
-  ( CommBuffer & commBuffer
-  , std::unique_ptr<TargetBuffer> pSendBuffer
-  , std::unique_ptr<TargetBuffer> pRecvBuffer )
+  ( Endpoint & commBuffer
+  , std::unique_ptr<Buffer> pSendBuffer
+  , std::unique_ptr<Buffer> pRecvBuffer )
 : _commBuffer(commBuffer)
 , _pSendBuffer(std::move(pSendBuffer))
 , _pRecvBuffer(std::move(pRecvBuffer))
 {}
 
 void
-CommBuffer::ConnectHandle
+Endpoint::ConnectHandle
   ::waitForCompletion() {
 
-  _pSendBuffer->waitForCompletion();
+  if(!_pRecvBuffer->waitForNotification()) {
+    throw std::runtime_error(CODE_ORIGIN+"Unexpected behavior");
+  }
+
+  BufferDescription remotePartnerDescription;
 
   serialization::deserialize
-     ( _commBuffer._localBufferDesc
-     , _pSendBuffer->address() );
-
-  _pRecvBuffer->waitForCompletion();
-
-  serialization::deserialize
-      ( _commBuffer._otherBufferDesc
+      ( remotePartnerDescription
       , _pRecvBuffer->address());
+
+  _commBuffer.setRemotePartner(remotePartnerDescription);
+
+  if(!_pSendBuffer->waitForNotification()) {
+      throw std::runtime_error(CODE_ORIGIN+"Unexpected behavior");
+  }
 }
 
-CommBuffer
-  ::CommBuffer
+Endpoint
+  ::Endpoint
    ( segment::Segment & segment
    , std::size_t size )
-: _allocMemory(true)
-, _allocNotify(true)
-, _pointer( reinterpret_cast<void*>(segment.allocator().allocate(size)) )
-, _size (size)
-, _notification(segment.acquire_notification())
-, _segment(segment)
-, _localBufferDesc()
+: Buffer
+  ( segment
+  , size )
+, _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
 {}
 
-CommBuffer
-  ::CommBuffer
+Endpoint
+  ::Endpoint
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size )
-: _allocMemory(false)
-, _allocNotify(true)
-, _pointer( pointer )
-, _size (size)
-, _notification(segment.acquire_notification())
-, _segment(segment)
-, _localBufferDesc()
+: Buffer
+  ( pointer
+  , segment
+  , size )
+, _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
 {}
 
-CommBuffer
-  ::CommBuffer
+Endpoint
+  ::Endpoint
    ( segment::Segment & segment
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: _allocMemory(true)
-, _allocNotify(false)
-, _pointer( reinterpret_cast<void*>(segment.allocator().allocate(size)) )
-, _size (size)
-, _notification(notification)
-, _segment(segment)
-, _localBufferDesc()
+: Buffer
+  ( segment
+  , size
+  , notification )
+, _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
 {}
 
-CommBuffer
-  ::CommBuffer
+Endpoint
+  ::Endpoint
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: _allocMemory(false)
-, _allocNotify(false)
-, _pointer( pointer )
-, _size (size)
-, _notification(notification)
-, _segment(segment)
-, _localBufferDesc()
+: Buffer
+  ( pointer
+  , segment
+  , size
+  , notification )
+, _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
 {}
 
-CommBuffer
-  ::~CommBuffer
-    ()
-{
-  if( _allocMemory ) {
-    _segment.allocator().deallocate
-          ( reinterpret_cast<char*>(_pointer)
-          , _size );
-  }
-  if( _allocNotify ) {
-    _segment.release_notification(_notification);
-  }
+void
+Endpoint
+  ::setRemotePartner
+   ( BufferDescription const & partnerDescription ) {
+  _otherBufferDesc = partnerDescription;
 }
 
-BufferDescription
-CommBuffer
-  ::description
-   () const
-{
-  BufferDescription desc
-    ( group::groupToGlobalRank( getRuntime().group()
-                              , getRuntime().rank() )
-    , _segment.id()
-    , _segment.pointerToOffset
-        (_pointer)
-    , _size
-    , _notification );
-
-  return desc;
-}
-
-void *
-CommBuffer
-  ::address
-   () const
-{
-  return _pointer;
-}
-
-CommBuffer::ConnectHandle
-CommBuffer
+Endpoint::ConnectHandle
+Endpoint
   ::connectToRemotePartner
    ( Context & context
    , group::Rank & rank
@@ -173,13 +136,11 @@ CommBuffer
       ( group::groupToGlobalRank( context.group()
                                 , rank ) );
 
-  BufferDescription localBufferDesc(description());
+  std::unique_ptr<Buffer> pSendBuffer
+    ( new Buffer( _segment
+                , serialization::size(_localBufferDesc) ) );
 
-  std::unique_ptr<TargetBuffer> pSendBuffer
-    ( new TargetBuffer( _segment
-                      , serialization::size(localBufferDesc) ) );
-
-  serialization::serialize (pSendBuffer->address(), localBufferDesc);
+  serialization::serialize (pSendBuffer->address(), _localBufferDesc);
 
   getRuntime().passive().iSendTagMessg
       ( group::groupToGlobalRank( context.group()
@@ -188,15 +149,15 @@ CommBuffer
       , *pSendBuffer );
 
 
-  std::unique_ptr<TargetBuffer> pRecvBuffer
-    ( new TargetBuffer( _segment
-                      , serialization::size(_otherBufferDesc) ) );
+  std::unique_ptr<Buffer> pRecvBuffer
+    ( new Buffer( _segment
+                , serialization::size(_otherBufferDesc) ) );
 
   getRuntime().passive().iRecvTagMessg
     (group::groupToGlobalRank( context.group()
                              , rank )
-    ,tag
-    ,*pRecvBuffer);
+    , tag
+    , *pRecvBuffer);
 
   return ConnectHandle
       (*this,
@@ -204,6 +165,5 @@ CommBuffer
        std::move(pRecvBuffer));
 }
 
-} // namespace write
 } // namespace singlesided
 } // namespace gaspi

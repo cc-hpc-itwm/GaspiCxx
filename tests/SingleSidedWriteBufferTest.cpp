@@ -141,7 +141,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
   int & isource ( *reinterpret_cast<int*>(source.address()) ); isource = -1;
   int & itarget ( *reinterpret_cast<int*>(target.address()) ); itarget = -1;
 
-  CommBuffer::ConnectHandle handle
+  Endpoint::ConnectHandle handle
     ( target.connectToRemoteSource
       ( context
       , leftNeighbour

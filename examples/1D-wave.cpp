@@ -113,13 +113,13 @@ class Field1D {
       int leftHaloTag(1);
       int rightHaloTag(2);
 
-      gaspi::singlesided::write::CommBuffer::ConnectHandle leftHaloHandle
+      gaspi::singlesided::Endpoint::ConnectHandle leftHaloHandle
           ( _leftHalo.connectToRemoteSource
               ( context
               , leftNeighbour
               , leftHaloTag ) );
 
-      gaspi::singlesided::write::CommBuffer::ConnectHandle rightHaloHandle
+      gaspi::singlesided::Endpoint::ConnectHandle rightHaloHandle
           ( _rightHalo.connectToRemoteSource
               ( context
               , rightNeighbour

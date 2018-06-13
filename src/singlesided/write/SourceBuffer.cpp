@@ -23,7 +23,7 @@
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
-#include <GaspiCxx/singlesided/write/CommBuffer.hpp>
+#include <GaspiCxx/singlesided/Endpoint.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
@@ -37,7 +37,7 @@ SourceBuffer
   ::SourceBuffer
    ( segment::Segment & segment
    , std::size_t size )
-: CommBuffer
+: Endpoint
   ( segment
   , size )
 {}
@@ -47,7 +47,7 @@ SourceBuffer
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size )
-: CommBuffer
+: Endpoint
   ( pointer
   , segment
   , size )
@@ -59,7 +59,7 @@ SourceBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: CommBuffer
+: Endpoint
   ( segment
   , size
   , notification)
@@ -72,7 +72,7 @@ SourceBuffer
    , std::size_t size
    , segment::Segment
        ::Notification notification )
-: CommBuffer
+: Endpoint
   ( pointer
   , segment
   , size
@@ -91,7 +91,7 @@ SourceBuffer
    , group::Rank & rank
    , Tag & tag )
 {
-  CommBuffer::connectToRemotePartner
+  Endpoint::connectToRemotePartner
     ( context
     , rank
     , tag ).waitForCompletion();
@@ -103,24 +103,24 @@ SourceBuffer
    ( Context & context )
 {
   context.write
-     ( CommBuffer::_localBufferDesc
-     , CommBuffer::_otherBufferDesc );
+     ( Endpoint::_localBufferDesc
+     , Endpoint::_otherBufferDesc );
 }
 
-void
+bool
 SourceBuffer
   ::checkForTransferAck
-  (Context & context)
+  ( )
 {
-  context.checkForBufferNotification(CommBuffer::_localBufferDesc);
+  return Buffer::checkForNotification();
 }
 
-void
+bool
 SourceBuffer
   ::waitForTransferAck
-  (Context & context)
+  ( )
 {
-  context.waitForBufferNotification(CommBuffer::_localBufferDesc);
+  return Buffer::waitForNotification();
 }
 
 

@@ -24,14 +24,13 @@
 
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Rank.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
-#include <GaspiCxx/singlesided/write/CommBuffer.hpp>
+#include <GaspiCxx/singlesided/Endpoint.hpp>
 
 namespace gaspi {
 namespace singlesided {
 namespace write {
 
-class TargetBuffer : public CommBuffer {
+class TargetBuffer : public Endpoint {
 
   public:
 
@@ -60,19 +59,16 @@ class TargetBuffer : public CommBuffer {
       , segment::Segment
           ::Notification notification );
 
-    ~TargetBuffer
-      ();
-
     // bilateral function
     // needs to be invoked by the correspondent
     // WriteTargetBuffer having the same size
-    CommBuffer::ConnectHandle
+    Endpoint::ConnectHandle
     connectToRemoteSource
       ( Context & context
       , group::Rank & rank
       , Tag & tag );
 
-    void
+    bool
     waitForCompletion
       ();
 

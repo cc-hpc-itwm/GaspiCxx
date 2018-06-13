@@ -20,7 +20,7 @@
  */
 
 #include <GaspiCxx/passive/Passive.hpp>
-#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
 
@@ -81,25 +81,6 @@ Passive
 Passive
   ::~Passive()
 {
-//	/* Wait for the passive thread to complete */
-//	pthread_join( gpi_passive_thread_id_
-//			    , NULL );
-//
-//
-//	/* Clean up and exit */
-//	pthread_attr_destroy(&gpi_passive_thread_attr_);
-//
-//	// doing passive forwarding  cleanup
-//	{
-//		pthread_mutex_destroy(&passive_fwd_recv_mutx_);
-//		pthread_cond_destroy (&passive_fwd_recv_cond_);
-//
-//		pthread_mutex_destroy(&passive_fwd_send_mutx_);
-//		pthread_cond_destroy (&passive_fwd_send_cond_);
-//	}
-//
-//	//pthread_exit(NULL);
-
   this->finish();
 
   _segment.allocator().deallocate
@@ -123,55 +104,6 @@ Passive
 					  );
 }
 
-singlesided::BufferDescription
-Passive
-  ::requestWriteTargetBuffer
-   ( std::size_t bufferSize
-   , int targetRank )
-{
-  singlesided::BufferDescription targetBufferDesc;
-
-  {
-    singlesided::write::TargetBuffer tempBuffer
-      ( _segment
-      , serialization::size(targetBufferDesc) );
-
-    {
-      singlesided::BufferDescription const tempBufferDesc
-          ( tempBuffer.description() );
-
-      std::size_t const pkgSize( serialization::size(bufferSize )
-                               + serialization::size(tempBufferDesc) );
-
-      char * pkgBuffer( new char[pkgSize] );
-      {
-        char * cPtr( pkgBuffer );
-        cPtr += serialization::serialize (cPtr, bufferSize);
-        cPtr += serialization::serialize (cPtr, tempBufferDesc);
-      }
-
-      sendPassive
-        ( WTBR
-        , pkgBuffer
-        , pkgSize
-        , targetRank );
-
-      delete[] pkgBuffer;
-    }
-
-    tempBuffer.waitForCompletion();
-
-
-    serialization::deserialize
-      ( targetBufferDesc
-      , tempBuffer.address() );
-
-
-  }
-
-  return targetBufferDesc;
-}
-
 bool
 Passive
   ::sendMessg
@@ -187,7 +119,7 @@ Passive
   {
     _segment.remoteRegistration(targetRank);
 
-    singlesided::write::TargetBuffer tempBuffer
+    singlesided::Buffer tempBuffer
       ( _segment
       , serialization::size(targetBufferDesc) );
 
@@ -214,7 +146,9 @@ Passive
       delete[] pkgBuffer;
     }
 
-    tempBuffer.waitForCompletion();
+    if(!tempBuffer.waitForNotification()) {
+      throw std::runtime_error(CODE_ORIGIN + "Unexpected behavior");
+    }
 
     serialization::deserialize
       ( targetBufferDesc
@@ -222,7 +156,7 @@ Passive
   }
 
   /// allocate source buffer
-  singlesided::write::TargetBuffer sourceBuffer
+  singlesided::Buffer sourceBuffer
     ( _segment
     , datSize );
 
@@ -284,7 +218,7 @@ Passive::recvMessg( std::vector<char> & Data
       Data.resize( DataSize + passive_msg_size_ );
       rank = passive_msg_rank_;
 
-      passive_msg_ptr_->waitForCompletion();
+      passive_msg_ptr_->waitForNotification();
 
       memcpy( reinterpret_cast<void *>(&Data[DataSize])
             , reinterpret_cast<void *>(passive_msg_ptr_->address())
@@ -323,7 +257,7 @@ Passive
   ::iSendTagMessg
     ( const int rank
     , const int tag
-    , singlesided::write::TargetBuffer & srcTargetBuffer )
+    , singlesided::Buffer & srcTargetBuffer )
 {
   bool ret(false);
 
@@ -370,8 +304,6 @@ Passive
       rcvTargetBufferDesc
         (search->second);
 
-//    std::cout << "found rcvTargetBuffer " << rcvTargetBufferDesc
-//              << " to srcTargetBuffer " << srcTargetBufferDesc << std::endl;
     rcvTargetBuffers_.erase(search);
 
     pthread_mutex_unlock(&passive_isendrcv_mutx_);
@@ -405,7 +337,7 @@ Passive
   ::iRecvTagMessg
     ( const int rank
     , const int tag
-    , singlesided::write::TargetBuffer & rcvTargetBuffer )
+    , singlesided::Buffer & rcvTargetBuffer )
 {
   // iRecvTagMessg
   // send rcv target buffer description to passive sender thread
@@ -618,65 +550,6 @@ Passive::passive_thread_func_(void * arg)
         break;
       }
 
-      case WTBR:
-      {
-        std::size_t sizeRequestedTargetBuffer;
-
-        singlesided::BufferDescription remoteInfoBufferDesc;
-        {
-            char * cPtr( msg_ptr.get() );
-            cPtr += serialization::deserialize
-                ( sizeRequestedTargetBuffer, cPtr);
-            cPtr += serialization::deserialize
-                ( remoteInfoBufferDesc, cPtr);
-
-            msg_ptr.reset( nullptr );
-        }
-
-        segment::Segment & _segment( pPassiveCommMan->_segment );
-
-        void * g_requested_buffer( _segment.allocator().allocate
-                                      (sizeRequestedTargetBuffer) );
-        int    g_requested_synchr( _segment.acquire_notification() );
-
-        {
-
-          void * g_temp_buffer( _segment.allocator().allocate
-                                  (sizeof(singlesided::BufferDescription)) );
-
-          singlesided::BufferDescription descr
-            ( pPassiveCommMan->global_rank()
-            , _segment.id()
-            , _segment.pointerToOffset
-                (g_requested_buffer)
-            , sizeRequestedTargetBuffer
-            , g_requested_synchr );
-
-          {
-            serialization::serialize( g_temp_buffer, descr);
-
-            gaspi_queue_id_t queue(0);
-            GASPI_CHECK
-              ( gaspi_write_notify
-               ( _segment.id()
-               , _segment.pointerToOffset(g_temp_buffer)
-               , remoteInfoBufferDesc.rank()
-               , remoteInfoBufferDesc.segmentId()
-               , remoteInfoBufferDesc.offset()
-               , sizeof(singlesided::BufferDescription)
-               , remoteInfoBufferDesc.notificationId()
-               , 1
-               , queue
-               , GASPI_BLOCK ) );
-            GASPI_CHECK
-              ( gaspi_wait
-                  (queue, GASPI_BLOCK) );
-          }
-        }
-
-        break;
-      }
-
       case DATP:
       {
           // make the same as DATE
@@ -704,8 +577,8 @@ Passive::passive_thread_func_(void * arg)
 
           _segment.remoteRegistration(remoteInfoBufferDesc.rank());
 
-          std::unique_ptr<singlesided::write::TargetBuffer>
-            pRequestedBuffer( new singlesided::write::TargetBuffer
+          std::unique_ptr<singlesided::Buffer>
+            pRequestedBuffer( new singlesided::Buffer
               ( _segment
               , g_requested_size ) );
 
@@ -714,7 +587,7 @@ Passive::passive_thread_func_(void * arg)
             singlesided::BufferDescription descr
               ( pRequestedBuffer->description() );
 
-            singlesided::write::TargetBuffer g_temp_buffer
+            singlesided::Buffer g_temp_buffer
               ( _segment
               , serialization::size(descr) );
 

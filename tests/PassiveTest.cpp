@@ -121,15 +121,15 @@ TEST_F(PassiveTest, SendMessg)
 
 }
 
-TEST_F(PassiveTest, WriteTargetBufferRequest)
-{
-   Passive & passive(getRuntime().passive());
-
-   passive.requestWriteTargetBuffer
-     ( 1024
-     , 0 );
-
-}
+//TEST_F(PassiveTest, WriteTargetBufferRequest)
+//{
+//   Passive & passive(getRuntime().passive());
+//
+//   passive.requestWriteTargetBuffer
+//     ( 1024
+//     , 0 );
+//
+//}
 
 TEST_F(PassiveTest, iSendRecvTest)
 {

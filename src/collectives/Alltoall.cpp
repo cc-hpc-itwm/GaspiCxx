@@ -22,7 +22,7 @@
 #include <GaspiCxx/collectives/Alltoall.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>
-#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
 
 #include <vector>
@@ -53,9 +53,9 @@ alltoall
   std::vector<singlesided::BufferDescription>
         remoteTargetDescriptions(context.size().get());
 
-  std::vector<std::unique_ptr<singlesided::write::TargetBuffer> >
+  std::vector<std::unique_ptr<singlesided::Buffer> >
       descriptionSendBuffers( context.size().get() );
-  std::vector<std::unique_ptr<singlesided::write::TargetBuffer> >
+  std::vector<std::unique_ptr<singlesided::Buffer> >
       descriptionRecvBuffers( context.size().get() );
 
   for( int i(0)
@@ -105,7 +105,7 @@ alltoall
     }
 
     descriptionSendBuffers[i].reset
-      ( new singlesided::write::TargetBuffer
+      ( new singlesided::Buffer
           ( targetSegment
           , serialization::size(localTargetDescriptions[i])
           + serialization::size(localSourceDescriptions[i]) ) );
@@ -115,7 +115,7 @@ alltoall
     cPtr += serialization::serialize (cPtr, localSourceDescriptions[i]);
 
     descriptionRecvBuffers[i].reset
-      ( new singlesided::write::TargetBuffer
+      ( new singlesided::Buffer
          ( targetSegment
          , serialization::size(remoteTargetDescriptions[i])
          + serialization::size(remoteSourceDescriptions[i]) ) );
@@ -137,7 +137,7 @@ alltoall
      ;    i<context.size().get()
      ;  ++i) {
 
-    descriptionRecvBuffers[i]->waitForCompletion();
+    descriptionRecvBuffers[i]->waitForNotification();
     {
       char * cPtr (static_cast<char *> (descriptionRecvBuffers[i]->address()));
       cPtr += serialization::deserialize (remoteTargetDescriptions[i], cPtr);
@@ -169,7 +169,7 @@ alltoall
 
     context.waitForBufferNotification(localSourceDescriptions[i]);
 
-    descriptionSendBuffers[i]->waitForCompletion();
+    descriptionSendBuffers[i]->waitForNotification();
 
     descriptionSendBuffers[i].reset( nullptr );
 
@@ -202,9 +202,9 @@ alltoallv
   std::vector<singlesided::BufferDescription>
         remoteTargetDescriptions(context.size().get());
 
-  std::vector<std::unique_ptr<singlesided::write::TargetBuffer> >
+  std::vector<std::unique_ptr<singlesided::Buffer> >
       descriptionSendBuffers( context.size().get() );
-  std::vector<std::unique_ptr<singlesided::write::TargetBuffer> >
+  std::vector<std::unique_ptr<singlesided::Buffer> >
       descriptionRecvBuffers( context.size().get() );
 
   std::size_t sourceOffset(0);
@@ -261,7 +261,7 @@ alltoallv
     targetOffset += targetSizes[i];
 
     descriptionSendBuffers[i].reset
-      ( new singlesided::write::TargetBuffer
+      ( new singlesided::Buffer
           ( targetSegment
           , serialization::size(localTargetDescriptions[i])
           + serialization::size(localSourceDescriptions[i]) ) );
@@ -271,7 +271,7 @@ alltoallv
     cPtr += serialization::serialize (cPtr, localSourceDescriptions[i]);
 
     descriptionRecvBuffers[i].reset
-      ( new singlesided::write::TargetBuffer
+      ( new singlesided::Buffer
          ( targetSegment
          , serialization::size(remoteTargetDescriptions[i])
          + serialization::size(remoteSourceDescriptions[i]) ) );
@@ -293,7 +293,7 @@ alltoallv
      ;    i<context.size().get()
      ;  ++i) {
 
-    descriptionRecvBuffers[i]->waitForCompletion();
+    descriptionRecvBuffers[i]->waitForNotification();
     {
       char * cPtr (static_cast<char *> (descriptionRecvBuffers[i]->address()));
       cPtr += serialization::deserialize (remoteTargetDescriptions[i], cPtr);
@@ -325,7 +325,7 @@ alltoallv
 
     context.waitForBufferNotification(localSourceDescriptions[i]);
 
-    descriptionSendBuffers[i]->waitForCompletion();
+    descriptionSendBuffers[i]->waitForNotification();
 
     descriptionSendBuffers[i].reset( nullptr );
 
