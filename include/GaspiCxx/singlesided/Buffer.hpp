@@ -71,7 +71,7 @@ class Buffer {
       () const;
 
     // Checks for notification
-    // return true if thread got notifcation (only a single thread gets the
+    // return true if thread got notification (only a single thread gets the
     //        notification)
     bool
     checkForNotification
