@@ -95,10 +95,15 @@ class Endpoint : public Buffer {
       , group::Rank & rank
       , Tag & tag );
 
+    bool
+    isConnected
+      () const;
+
   protected:
 
     BufferDescription   _localBufferDesc;
     BufferDescription   _otherBufferDesc;
+    bool                _isConnected;
 
 };
 

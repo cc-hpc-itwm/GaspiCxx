@@ -72,6 +72,7 @@ Endpoint
   , size )
 , _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
+, _isConnected(false)
 {}
 
 Endpoint
@@ -85,6 +86,7 @@ Endpoint
   , size )
 , _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
+, _isConnected(false)
 {}
 
 Endpoint
@@ -99,6 +101,7 @@ Endpoint
   , notification )
 , _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
+, _isConnected(false)
 {}
 
 Endpoint
@@ -115,6 +118,7 @@ Endpoint
   , notification )
 , _localBufferDesc(Buffer::description())
 , _otherBufferDesc()
+, _isConnected(false)
 {}
 
 void
@@ -122,6 +126,7 @@ Endpoint
   ::setRemotePartner
    ( BufferDescription const & partnerDescription ) {
   _otherBufferDesc = partnerDescription;
+  _isConnected = true;
 }
 
 Endpoint::ConnectHandle
@@ -163,6 +168,15 @@ Endpoint
       (*this,
        std::move(pSendBuffer),
        std::move(pRecvBuffer));
+}
+
+
+bool
+Endpoint
+  ::isConnected
+   () const
+{
+  return _isConnected;
 }
 
 } // namespace singlesided

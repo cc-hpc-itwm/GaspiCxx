@@ -19,6 +19,8 @@
  *
  */
 
+#include <cassert>
+
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>
@@ -102,6 +104,8 @@ SourceBuffer
   ::initTransfer
    ( Context & context )
 {
+  assert(Endpoint::isConnected());
+
   context.write
      ( Endpoint::_localBufferDesc
      , Endpoint::_otherBufferDesc );
@@ -112,6 +116,8 @@ SourceBuffer
   ::checkForTransferAck
   ( )
 {
+  assert(Endpoint::isConnected());
+
   return Buffer::checkForNotification();
 }
 
@@ -120,6 +126,8 @@ SourceBuffer
   ::waitForTransferAck
   ( )
 {
+  assert(Endpoint::isConnected());
+
   return Buffer::waitForNotification();
 }
 
