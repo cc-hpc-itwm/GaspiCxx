@@ -54,13 +54,13 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 {
   Context context;
 
-  group::Rank rightNeighbour( ( context.rank().get()
-                              + context.size().get()
-                              + 1 ) % context.size().get() );
+  group::Rank rightNeighbour( ( context.rank()
+                              + context.size()
+                              + 1 ) % context.size() );
 
-  group::Rank leftNeighbour ( ( context.rank().get()
-                              + context.size().get()
-                              - 1 ) % context.size().get() );
+  group::Rank leftNeighbour ( ( context.rank()
+                              + context.size()
+                              - 1 ) % context.size() );
 
   int tag(1);
 
@@ -123,13 +123,13 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 {
   Context context;
 
-  group::Rank rightNeighbour( ( context.rank().get()
-                              + context.size().get()
-                              + 1 ) % context.size().get() );
+  group::Rank rightNeighbour( ( context.rank()
+                              + context.size()
+                              + 1 ) % context.size() );
 
-  group::Rank leftNeighbour ( ( context.rank().get()
-                              + context.size().get()
-                              - 1 ) % context.size().get() );
+  group::Rank leftNeighbour ( ( context.rank()
+                              + context.size()
+                              - 1 ) % context.size() );
 
   int tag(1);
 

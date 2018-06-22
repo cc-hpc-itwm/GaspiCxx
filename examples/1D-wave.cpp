@@ -101,14 +101,14 @@ class Field1D {
         , _nBound1D * sizeof(T) )
     {
       gaspi::group::Rank
-        rightNeighbour( ( context.rank().get()
-                        + context.size().get()
-                        + 1 ) % context.size().get() );
+        rightNeighbour( ( context.rank()
+                        + context.size()
+                        + 1 ) % context.size() );
 
       gaspi::group::Rank
-        leftNeighbour ( ( context.rank().get()
-                        + context.size().get()
-                        - 1 ) % context.size().get() );
+        leftNeighbour ( ( context.rank()
+                        + context.size()
+                        - 1 ) % context.size() );
 
       int leftHaloTag(1);
       int rightHaloTag(2);

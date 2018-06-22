@@ -58,6 +58,21 @@ public:
   Rank
   operator--(int);
 
+  Rank
+  operator+(Rank const & other) const;
+
+  Rank
+  operator+(int const & other) const;
+
+  Rank
+  operator-(Rank const & other) const;
+
+  Rank
+  operator-(int const & other) const;
+
+  Rank
+  operator%(Rank const & other) const;
+
   bool
   operator==( Rank const & other ) const;
 

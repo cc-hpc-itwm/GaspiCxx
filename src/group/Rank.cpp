@@ -68,6 +68,36 @@ Rank
   return tmp;
 }
 
+Rank
+Rank
+  ::operator+(Rank const & other) const {
+  return Rank(this->get()+other.get());
+}
+
+Rank
+Rank
+  ::operator+(int const & other) const {
+  return *this + Rank(other);
+}
+
+Rank
+Rank
+  ::operator-(Rank const & other) const {
+  return Rank(this->get()-other.get());
+}
+
+Rank
+Rank
+  ::operator-(int const & other) const {
+  return *this - Rank(other);
+}
+
+Rank
+Rank
+  ::operator%(Rank const & other) const {
+  return Rank(this->get()%other.get());
+}
+
 
 bool
 Rank
