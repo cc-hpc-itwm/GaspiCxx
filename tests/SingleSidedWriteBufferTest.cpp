@@ -77,7 +77,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
     source.connectToRemoteTarget
         ( context
         , rightNeighbour
-        , tag );
+        , tag ).waitForCompletion();
 
 
     target.connectToRemoteSource
@@ -103,7 +103,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
     source.connectToRemoteTarget
             ( context
             , rightNeighbour
-            , tag );
+            , tag ).waitForCompletion();
 
     target.waitForCompletion();
 
@@ -141,18 +141,20 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
   int & isource ( *reinterpret_cast<int*>(source.address()) ); isource = -1;
   int & itarget ( *reinterpret_cast<int*>(target.address()) ); itarget = -1;
 
-  Endpoint::ConnectHandle handle
+  Endpoint::ConnectHandle tHandle
     ( target.connectToRemoteSource
       ( context
       , leftNeighbour
       , tag ) );
 
-  source.connectToRemoteTarget
-          ( context
-          , rightNeighbour
-          , tag );
+  Endpoint::ConnectHandle sHandle
+    ( source.connectToRemoteTarget
+       ( context
+       , rightNeighbour
+      , tag ) );
 
-  handle.waitForCompletion();
+  tHandle.waitForCompletion();
+  sHandle.waitForCompletion();
 
   if( context.rank() == group::Rank(0) ) {
 

@@ -67,7 +67,7 @@ class SourceBuffer : public Endpoint {
     // bilateral function
     // needs to be invoked by the correspondent
     // WriteTargetBuffer having the same size
-    void
+    Endpoint::ConnectHandle
     connectToRemoteTarget
       ( Context & context
       , group::Rank & rank

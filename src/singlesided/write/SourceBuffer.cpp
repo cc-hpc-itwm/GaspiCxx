@@ -84,17 +84,17 @@ SourceBuffer
     ()
 { }
 
-void
+Endpoint::ConnectHandle
 SourceBuffer
   ::connectToRemoteTarget
    ( Context & context
    , group::Rank & rank
    , Tag & tag )
 {
-  Endpoint::connectToRemotePartner
-    ( context
-    , rank
-    , tag ).waitForCompletion();
+  return Endpoint::connectToRemotePartner
+      ( context
+      , rank
+      , tag );
 }
 
 void

@@ -119,24 +119,27 @@ class Field1D {
               , leftNeighbour
               , leftHaloTag ) );
 
+      gaspi::singlesided::Endpoint::ConnectHandle leftBoundaryHandle
+          ( _leftBoundary.connectToRemoteTarget
+              ( context
+              , leftNeighbour
+              , rightHaloTag ) );
+
+      gaspi::singlesided::Endpoint::ConnectHandle rightBoundaryHandle
+        ( _rightBoundary.connectToRemoteTarget
+          ( context
+          , rightNeighbour
+          , leftHaloTag ) );
+
       gaspi::singlesided::Endpoint::ConnectHandle rightHaloHandle
           ( _rightHalo.connectToRemoteSource
               ( context
               , rightNeighbour
               , rightHaloTag ) );
 
-      _leftBoundary.connectToRemoteTarget
-        ( context
-        , leftNeighbour
-        , rightHaloTag );
-
-      _rightBoundary.connectToRemoteTarget
-        ( context
-        , rightNeighbour
-        , leftHaloTag );
-
-
       leftHaloHandle.waitForCompletion();
+      leftBoundaryHandle.waitForCompletion();
+      rightBoundaryHandle.waitForCompletion();
       rightHaloHandle.waitForCompletion();
 
       for( int i(0)

@@ -93,30 +93,51 @@ main
         )
       );
 
-  lb1.connectToRemoteTarget
-    ( context
-    , leftNeighbour
-    , lb1_tag );
+  gaspi::singlesided::Endpoint::ConnectHandle
+    lb1_connect_handle
+      ( lb1.connectToRemoteTarget
+        ( context
+        , leftNeighbour
+        , lb1_tag
+        )
+      );
 
-  rb1.connectToRemoteTarget
-    ( context
-    , rightNeighbour
-    , rb1_tag );
+  gaspi::singlesided::Endpoint::ConnectHandle
+    rb1_connect_handle
+      ( rb1.connectToRemoteTarget
+        ( context
+        , rightNeighbour
+        , rb1_tag
+        )
+      );
 
-  lb2.connectToRemoteTarget
-      ( context
-      , leftNeighbour
-      , lb2_tag );
+  gaspi::singlesided::Endpoint::ConnectHandle
+    lb2_connect_handle
+      ( lb2.connectToRemoteTarget
+        ( context
+        , leftNeighbour
+        , lb2_tag
+        )
+      );
 
-  rb2.connectToRemoteTarget
-    ( context
-    , rightNeighbour
-    , rb2_tag );
+  gaspi::singlesided::Endpoint::ConnectHandle
+    rb2_connect_handle
+      ( rb2.connectToRemoteTarget
+        ( context
+          , rightNeighbour
+          , rb2_tag
+        )
+      );
 
   lh1_connect_handle.waitForCompletion();
   rh1_connect_handle.waitForCompletion();
   lh2_connect_handle.waitForCompletion();
   rh2_connect_handle.waitForCompletion();
+
+  lb1_connect_handle.waitForCompletion();
+  rb1_connect_handle.waitForCompletion();
+  lb2_connect_handle.waitForCompletion();
+  rb2_connect_handle.waitForCompletion();
 
   for(int it(0)
      ;    it<1000
