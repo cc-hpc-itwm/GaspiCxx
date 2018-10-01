@@ -325,7 +325,16 @@ Passive
     pthread_mutex_unlock(&passive_isendrcv_mutx_);
 
     if(!ret.second) {
-      throw std::runtime_error("key exists already");
+
+      std::stringstream ss;
+
+      ss << "key ("
+         << key.first
+         << ", "
+         << key.second
+         << ") exists already";
+
+      throw std::runtime_error(CODE_ORIGIN + ss.str());
     }
   }
 
