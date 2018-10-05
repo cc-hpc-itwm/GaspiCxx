@@ -77,6 +77,12 @@ Runtime
   pGRuntime = nullptr;
 }
 
+bool
+isRuntimeAvailable()
+{
+  return !(pGRuntime == nullptr);
+}
+
 Runtime &
 getRuntime()
 {
