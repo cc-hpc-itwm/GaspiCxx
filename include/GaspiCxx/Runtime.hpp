@@ -95,6 +95,9 @@ namespace gaspi {
     }
   };
 
+  bool
+  isRuntimeAvailable();
+
   Runtime &
   getRuntime();
 
