@@ -112,17 +112,19 @@ allreduce
   , Allreduce::Type const & type
   , Context & context ) {
 
-  T result;
+  T result(input);
 
-  GASPI_CHECK(
-    gaspi_allreduce
-      ( const_cast<T * const>(&input)
-      , const_cast<T * const>(&result)
-      , 1
-      , detail::getGaspiOperationT(type)
-      , detail::getGaspiDatatypeT<T>()
-      , context.group().group()
-      , GASPI_BLOCK) );
+  if(context.size().get() > 1) {
+    GASPI_CHECK(
+      gaspi_allreduce
+        ( const_cast<T * const>(&input)
+        , const_cast<T * const>(&result)
+        , 1
+        , detail::getGaspiOperationT(type)
+        , detail::getGaspiDatatypeT<T>()
+        , context.group().group()
+        , GASPI_BLOCK) );
+  }
 
   return result;
 }
@@ -140,19 +142,21 @@ allreduce<std::complex<float> >
       (CODE_ORIGIN + "Complex data type does not support MIN or MAX");
   }
 
-  std::complex<float> result;
+  std::complex<float> result(input);
 
-  GASPI_CHECK(
-    gaspi_allreduce
-      ( const_cast<float * const>
-          (reinterpret_cast<const float(&)[2]>(input))
-      , const_cast<float * const>
-          (reinterpret_cast<      float(&)[2]>(result))
-      , 2
-      , detail::getGaspiOperationT(type)
-      , detail::getGaspiDatatypeT<float>()
-      , context.group().group()
-      , GASPI_BLOCK) );
+  if(context.size().get() > 1) {
+    GASPI_CHECK(
+      gaspi_allreduce
+        ( const_cast<float * const>
+            (reinterpret_cast<const float(&)[2]>(input))
+        , const_cast<float * const>
+            (reinterpret_cast<      float(&)[2]>(result))
+        , 2
+        , detail::getGaspiOperationT(type)
+        , detail::getGaspiDatatypeT<float>()
+        , context.group().group()
+        , GASPI_BLOCK) );
+  }
 
   return result;
 }
@@ -170,19 +174,21 @@ allreduce<std::complex<double> >
       (CODE_ORIGIN + "Complex data type does not support MIN or MAX");
   }
 
-  std::complex<double> result;
+  std::complex<double> result(input);
 
-  GASPI_CHECK(
-    gaspi_allreduce
-      ( const_cast<double * const>
-          (reinterpret_cast<const double(&)[2]>(input))
-      , const_cast<double * const>
-          (reinterpret_cast<      double(&)[2]>(result))
-      , 2
-      , detail::getGaspiOperationT(type)
-      , detail::getGaspiDatatypeT<double>()
-      , context.group().group()
-      , GASPI_BLOCK) );
+  if(context.size().get() > 1) {
+    GASPI_CHECK(
+      gaspi_allreduce
+        ( const_cast<double * const>
+            (reinterpret_cast<const double(&)[2]>(input))
+        , const_cast<double * const>
+            (reinterpret_cast<      double(&)[2]>(result))
+        , 2
+        , detail::getGaspiOperationT(type)
+        , detail::getGaspiDatatypeT<double>()
+        , context.group().group()
+        , GASPI_BLOCK) );
+  }
 
   return result;
 }
