@@ -23,6 +23,7 @@ add_library ( GaspiCxx
               singlesided/Queue.cpp
               singlesided/write/SourceBuffer.cpp
               singlesided/write/TargetBuffer.cpp
+	      utility/Filesystem.cpp
               utility/LockGuard.cpp
               utility/serialization.cpp
 	      )

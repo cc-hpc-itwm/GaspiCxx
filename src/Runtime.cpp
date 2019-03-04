@@ -21,6 +21,7 @@
 
 
 #include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/utility/Filesystem.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
 namespace gaspi {
@@ -64,6 +65,34 @@ Runtime
   _ppassive.reset
     ( new passive::Passive( *_psegment
                           , *this ) );
+
+  if(rank() == group::Rank(0)) {
+
+    std::string const dir(getCurrentWorkingDirectory());
+
+    for( group::Rank targetRank(1);targetRank < size(); ++targetRank) {
+      _ppassive->sendMessg
+        ( dir.c_str()
+        , dir.size()
+        , targetRank.get() );
+    }
+  }
+  else {
+
+    std::vector<char> buffer;
+
+    int srcRank;
+
+    _ppassive->recvMessg
+      ( buffer
+      , srcRank );
+
+    std::string dir(buffer.data());
+
+    setCurrentWorkingDirectory(dir);
+
+  }
+
 }
 
 Runtime
