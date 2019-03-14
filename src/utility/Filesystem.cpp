@@ -21,6 +21,7 @@
 
 #include <GaspiCxx/utility/Filesystem.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
+#include <errno.h>
 #include <unistd.h>
 
 namespace gaspi {
@@ -50,8 +51,60 @@ setCurrentWorkingDirectory
   (std::string const & dir) {
 
   if (chdir(dir.c_str())) {
+    int errsv = errno;
+
+    std::stringstream ss
+      ("Could not change current working directory: ");
+
+    switch (errsv) {
+      case EACCES: {
+        ss << "Search permission is denied for one of the components of "
+           << dir;
+        break;
+      }
+      case EFAULT: {
+        ss << dir
+           << " points outside your accessible address space";
+        break;
+      }
+      case EIO: {
+        ss << "An I/O error orccured: "
+           << dir;
+        break;
+      }
+      case ELOOP: {
+        ss << "Too many symbolic links were encountered in resolving "
+           << dir;
+        break;
+      }
+      case ENAMETOOLONG: {
+        ss << dir
+           << " is too long";
+        break;
+      }
+      case ENOENT: {
+        ss << "The file does not exist: "
+           << dir;
+        break;
+      }
+      case ENOMEM: {
+        ss << "Insufficient kernel memory was available";
+        break;
+      }
+      case ENOTDIR: {
+        ss << "A component of "
+           << dir
+           << " is not a directory";
+        break;
+      }
+      default: {
+        ss << "Unknown error: "
+           << dir;
+      }
+    }
+
     throw std::runtime_error
-      (CODE_ORIGIN + "Could not change current working directory");
+      (CODE_ORIGIN + ss.str());
   }
 
 }
