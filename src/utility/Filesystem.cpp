@@ -33,8 +33,46 @@ getCurrentWorkingDirectory
   char* const currentDirectory (getcwd (NULL, 0));
 
   if (currentDirectory == nullptr) {
+    int errsv = errno;
+
+    std::stringstream ss
+      ("Could not determine current working directory: ");
+
+    switch (errsv) {
+      case EACCES: {
+        ss << "Permission to read or search a component of the filename "
+           << "was denied";
+        break;
+      }
+      case EFAULT: {
+        ss << "buf=NULL points to a bad address";
+        break;
+      }
+      case EINVAL: {
+        ss << "The size argument is zero and buf=NULL is not a null pointer";
+        break;
+      }
+      case ENOMEM: {
+        ss << "Out of memory";
+        break;
+      }
+      case ENOENT: {
+        ss << "The current working directory has been unlinked";
+        break;
+      }
+      case ERANGE: {
+        ss << "The size=0 argument is less than the length of the absolute "
+           << "pathname of the working directory, including the terminating "
+           << "null byte. You need to allocate a bigger array and try again";
+        break;
+      }
+      default: {
+        ss << "Unknown error";
+      }
+    }
+
     throw std::runtime_error
-      (CODE_ORIGIN + "Could not determine current working directory");
+      (CODE_ORIGIN + ss.str());
   }
 
   std::string directory (currentDirectory);
