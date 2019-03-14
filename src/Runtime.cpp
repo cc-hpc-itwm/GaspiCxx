@@ -87,7 +87,7 @@ Runtime
       ( buffer
       , srcRank );
 
-    std::string dir(buffer.data());
+    std::string dir(buffer.data(),buffer.size());
 
     setCurrentWorkingDirectory(dir);
 
