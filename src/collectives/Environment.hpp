@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with GaspiLS. If not, see <http://www.gnu.org/licenses/>.
+ * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
  *
  * Environment.hpp
  *
@@ -67,7 +67,7 @@ namespace gaspi
     //! Offset of the allreduce buffer on each rank
     gaspi_offset_t *_allreduceBufferRemoteOffsets;
 
-    //! A notification that is used if the value is of no importanGaspiLS
+    //! A notification that is used if the value is of no importanGaspiCxx
     static const gaspi_notification_t NOTIFICATION_DISCARD = 1;
 
     //! An interface cannot be copied.
@@ -117,7 +117,7 @@ namespace gaspi
     //! The destructor
     ~Environment();
     //! Get the rank of the calling process.
-    //! \note Most GaspiLS methods work with the <em>group rank</em>, i.e.,
+    //! \note Most GaspiCxx methods work with the <em>group rank</em>, i.e.,
     //!       the rank within the GASPI group used for the interface!
     gaspi_rank_t rank() const;
     //! Return the GASPI group of this interface.
@@ -426,7 +426,7 @@ namespace gaspi
 
     return result;
   }
-} // namespace GaspiLS
+} // namespace GaspiCxx
 
 #endif // GASPIINTERFACE_HPP
 
