@@ -22,8 +22,6 @@
 #include <cstring>
 #include <memory>
 #include <GaspiCxx/Context.hpp>
-#include <GaspiCxx/passive/Passive.hpp>
-#include <GaspiCxx/segment/Segment.hpp>
 
 extern "C" {
 #include <GASPI.h>
@@ -34,6 +32,10 @@ extern "C" {
 #define GASPIRUNTIME_HPP
 
 namespace gaspi {
+
+namespace segment { class Segment; }
+namespace passive { class Passive; }
+
 
   class RuntimeBase {
 
