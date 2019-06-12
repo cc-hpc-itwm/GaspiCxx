@@ -22,6 +22,7 @@
 #include <GaspiCxx/Runtime.hpp>
 #include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/collectives/Allgather.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>

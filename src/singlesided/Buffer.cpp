@@ -20,6 +20,7 @@
  */
 
 #include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>

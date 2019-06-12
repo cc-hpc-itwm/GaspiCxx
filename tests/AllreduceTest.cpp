@@ -22,6 +22,7 @@
 #include <GaspiCxx/Runtime.hpp>
 #include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/collectives/Allreduce.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 
 extern GlobalTestConfiguration *globalTestConf;
 

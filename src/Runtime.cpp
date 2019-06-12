@@ -21,6 +21,7 @@
 
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/utility/Filesystem.hpp>

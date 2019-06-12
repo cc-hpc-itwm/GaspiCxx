@@ -20,6 +20,7 @@
  */
 
 #include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
 namespace gaspi {

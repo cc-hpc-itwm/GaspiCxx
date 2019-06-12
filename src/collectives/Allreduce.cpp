@@ -20,6 +20,7 @@
  */
 
 #include <GaspiCxx/collectives/Allreduce.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
 #include <complex>
