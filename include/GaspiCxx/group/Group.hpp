@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2017
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
  *
  * This file is part of GaspiCxx.
  *
@@ -32,6 +32,8 @@ extern "C" {
 
 namespace gaspi {
 namespace group {
+
+class Rank;
 
 class Group
 {
