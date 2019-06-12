@@ -26,9 +26,9 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <GaspiCxx/segment/Segment.hpp>
-
 namespace gaspi {
+
+namespace segment { template <typename T> class Allocator; }
 
 //! This class implements the RAII idiom for memory
 //! allocations on GASPI segments.
