@@ -22,12 +22,16 @@
 #ifndef SOURCEBUFFER_HPP_
 #define SOURCEBUFFER_HPP_
 
-#include <cstdlib>
-#include <GaspiCxx/Context.hpp>
-#include <GaspiCxx/group/Rank.hpp>
-#include <GaspiCxx/segment/Segment.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
+
+// forward declarations
+namespace gaspi {
+
+class Context;
+
+namespace group { class Rank; }
+
+}
 
 namespace gaspi {
 namespace singlesided {
