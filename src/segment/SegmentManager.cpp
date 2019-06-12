@@ -21,6 +21,9 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <GaspiCxx/segment/Allocator.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/SegmentManager.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
@@ -78,10 +81,14 @@ SegmentManager
     ( SegmentID segmentID )
 : _segmentID(segmentID)
 , _memoryManager
-  ( getSegmentPtr (segmentID)
-  , getSegmentSize(segmentID) )
+  ( std::make_unique<MemoryManager>
+    ( getSegmentPtr (segmentID)
+    , getSegmentSize(segmentID) )
+    )
 , _notifyManager
-  ( getNumNotificationsMax() )
+  ( std::make_unique<NotificationManager>
+    ( getNumNotificationsMax() )
+  )
 {
 
 }
@@ -116,7 +123,7 @@ SegmentManager
   ::allocator
    ()
 {
-  return Allocator<char>(&_memoryManager);
+  return Allocator<char>(_memoryManager.get());
 }
 
 SegmentManager
@@ -125,7 +132,7 @@ SegmentManager
   ::acquire_notification
     ()
 {
-  return _notifyManager.allocate( 1 );
+  return _notifyManager->allocate( 1 );
 }
 
 void
@@ -133,7 +140,7 @@ SegmentManager
   ::release_notification
     (Notification const & notification)
 {
-  _notifyManager.deallocate( static_cast<std::size_t>(notification) );
+  _notifyManager->deallocate( static_cast<std::size_t>(notification) );
 }
 
 #undef GASPI_CHECK

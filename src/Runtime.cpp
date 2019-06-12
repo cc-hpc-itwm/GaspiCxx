@@ -23,6 +23,8 @@
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/utility/Filesystem.hpp>
 #include <GaspiCxx/utility/Macros.hpp>

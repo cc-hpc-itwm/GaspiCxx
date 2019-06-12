@@ -25,6 +25,8 @@
 #include <GaspiCxx/collectives/Alltoall.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
+#include <GaspiCxx/segment/Allocator.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 

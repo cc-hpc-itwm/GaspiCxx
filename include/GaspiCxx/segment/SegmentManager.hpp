@@ -22,9 +22,21 @@
 #ifndef SEGMENT_MANAGER_HPP_
 #define SEGMENT_MANAGER_HPP_
 
-#include <GaspiCxx/segment/Allocator.hpp>
-#include <GaspiCxx/segment/MemoryManager.hpp>
-#include <GaspiCxx/segment/NotificationManager.hpp>
+#include <memory>
+
+// forward declarations
+
+namespace gaspi {
+namespace segment {
+
+template <typename T>
+class Allocator;
+
+class MemoryManager;
+class NotificationManager;
+
+}
+}
 
 namespace gaspi {
 namespace segment {
@@ -68,9 +80,9 @@ class SegmentManager
 
 private:
 
-    SegmentID           _segmentID;
-    MemoryManager       _memoryManager;
-    NotificationManager _notifyManager;
+    SegmentID                            _segmentID;
+    std::unique_ptr<MemoryManager>       _memoryManager;
+    std::unique_ptr<NotificationManager> _notifyManager;
 
 };
 

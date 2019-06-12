@@ -23,6 +23,7 @@
 #include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/collectives/Allreduce.hpp>
 #include <GaspiCxx/group/Rank.hpp>
+#include <GaspiCxx/segment/Allocator.hpp>
 
 extern GlobalTestConfiguration *globalTestConf;
 

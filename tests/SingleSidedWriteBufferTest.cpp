@@ -21,6 +21,8 @@
 
 #include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>

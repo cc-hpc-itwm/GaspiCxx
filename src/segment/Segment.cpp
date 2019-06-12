@@ -21,6 +21,9 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <GaspiCxx/segment/Allocator.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 

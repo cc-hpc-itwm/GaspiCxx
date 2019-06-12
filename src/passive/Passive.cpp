@@ -20,6 +20,7 @@
  */
 
 #include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/segment/Allocator.hpp>
 #include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
