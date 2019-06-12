@@ -22,9 +22,16 @@
 #ifndef TARGETBUFFER_HPP_
 #define TARGETBUFFER_HPP_
 
-#include <GaspiCxx/Context.hpp>
-#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
+
+// forward declarations
+namespace gaspi {
+
+class Context;
+
+namespace group { class Rank; }
+
+}
 
 namespace gaspi {
 namespace singlesided {
