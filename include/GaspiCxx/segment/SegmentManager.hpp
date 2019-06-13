@@ -54,6 +54,9 @@ class SegmentManager
     SegmentManager
       ( SegmentID segmentID );
 
+    ~SegmentManager
+      ();
+
     SegmentID
     id
       () const;
