@@ -20,7 +20,10 @@
  */
 
 #include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <GaspiCxx/singlesided/Queue.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
 namespace gaspi {
@@ -37,8 +40,8 @@ Context
   ::Context
     (group::Group && group)
 : _rank(0)
-, _group(std::move(group))
-, _queue()
+, _pGroup(std::make_unique<group::Group>(std::move(group)))
+, _pQueue(std::make_unique<singlesided::Queue>())
 {
   GASPI_CHECK
     (gaspi_proc_rank(&_rank));
@@ -55,7 +58,7 @@ group::Group const &
 Context
   ::group() const
 {
-  return _group;
+  return *_pGroup;
 }
 
 /// Returns the rank of this process in the communicator
@@ -64,7 +67,7 @@ Context
   ::rank
     () const
 {
-  return _group.rank();
+  return _pGroup->rank();
 }
 
 /// Returns the size of this communicator
@@ -73,7 +76,7 @@ Context
   ::size
     () const
 {
-  return _group.size();
+  return _pGroup->size();
 }
 
 void
@@ -111,9 +114,9 @@ Context
                      , targetBufferDescription.size()
                      , targetBufferDescription.notificationId()
                      , 1
-                     , _queue.get()
+                     , _pQueue->get()
                      , GASPI_BLOCK) ) == GASPI_QUEUE_FULL ) {
-      _queue.flush();
+      _pQueue->flush();
     }
 
     try {
@@ -149,9 +152,9 @@ Context
                    , targetBufferDescription.rank()
                    , targetBufferDescription.notificationId()
                    , 1
-                   , _queue.get()
+                   , _pQueue->get()
                    , GASPI_BLOCK) ) == GASPI_QUEUE_FULL ) {
-    _queue.flush();
+    _pQueue->flush();
   }
 
   try {
@@ -243,7 +246,7 @@ Context
   ::flush
    () const
 {
-  _queue.flush();
+  _pQueue->flush();
 }
 
 /// Collective barrier call for all processes in `this` communicator.
@@ -254,7 +257,7 @@ Context
 {
   if(size().get() > 1) {
     GASPI_CHECK
-      (gaspi_barrier(_group.group(), GASPI_BLOCK));
+      (gaspi_barrier(_pGroup->group(), GASPI_BLOCK));
   }
 }
 

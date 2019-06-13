@@ -20,6 +20,7 @@
  */
 
 #include <GaspiCxx/collectives/Allgather.hpp>
+#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>

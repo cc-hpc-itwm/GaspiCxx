@@ -23,10 +23,26 @@
 #define COMMUNICATOR_HPP_
 
 #include <memory>
-#include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
-#include <GaspiCxx/singlesided/Queue.hpp>
 #include <GaspiCxx/type_defs.hpp>
+
+// fowrward declarations
+namespace gaspi {
+
+namespace group {
+
+class Group;
+class Rank;
+
+}
+
+namespace singlesided {
+
+class BufferDescription;
+class Queue;
+
+}
+}
+
 
 namespace gaspi {
 
@@ -38,8 +54,8 @@ class Context
     //! The rank of "this" process
     gaspi_rank_t _rank;
 
-    group::Group       _group;
-    singlesided::Queue _queue;
+    std::unique_ptr<group::Group>       _pGroup;
+    std::unique_ptr<singlesided::Queue> _pQueue;
 
     //! A communicator cannot be copied.
     Context
