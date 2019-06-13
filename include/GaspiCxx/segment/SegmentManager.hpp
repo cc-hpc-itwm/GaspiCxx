@@ -23,6 +23,7 @@
 #define SEGMENT_MANAGER_HPP_
 
 #include <memory>
+#include <GaspiCxx/segment/Types.hpp>
 
 // forward declarations
 
@@ -44,9 +45,6 @@ namespace segment {
 class SegmentManager
 {
   public:
-
-    using SegmentID = int;
-    using Notification = int;
 
     SegmentManager
       () = delete;

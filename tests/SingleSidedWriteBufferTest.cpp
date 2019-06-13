@@ -21,6 +21,7 @@
 
 #include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
 #include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Segment.hpp>

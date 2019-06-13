@@ -58,7 +58,7 @@ SourceBuffer
   ::SourceBuffer
    ( segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : Endpoint
   ( segment
@@ -71,7 +71,7 @@ SourceBuffer
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : Endpoint
   ( pointer
@@ -106,8 +106,8 @@ SourceBuffer
   assert(Endpoint::isConnected());
 
   context.write
-     ( Endpoint::_localBufferDesc
-     , Endpoint::_otherBufferDesc );
+     ( Endpoint::localBufferDesc()
+     , Endpoint::otherBufferDesc() );
 }
 
 bool

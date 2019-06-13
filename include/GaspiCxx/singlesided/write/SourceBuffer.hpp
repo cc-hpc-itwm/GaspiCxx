@@ -55,14 +55,14 @@ class SourceBuffer : public Endpoint {
     SourceBuffer
       ( segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
 
     SourceBuffer
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
 
     ~SourceBuffer

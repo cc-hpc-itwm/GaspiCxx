@@ -23,6 +23,7 @@
 #define SEGMENT_RESOURCE_HPP_
 
 #include <GaspiCxx/segment/SegmentManager.hpp>
+#include <GaspiCxx/segment/Types.hpp>
 #include <GaspiCxx/type_defs.hpp>
 
 namespace gaspi {
@@ -31,8 +32,6 @@ namespace segment {
 class SegmentResource
 {
   public:
-
-    using SegmentID = SegmentManager::SegmentID;
 
     SegmentResource
       ( std::size_t segmentSize );

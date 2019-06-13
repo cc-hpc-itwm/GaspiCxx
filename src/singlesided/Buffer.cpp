@@ -23,6 +23,8 @@
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/segment/Allocator.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/segment/SegmentManager.hpp>
 #include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
@@ -79,7 +81,7 @@ class NotifyAllocation {
       _segmentManager.release_notification(_notification);
     }
 
-    segment::SegmentManager::Notification const &
+    segment::Notification const &
     notification
       () const {
       return _notification;
@@ -87,8 +89,8 @@ class NotifyAllocation {
 
   private:
 
-    segment::SegmentManager &             _segmentManager;
-    segment::SegmentManager::Notification _notification;
+    segment::SegmentManager & _segmentManager;
+    segment::Notification     _notification;
 
 };
 
@@ -121,7 +123,7 @@ Buffer
   ::Buffer
    ( segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : _allocMemory(new MemoryAllocation(segment.allocator(),size))
 , _allocNotify()
@@ -136,7 +138,7 @@ Buffer
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : _allocMemory()
 , _allocNotify()

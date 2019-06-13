@@ -23,16 +23,26 @@
 #define ENDPOINT_HPP_
 
 #include <cstdlib>
-#include <GaspiCxx/Context.hpp>
-#include <GaspiCxx/group/Rank.hpp>
-#include <GaspiCxx/segment/Segment.hpp>
-#include <GaspiCxx/singlesided/Buffer.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
+#include <memory>
 
+#include <GaspiCxx/singlesided/Buffer.hpp>
+
+// forward declarations
+
+namespace gaspi {
+
+class Context;
+
+namespace singlesided {
+
+class BufferDescription;
+
+}
+
+}
 
 namespace gaspi {
 namespace singlesided {
-
 
 class Endpoint : public Buffer {
 
@@ -72,15 +82,17 @@ class Endpoint : public Buffer {
     Endpoint
       ( segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
 
     Endpoint
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
+
+    ~Endpoint();
 
     void
     setRemotePartner
@@ -101,9 +113,23 @@ class Endpoint : public Buffer {
 
   protected:
 
-    BufferDescription   _localBufferDesc;
-    BufferDescription   _otherBufferDesc;
-    bool                _isConnected;
+    BufferDescription &
+    localBufferDesc();
+
+    BufferDescription const &
+    localBufferDesc() const;
+
+    BufferDescription &
+    otherBufferDesc();
+
+    BufferDescription const &
+    otherBufferDesc() const;
+
+  private:
+
+    std::unique_ptr<BufferDescription>   _pLocalBufferDesc;
+    std::unique_ptr<BufferDescription>   _pOtherBufferDesc;
+    bool                                 _isConnected;
 
 };
 

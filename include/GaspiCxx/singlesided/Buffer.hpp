@@ -23,15 +23,30 @@
 #define BUFFER_HPP_
 
 #include <cstdlib>
-#include <GaspiCxx/segment/Segment.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
-#include <GaspiCxx/utility/ScopedAllocation.hpp>
+
+#include <GaspiCxx/segment/Types.hpp>
+
+// forward declaration
+namespace gaspi {
+
+namespace segment {
+
+class Segment;
+
+}
+
+namespace singlesided {
+
+class BufferDescription;
+class MemoryAllocation;
+class NotifyAllocation;
+
+}
+}
+
 
 namespace gaspi {
 namespace singlesided {
-
-class MemoryAllocation;
-class NotifyAllocation;
 
 class Buffer {
 
@@ -49,14 +64,14 @@ class Buffer {
     Buffer
       ( segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
 
     Buffer
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
 
     ~Buffer
@@ -91,7 +106,7 @@ class Buffer {
 
     void * const        _pointer;
     std::size_t         _size;
-    segment::Segment
+    segment
       ::Notification    _notification;
     segment::Segment &  _segment;
 

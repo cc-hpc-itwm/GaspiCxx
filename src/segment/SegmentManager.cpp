@@ -39,7 +39,7 @@ namespace {
 
   std::size_t
   getSegmentSize
-    (SegmentManager::SegmentID segmentID)
+    (SegmentID segmentID)
   {
     gaspi_size_t segmentSize;
     {
@@ -53,7 +53,7 @@ namespace {
 
   void *
   getSegmentPtr
-    (SegmentManager::SegmentID segmentID)
+    (SegmentID segmentID)
   {
     gaspi_pointer_t segmentPtr;
     {
@@ -100,7 +100,7 @@ SegmentManager
 
 }
 
-SegmentManager::SegmentID
+SegmentID
 SegmentManager
   ::id
    () const
@@ -133,8 +133,7 @@ SegmentManager
   return Allocator<char>(_memoryManager.get());
 }
 
-SegmentManager
-  ::Notification
+Notification
 SegmentManager
   ::acquire_notification
     ()

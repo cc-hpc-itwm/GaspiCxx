@@ -30,7 +30,7 @@ extern "C" {
 namespace gaspi {
 namespace segment {
 
-SegmentResource::SegmentID
+SegmentID
 SegmentResource
   ::getFreeLocalSegmentId()
 {
@@ -110,7 +110,7 @@ SegmentResource
   GASPI_CHECK(gaspi_segment_delete(_segmentId));
 }
 
-SegmentResource::SegmentID
+SegmentID
 SegmentResource
   ::id
    () const

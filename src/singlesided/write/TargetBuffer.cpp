@@ -58,7 +58,7 @@ TargetBuffer
   ::TargetBuffer
    ( segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : Endpoint
   ( segment
@@ -71,7 +71,7 @@ TargetBuffer
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : Endpoint
   ( pointer
@@ -120,7 +120,7 @@ TargetBuffer
 {
   assert(Endpoint::isConnected());
 
-  context.notify(Endpoint::_otherBufferDesc);
+  context.notify(Endpoint::otherBufferDesc());
 }
 
 } // namespace write

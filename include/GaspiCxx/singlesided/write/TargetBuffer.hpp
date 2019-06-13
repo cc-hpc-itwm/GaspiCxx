@@ -56,14 +56,14 @@ class TargetBuffer : public Endpoint {
     TargetBuffer
       ( segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
 
     TargetBuffer
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
-      , segment::Segment
+      , segment
           ::Notification notification );
 
     // bilateral function

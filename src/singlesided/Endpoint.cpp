@@ -19,9 +19,13 @@
  *
  */
 
+#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/singlesided/Buffer.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
@@ -70,8 +74,10 @@ Endpoint
 : Buffer
   ( segment
   , size )
-, _localBufferDesc(Buffer::description())
-, _otherBufferDesc()
+, _pLocalBufferDesc
+    (std::make_unique<BufferDescription>(Buffer::description()))
+, _pOtherBufferDesc
+    (std::make_unique<BufferDescription>())
 , _isConnected(false)
 {}
 
@@ -84,8 +90,10 @@ Endpoint
   ( pointer
   , segment
   , size )
-, _localBufferDesc(Buffer::description())
-, _otherBufferDesc()
+, _pLocalBufferDesc
+    (std::make_unique<BufferDescription>(Buffer::description()))
+, _pOtherBufferDesc
+    (std::make_unique<BufferDescription>())
 , _isConnected(false)
 {}
 
@@ -93,14 +101,16 @@ Endpoint
   ::Endpoint
    ( segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : Buffer
   ( segment
   , size
   , notification )
-, _localBufferDesc(Buffer::description())
-, _otherBufferDesc()
+, _pLocalBufferDesc
+    (std::make_unique<BufferDescription>(Buffer::description()))
+, _pOtherBufferDesc
+    (std::make_unique<BufferDescription>())
 , _isConnected(false)
 {}
 
@@ -109,23 +119,32 @@ Endpoint
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size
-   , segment::Segment
+   , segment
        ::Notification notification )
 : Buffer
   ( pointer
   , segment
   , size
   , notification )
-, _localBufferDesc(Buffer::description())
-, _otherBufferDesc()
+, _pLocalBufferDesc
+    (std::make_unique<BufferDescription>(Buffer::description()))
+, _pOtherBufferDesc
+    (std::make_unique<BufferDescription>())
 , _isConnected(false)
 {}
+
+Endpoint
+  ::~Endpoint
+   ()
+{
+
+}
 
 void
 Endpoint
   ::setRemotePartner
    ( BufferDescription const & partnerDescription ) {
-  _otherBufferDesc = partnerDescription;
+  *_pOtherBufferDesc = partnerDescription;
   _isConnected = true;
 }
 
@@ -143,9 +162,9 @@ Endpoint
 
   std::unique_ptr<Buffer> pSendBuffer
     ( new Buffer( _segment
-                , serialization::size(_localBufferDesc) ) );
+                , serialization::size(localBufferDesc()) ) );
 
-  serialization::serialize (pSendBuffer->address(), _localBufferDesc);
+  serialization::serialize (pSendBuffer->address(), localBufferDesc() );
 
   getRuntime().passive().iSendTagMessg
       ( group::groupToGlobalRank( context.group()
@@ -156,7 +175,7 @@ Endpoint
 
   std::unique_ptr<Buffer> pRecvBuffer
     ( new Buffer( _segment
-                , serialization::size(_otherBufferDesc) ) );
+                , serialization::size( otherBufferDesc() ) ) );
 
   getRuntime().passive().iRecvTagMessg
     (group::groupToGlobalRank( context.group()
@@ -177,6 +196,34 @@ Endpoint
    () const
 {
   return _isConnected;
+}
+
+BufferDescription &
+Endpoint
+  ::localBufferDesc()
+{
+  return *_pLocalBufferDesc;
+}
+
+BufferDescription const &
+Endpoint
+  ::localBufferDesc() const
+{
+  return *_pLocalBufferDesc;
+}
+
+BufferDescription &
+Endpoint
+  ::otherBufferDesc()
+{
+  return *_pOtherBufferDesc;
+}
+
+BufferDescription const &
+Endpoint
+  ::otherBufferDesc() const
+{
+  return *_pOtherBufferDesc;
 }
 
 } // namespace singlesided
