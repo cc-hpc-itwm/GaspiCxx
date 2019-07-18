@@ -81,7 +81,7 @@ Group
   ::~Group()
 {
   if(static_cast<bool>(_pgroup)) {
-    GASPI_CHECK
+    GASPI_CHECK_NOTHROW
       (gaspi_group_delete(*_pgroup));
   }
 }

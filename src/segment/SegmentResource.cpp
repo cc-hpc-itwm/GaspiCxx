@@ -107,7 +107,7 @@ SegmentResource
   ::~SegmentResource
     ()
 {
-  GASPI_CHECK(gaspi_segment_delete(_segmentId));
+  GASPI_CHECK_NOTHROW(gaspi_segment_delete(_segmentId));
 }
 
 SegmentID

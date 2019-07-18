@@ -44,7 +44,7 @@ RuntimeBase
   ::~RuntimeBase
     ()
 {
-  GASPI_CHECK(gaspi_proc_term(GASPI_BLOCK));
+  GASPI_CHECK_NOTHROW(gaspi_proc_term(GASPI_BLOCK));
 }
 
 static Runtime * pGRuntime = nullptr;
