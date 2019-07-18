@@ -162,7 +162,7 @@ size_t size (std::vector<T> const & vec)
   typedef typename std::vector<T>::const_iterator iterator;
   for (iterator it (vec.begin()); it != vec.end(); ++it)
   {
-    totSize += size (*it);
+    totSize += serialization::size (*it);
   }
 
   return totSize;
@@ -200,7 +200,7 @@ size_t serialize (void * const buffer, std::vector<T> const & vec)
     cPtr += serialize (cPtr, *it);
   }
 
-  return size (vec);
+  return serialization::size (vec);
 }
 
 template<typename T>
@@ -235,7 +235,7 @@ size_t deserialize (std::vector<T> & vec, void const * const buffer)
     cPtr += deserialize (vec[n], cPtr);
   }
 
-  return size (vec);
+  return serialization::size (vec);
 }
 
 
@@ -286,7 +286,7 @@ size_t serialize (void * const buffer, std::deque<T> const & vec)
     cPtr += serialize (cPtr, *it);
   }
 
-  return size (vec);
+  return serialization::size (vec);
 }
 
 template<typename T>
@@ -321,7 +321,7 @@ size_t deserialize (std::deque<T> & vec, void const * const buffer)
     cPtr += deserialize (vec[n], cPtr);
   }
 
-  return size (vec);
+  return serialization::size (vec);
 }
 
 
@@ -334,7 +334,7 @@ size_t size (std::set<T> const & set)
   typedef typename std::set<T>::const_iterator iterator;
   for (iterator it (set.begin()); it != set.end(); ++it)
   {
-    totSize += size (*it);
+    totSize += serialization::size (*it);
   }
 
   return totSize;
@@ -371,7 +371,7 @@ size_t serialize (void * const buffer, std::set<T> const & set)
     cPtr += serialize (cPtr, *it);
   }
 
-  return size (set);
+  return serialization::size (set);
 }
 
 template<typename T>
@@ -410,7 +410,7 @@ size_t deserialize (std::set<T> & set, void const * const buffer)
     set.insert  (elem);
   }
 
-  return size (set);
+  return serialization::size (set);
 }
 
 
@@ -423,8 +423,8 @@ size_t size (std::map<U, V, T> const & map)
   typedef typename std::map<U, V, T>::const_iterator iterator;
   for (iterator it (map.begin()); it != map.end(); ++it)
   {
-    totSize += ( size (it->first)
-               + size (it->second)
+    totSize += ( serialization::size (it->first)
+               + serialization::size (it->second)
                );
   }
 

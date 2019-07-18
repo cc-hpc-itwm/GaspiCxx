@@ -52,7 +52,7 @@ size_t serialize (void * const buffer, T const & elem)
 {
   memcpy (buffer, &elem, size (elem));
 
-  return size (elem);
+  return serialization::size (elem);
 }
 
 template<typename T>
@@ -73,7 +73,7 @@ size_t deserialize (T & elem, void const * const buffer)
 {
   memcpy (&elem, buffer, size (elem));
 
-  return size (elem);
+  return serialization::size (elem);
 }
 
 /* * * * * * * * * * * * * * * * * *
@@ -246,7 +246,7 @@ size_t serialize (void * const buffer, std::string const & str)
   char * cPtr (static_cast<char *> (buffer) + serialize (buffer, length));
   str.copy (cPtr, length);
 
-  return size (str);
+  return serialization::size (str);
 }
 
 template<>
@@ -274,7 +274,7 @@ size_t deserialize (std::string & str, void const * const buffer)
   char const * cPtr (static_cast<char const *> (buffer) + deserialize (length, buffer));
   str.assign (cPtr, length);
 
-  return size (str);
+  return serialization::size (str);
 }
 
 }
