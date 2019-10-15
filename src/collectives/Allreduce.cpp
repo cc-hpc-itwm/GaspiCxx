@@ -209,10 +209,6 @@ template long allreduce<long>
   (long const&, Allreduce::Type const &, Context &);
 template unsigned long allreduce<unsigned long>
   (unsigned long const&, Allreduce::Type const &, Context &);
-template std::complex<float> allreduce<std::complex<float> >
-  (std::complex<float> const&, Allreduce::Type const &, Context &);
-template std::complex<double> allreduce<std::complex<double> >
-  (std::complex<double> const&, Allreduce::Type const &, Context &);
 
 }
 }
