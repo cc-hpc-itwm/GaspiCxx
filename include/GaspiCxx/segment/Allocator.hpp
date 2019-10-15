@@ -33,7 +33,7 @@ class Allocator
 {
   public:
 
-    template <typename U> friend struct Allocator;
+    template <typename U> friend class Allocator;
 
     using value_type = T;
     using pointer = T *;
