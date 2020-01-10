@@ -10,7 +10,7 @@ C interface fully transparent to the application. They do not need to be managed
 GaspiCxx depends on 
 
 - Google test
-- GPI-2
+- [GPI-2](https://github.com/cc-hpc-itwm/GPI-2)
 
 ### Step 2: Build GaspiCxx
 
