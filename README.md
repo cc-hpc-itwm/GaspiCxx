@@ -1,17 +1,7 @@
 # GaspiCxx
 
-GaspiCxx is a C++ interface for the communication library GPI-2. The C++ 
-interface aims at an abstraction for the native C based communication interface 
-of GPI-2 without impacting the underlying performance. The interface design 
-makes the explicit management of communication resources required by the native 
-C interface fully transparent to the application. They do not need to be managed 
-explicitly any more. Instead, objects with exclusive and auto-managed resources 
-for groups, queues, segments are provided by GaspiCxx. The dynamic management of 
-segment memory and segment synchronization primitives is provided by allocators. 
-The single-sided and the passive communication are built on top of that. 
-Allocations within the partitioned global address space and the respective 
-synchronization primitives can be easily connected with each other on the source 
-and the target side for efficient communication. 
+GaspiCxx is a C++ interface for the communication library GPI-2. The C++ interface aims at an abstraction for the native C based communication interface of GPI-2 without impacting the underlying performance. The interface design makes the explicit management of communication resources required by the native 
+C interface fully transparent to the application. They do not need to be managed explicitly any more. Instead, objects with exclusive and auto-managed resources for groups, queues, segments are provided by GaspiCxx. The dynamic management of segment memory and segment synchronization primitives is provided by allocators. The single-sided and the passive communication are built on top of that. Allocations within the partitioned global address space and the respective synchronization primitives can be easily connected with each other on the source and the target side for efficient communication. 
 
 ## Installation
 
