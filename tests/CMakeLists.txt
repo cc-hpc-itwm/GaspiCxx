@@ -1,7 +1,7 @@
 enable_testing()
 find_package(GTest REQUIRED)
 
-add_executable ( run_tests
+add_executable ( GaspiCxxTests 
       run_tests.cpp
       GlobalTestConfiguration.cpp
       AllgatherTest.cpp
@@ -11,10 +11,10 @@ add_executable ( run_tests
       SegmentMemoryManagerTest.cpp 
       SingleSidedWriteBufferTest.cpp )
 
-target_include_directories (run_tests PRIVATE 
+target_include_directories (GaspiCxxTests PRIVATE 
 	${CMAKE_CURRENT_SOURCE_DIR} )	
 
-target_link_libraries( run_tests LINK_PUBLIC  
+target_link_libraries( GaspiCxxTests LINK_PUBLIC  
   	GTest::GTest 
 	GTest::Main 
 	GaspiCxx 
@@ -22,5 +22,7 @@ target_link_libraries( run_tests LINK_PUBLIC
 	pthread 
 	rt )
 
-#add_test(unittests ./run_tests.sh GASPI_PATH=${GPI2_LIBRARIES}/../)
-add_custom_command(TARGET run_tests POST_BUILD COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh run_tests)
+add_custom_target (run_tests
+	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh GaspiCxxTests 
+	DEPENDS GaspiCxxTests 
+	)
