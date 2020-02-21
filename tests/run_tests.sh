@@ -26,21 +26,23 @@ SEGMENT_SIZE=$(expr 128 \* 1024 \* 1024)
 TEST_CFG="--segment_id 0 --segment_size ${SEGMENT_SIZE} --queue 0 \
           --group all --num_threads 4"
 MFILE=mfile
-N=4
 
-# Generate machinefile
-rm -f ${MFILE}
-for I in `seq 1 $N`
+for N in {2..4}
 do
-  hostname >> ${MFILE}
+  # Generate machinefile
+  rm -f ${MFILE}
+  for I in `seq 1 $N`
+  do
+    hostname >> ${MFILE}
+  done
+
+  # Run tests
+  gaspi_cleanup -m ${MFILE}
+  echo "Starting tests on " $N "processes\n"
+  gaspi_run -m ${MFILE} $1 ${GTEST_PARAMS} \
+                           ${GTEST_TEST} \
+                           ${TEST_CFG}
+  gaspi_cleanup -m ${MFILE}
+
+  rm -f ${MFILE}
 done
-
-# Run tests
-gaspi_cleanup -m ${MFILE}
-gaspi_run -m ${MFILE} $1 ${GTEST_PARAMS} \
-                         ${GTEST_TEST} \
-                         ${TEST_CFG}
-gaspi_cleanup -m ${MFILE}
-
-rm -f ${MFILE}
-
