@@ -136,6 +136,18 @@ class Passive
 		  , singlesided::BufferDescription const & rcvTargetBufferDesc
 		  , Context const & context );
 
+		void
+        handleTaggedSrcBufferDesc
+         ( int rank
+         , int tag
+         , singlesided::BufferDescription const & srcTargetBufferDesc );
+
+		void
+		handleTaggedRcvBufferDesc
+         ( int rank
+         , int tag
+         , singlesided::BufferDescription const & rcvTargetBufferDesc );
+
 		segment::Segment & _segment;
 		Context &          _context;
 

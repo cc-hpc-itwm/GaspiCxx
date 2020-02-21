@@ -293,51 +293,7 @@ Passive
     srcTargetBufferDesc
       ( srcTargetBuffer.description() );
 
-  Key key(tag,rank);
-
-  pthread_mutex_lock(&passive_isendrcv_mutx_);
-
-  auto search (rcvTargetBuffers_.find(key));
-
-  if(search!=rcvTargetBuffers_.end()) {
-    // found matching rcvTargetBuffer
-    singlesided::BufferDescription const
-      rcvTargetBufferDesc
-        (search->second);
-
-    rcvTargetBuffers_.erase(search);
-
-    pthread_mutex_unlock(&passive_isendrcv_mutx_);
-
-    // do the communication
-
-    iSendRecvComm( srcTargetBufferDesc
-                 , rcvTargetBufferDesc
-                 , _context );
-
-  }
-  else {
-    // did not find matching rcvTargetBuffer
-    // append srcTargetBuffer
-
-    auto ret = srcTargetBuffers_.insert
-      ( std::make_pair(key,srcTargetBufferDesc) );
-
-    pthread_mutex_unlock(&passive_isendrcv_mutx_);
-
-    if(!ret.second) {
-
-      std::stringstream ss;
-
-      ss << "key ("
-         << key.first
-         << ", "
-         << key.second
-         << ") exists already";
-
-      throw std::runtime_error(CODE_ORIGIN + ss.str());
-    }
-  }
+  handleTaggedSrcBufferDesc(rank, tag, srcTargetBufferDesc);
 
   return ret;
 }
@@ -355,29 +311,36 @@ Passive
   bool ret(false);
 
   singlesided::BufferDescription rcvTargetBufferDesc
-      ( rcvTargetBuffer.description() );
+    ( rcvTargetBuffer.description() );
 
-  std::size_t const pkgSize( serialization::size(tag)
-                           + serialization::size(rcvTargetBufferDesc) );
-
+  if( rank == global_rank() )
   {
-    char * const pkgBuffer( new char[pkgSize] );
+    handleTaggedRcvBufferDesc(rank, tag, rcvTargetBufferDesc);
+  }
+  else
+  {
+    std::size_t const pkgSize( serialization::size(tag)
+                             + serialization::size(rcvTargetBufferDesc) );
+
     {
-      char * cPtr( pkgBuffer );
-      cPtr += serialization::serialize (cPtr, tag);
-      cPtr += serialization::serialize (cPtr, rcvTargetBufferDesc);
+      char * const pkgBuffer( new char[pkgSize] );
+      {
+        char * cPtr( pkgBuffer );
+        cPtr += serialization::serialize (cPtr, tag);
+        cPtr += serialization::serialize (cPtr, rcvTargetBufferDesc);
+      }
+
+      sendPassive
+        ( RTBD
+        , pkgBuffer
+        , pkgSize
+        , rank );
+
+      delete[] pkgBuffer;
     }
 
-    sendPassive
-      ( RTBD
-      , pkgBuffer
-      , pkgSize
-      , rank );
-
-    delete[] pkgBuffer;
+    ret = true;
   }
-
-  ret = true;
 
   return ret;
 }
@@ -521,41 +484,10 @@ Passive::passive_thread_func_(void * arg)
 
         Key key(rcvTargetBufferTag,msg_rank);
 
-        pthread_mutex_lock(&pPassiveCommMan->passive_isendrcv_mutx_);
-
-        auto search (pPassiveCommMan->srcTargetBuffers_.find(key));
-
-        if(search!=pPassiveCommMan->srcTargetBuffers_.end()) {
-          // found matching rcvTargetBuffer
-          singlesided::BufferDescription const
-            srcTargetBufferDesc
-              (search->second);
-
-          pPassiveCommMan->srcTargetBuffers_.erase(search);
-
-          pthread_mutex_unlock(&pPassiveCommMan->passive_isendrcv_mutx_);
-
-          // do the communication
-
-          pPassiveCommMan->iSendRecvComm( srcTargetBufferDesc
-                                        , rcvTargetBufferDesc
-                                        , pPassiveCommMan->_context );
-
-        }
-        else {
-          // did not find matching srcTargetBuffer
-          // append rcvTargetBuffer
-
-          auto ret = pPassiveCommMan->rcvTargetBuffers_.insert
-            ( std::make_pair(key,rcvTargetBufferDesc) );
-
-          pthread_mutex_unlock(&pPassiveCommMan->passive_isendrcv_mutx_);
-
-          if(!ret.second) {
-            std::cout << "key exists already" << std::endl;
-            throw std::runtime_error("key exists already");
-          }
-        }
+        pPassiveCommMan->handleTaggedRcvBufferDesc
+          ( msg_rank
+          , rcvTargetBufferTag
+          , rcvTargetBufferDesc );
 
         break;
       }
@@ -741,6 +673,111 @@ Passive
 	_segment.allocator().deallocate(g_ptr,PASSIVE_SENDRECVBUF_SIZE_);
 
 	return pMsg;
+}
+
+void
+Passive
+  ::handleTaggedSrcBufferDesc
+     ( int rank
+     , int tag
+     , singlesided::BufferDescription const & srcTargetBufferDesc )
+{
+  Key key(tag,rank);
+
+  pthread_mutex_lock(&passive_isendrcv_mutx_);
+
+  auto search (rcvTargetBuffers_.find(key));
+
+  if(search!=rcvTargetBuffers_.end()) {
+    // found matching rcvTargetBuffer
+    singlesided::BufferDescription const
+      rcvTargetBufferDesc
+        (search->second);
+
+    rcvTargetBuffers_.erase(search);
+
+    pthread_mutex_unlock(&passive_isendrcv_mutx_);
+
+    // do the communication
+
+    iSendRecvComm( srcTargetBufferDesc
+                 , rcvTargetBufferDesc
+                 , _context );
+
+  }
+  else {
+    // did not find matching rcvTargetBuffer
+    // append srcTargetBuffer
+
+    auto ret = srcTargetBuffers_.insert
+      ( std::make_pair(key,srcTargetBufferDesc) );
+
+    pthread_mutex_unlock(&passive_isendrcv_mutx_);
+
+    if(!ret.second) {
+
+      std::stringstream ss;
+
+      ss << "key ("
+         << key.first
+         << ", "
+         << key.second
+         << ") exists already";
+
+      throw std::runtime_error(CODE_ORIGIN + ss.str());
+    }
+  }
+}
+
+void
+Passive
+  ::handleTaggedRcvBufferDesc
+     ( int rank
+     , int tag
+     , singlesided::BufferDescription const & rcvTargetBufferDesc )
+{
+  Key key(tag,rank);
+
+  pthread_mutex_lock(&passive_isendrcv_mutx_);
+
+  auto search (srcTargetBuffers_.find(key));
+
+  if(search!=srcTargetBuffers_.end()) {
+    // found matching rcvTargetBuffer
+    singlesided::BufferDescription const
+      srcTargetBufferDesc
+        (search->second);
+
+    srcTargetBuffers_.erase(search);
+
+    pthread_mutex_unlock(&passive_isendrcv_mutx_);
+
+    // do the communication
+    iSendRecvComm( srcTargetBufferDesc
+                 , rcvTargetBufferDesc
+                 , _context );
+  }
+  else {
+    // did not find matching srcTargetBuffer
+    // append rcvTargetBuffer
+
+    auto ret = rcvTargetBuffers_.insert
+      ( std::make_pair(key,rcvTargetBufferDesc) );
+
+    pthread_mutex_unlock(&passive_isendrcv_mutx_);
+
+    if(!ret.second) {
+      std::stringstream ss;
+
+      ss << "key ("
+         << key.first
+         << ", "
+         << key.second
+         << ") exists already";
+
+      throw std::runtime_error(CODE_ORIGIN + ss.str());
+    }
+  }
 }
 
 }   // end of namespace passive

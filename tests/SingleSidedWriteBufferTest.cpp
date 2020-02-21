@@ -124,6 +124,38 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
 }
 
+TEST_F(SingleSidedWriteBufferTest, SelfConnect)
+{
+  Context context;
+
+  group::Rank rank(context.rank());
+
+  int tag(1);
+
+  segment::Segment segment(_segmentSize);
+
+  SourceBuffer source(segment,sizeof(int));
+  TargetBuffer target(segment,sizeof(int));
+
+  int & isource ( *reinterpret_cast<int*>(source.address()) ); isource = -1;
+  int & itarget ( *reinterpret_cast<int*>(target.address()) ); itarget = -1;
+
+  Endpoint::ConnectHandle tHandle
+    ( target.connectToRemoteSource
+      ( context
+      , rank
+      , tag ) );
+
+  Endpoint::ConnectHandle sHandle
+    ( source.connectToRemoteTarget
+       ( context
+       , rank
+      , tag ) );
+
+  tHandle.waitForCompletion();
+  sHandle.waitForCompletion();
+}
+
 TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 {
   Context context;
