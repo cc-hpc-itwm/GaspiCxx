@@ -47,6 +47,7 @@
 #include <cmath>
 #include <limits>
 #include <pthread.h>
+#include <tuple>
 #include <vector>
 #include <cstring>
 #include <map>
@@ -66,8 +67,11 @@ namespace passive {
 
 class Passive
 {
+    using Rank = int;
 
 	public:
+
+        using Tag = long;
 
 		Passive
 		  ( segment::Segment &
@@ -97,14 +101,14 @@ class Passive
 
 		bool
 		iSendTagMessg
-		  ( const int rank
-		  , const int tag
+		  ( const Rank rank
+		  , const Tag tag
 		  , singlesided::Buffer & );
 
 		bool
 		iRecvTagMessg
-		  ( const int rank
-		  , const int tag
+		  ( const Rank rank
+		  , const Tag tag
 		  , singlesided::Buffer & );
 
 	private:
@@ -138,14 +142,14 @@ class Passive
 
 		void
         handleTaggedSrcBufferDesc
-         ( int rank
-         , int tag
+         ( Rank rank
+         , Tag tag
          , singlesided::BufferDescription const & srcTargetBufferDesc );
 
 		void
 		handleTaggedRcvBufferDesc
-         ( int rank
-         , int tag
+         ( Rank rank
+         , Tag tag
          , singlesided::BufferDescription const & rcvTargetBufferDesc );
 
 		segment::Segment & _segment;
@@ -183,9 +187,7 @@ class Passive
 		int           MAX_PASSIVE_MESSAGE_SIZE_;
 		int           PASSIVE_SENDRECVBUF_SIZE_;
 
-		using Tag  = int;
-		using Rank = int;
-		using Key = std::pair<Tag,Rank>;
+		using Key = std::tuple<Tag,Rank>;
 
 		std::map<Key,singlesided::BufferDescription> srcTargetBuffers_;
 		std::map<Key,singlesided::BufferDescription> rcvTargetBuffers_;

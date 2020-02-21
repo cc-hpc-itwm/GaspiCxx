@@ -70,27 +70,33 @@ class Endpoint : public Buffer {
 
     };
 
-    Endpoint
-      ( segment::Segment & segment
-      , std::size_t size );
-
-    Endpoint
-      ( void * const ptr
-      , segment::Segment & segment
-      , std::size_t size );
+    enum Type {SOURCE, TARGET, GENERIC};
 
     Endpoint
       ( segment::Segment & segment
       , std::size_t size
-      , segment
-          ::Notification notification );
+      , Type type = GENERIC );
 
     Endpoint
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
+      , Type type = GENERIC);
+
+    Endpoint
+      ( segment::Segment & segment
+      , std::size_t size
       , segment
-          ::Notification notification );
+          ::Notification notification
+      , Type type = GENERIC);
+
+    Endpoint
+      ( void * const ptr
+      , segment::Segment & segment
+      , std::size_t size
+      , segment
+          ::Notification notification
+      , Type type = GENERIC);
 
     ~Endpoint();
 
@@ -130,6 +136,7 @@ class Endpoint : public Buffer {
     std::unique_ptr<BufferDescription>   _pLocalBufferDesc;
     std::unique_ptr<BufferDescription>   _pOtherBufferDesc;
     bool                                 _isConnected;
+    Type                                 _type;
 
 };
 

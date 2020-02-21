@@ -40,7 +40,8 @@ TargetBuffer
    , std::size_t size )
 : Endpoint
   ( segment
-  , size )
+  , size
+  , Endpoint::Type::TARGET )
 {}
 
 TargetBuffer
@@ -51,7 +52,8 @@ TargetBuffer
 : Endpoint
   ( pointer
   , segment
-  , size )
+  , size
+  , Endpoint::Type::TARGET )
 {}
 
 TargetBuffer
@@ -63,7 +65,8 @@ TargetBuffer
 : Endpoint
   ( segment
   , size
-  , notification )
+  , notification
+  , Endpoint::Type::TARGET )
 {}
 
 TargetBuffer
@@ -77,7 +80,8 @@ TargetBuffer
   ( pointer
   , segment
   , size
-  , notification )
+  , notification
+  , Endpoint::Type::TARGET )
 {}
 
 Endpoint::ConnectHandle

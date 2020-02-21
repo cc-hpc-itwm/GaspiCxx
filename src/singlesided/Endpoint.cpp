@@ -70,7 +70,8 @@ Endpoint::ConnectHandle
 Endpoint
   ::Endpoint
    ( segment::Segment & segment
-   , std::size_t size )
+   , std::size_t size
+   , Type type )
 : Buffer
   ( segment
   , size )
@@ -79,13 +80,15 @@ Endpoint
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
+, _type(type)
 {}
 
 Endpoint
   ::Endpoint
    ( void * const pointer
    , segment::Segment & segment
-   , std::size_t size )
+   , std::size_t size
+   , Type type )
 : Buffer
   ( pointer
   , segment
@@ -95,6 +98,7 @@ Endpoint
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
+, _type(type)
 {}
 
 Endpoint
@@ -102,7 +106,8 @@ Endpoint
    ( segment::Segment & segment
    , std::size_t size
    , segment
-       ::Notification notification )
+       ::Notification notification
+   , Type type )
 : Buffer
   ( segment
   , size
@@ -112,6 +117,7 @@ Endpoint
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
+, _type(type)
 {}
 
 Endpoint
@@ -120,7 +126,8 @@ Endpoint
    , segment::Segment & segment
    , std::size_t size
    , segment
-       ::Notification notification )
+       ::Notification notification
+   , Type type )
 : Buffer
   ( pointer
   , segment
@@ -131,6 +138,7 @@ Endpoint
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
+, _type(type)
 {}
 
 Endpoint
@@ -156,6 +164,41 @@ Endpoint
    , Tag & tag )
 {
 
+  if( static_cast<passive::Passive::Tag>(tag)
+      >= std::numeric_limits<passive::Passive::Tag>::max() / 3 ) {
+    throw std::runtime_error
+      (CODE_ORIGIN + "tag out of bounds");
+  }
+
+  passive::Passive::Tag sendTag ( 3 * static_cast<passive::Passive::Tag>(tag) );
+  passive::Passive::Tag recvTag ( 3 * static_cast<passive::Passive::Tag>(tag) );
+
+  switch (_type)
+  {
+    case SOURCE : {
+      sendTag += 1;
+      recvTag += 2;
+      break;
+    }
+
+    case TARGET : {
+      sendTag += 2;
+      recvTag += 1;
+      break;
+    }
+
+    case GENERIC : {
+      sendTag += 0;
+      recvTag += 0;
+      break;
+    }
+
+    default: {
+      throw std::runtime_error
+        (CODE_ORIGIN + "Unsupported Endpoint::Type");
+    }
+  }
+
   _segment.remoteRegistration
       ( group::groupToGlobalRank( context.group()
                                 , rank ) );
@@ -169,7 +212,7 @@ Endpoint
   getRuntime().passive().iSendTagMessg
       ( group::groupToGlobalRank( context.group()
                                 , rank )
-      , tag
+      , sendTag
       , *pSendBuffer );
 
 
@@ -180,7 +223,7 @@ Endpoint
   getRuntime().passive().iRecvTagMessg
     (group::groupToGlobalRank( context.group()
                              , rank )
-    , tag
+    , recvTag
     , *pRecvBuffer);
 
   return ConnectHandle

@@ -40,7 +40,8 @@ SourceBuffer
    , std::size_t size )
 : Endpoint
   ( segment
-  , size )
+  , size
+  , Endpoint::Type::SOURCE)
 {}
 
 SourceBuffer
@@ -51,7 +52,8 @@ SourceBuffer
 : Endpoint
   ( pointer
   , segment
-  , size )
+  , size
+  , Endpoint::Type::SOURCE )
 {}
 
 SourceBuffer
@@ -63,7 +65,8 @@ SourceBuffer
 : Endpoint
   ( segment
   , size
-  , notification)
+  , notification
+  , Endpoint::Type::SOURCE )
 {}
 
 SourceBuffer
@@ -77,7 +80,8 @@ SourceBuffer
   ( pointer
   , segment
   , size
-  , notification)
+  , notification
+  , Endpoint::Type::SOURCE )
 {}
 
 SourceBuffer

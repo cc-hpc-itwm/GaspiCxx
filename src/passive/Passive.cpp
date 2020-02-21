@@ -257,8 +257,8 @@ Passive::recvMessg( std::vector<char> & Data
 bool
 Passive
   ::iSendTagMessg
-    ( const int rank
-    , const int tag
+    ( const Rank rank
+    , const Tag tag
     , singlesided::Buffer & srcTargetBuffer )
 {
   bool ret(false);
@@ -302,8 +302,8 @@ Passive
 bool
 Passive
   ::iRecvTagMessg
-    ( const int rank
-    , const int tag
+    ( const Rank rank
+    , const Tag tag
     , singlesided::Buffer & rcvTargetBuffer )
 {
   // iRecvTagMessg
@@ -679,11 +679,11 @@ Passive
 void
 Passive
   ::handleTaggedSrcBufferDesc
-     ( int rank
-     , int tag
+     ( Rank rank
+     , Tag tag
      , singlesided::BufferDescription const & srcTargetBufferDesc )
 {
-  Key key(tag,rank);
+  Key key(tag, rank);
 
   pthread_mutex_lock(&passive_isendrcv_mutx_);
 
@@ -720,9 +720,9 @@ Passive
       std::stringstream ss;
 
       ss << "key ("
-         << key.first
+         << std::get<0>(key)
          << ", "
-         << key.second
+         << std::get<1>(key)
          << ") exists already";
 
       throw std::runtime_error(CODE_ORIGIN + ss.str());
@@ -733,11 +733,11 @@ Passive
 void
 Passive
   ::handleTaggedRcvBufferDesc
-     ( int rank
-     , int tag
+     ( Rank rank
+     , Tag tag
      , singlesided::BufferDescription const & rcvTargetBufferDesc )
 {
-  Key key(tag,rank);
+  Key key(tag, rank);
 
   pthread_mutex_lock(&passive_isendrcv_mutx_);
 
@@ -772,9 +772,9 @@ Passive
       std::stringstream ss;
 
       ss << "key ("
-         << key.first
+         << std::get<0>(key)
          << ", "
-         << key.second
+         << std::get<1>(key)
          << ") exists already";
 
       throw std::runtime_error(CODE_ORIGIN + ss.str());
