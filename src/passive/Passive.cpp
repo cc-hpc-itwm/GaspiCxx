@@ -43,10 +43,11 @@ Passive
 , _passiveBufSize(std::min(static_cast<std::size_t>(1024),segment.size()/2))
 , _passiveBufPointer( _segment.allocator().allocate(_passiveBufSize) )
 {
-	MAX_PASSIVE_MESSAGE_SIZE_ = ( ( _passiveBufSize - 4 * (int)sizeof(int) ) / 2 );  // maximal passive message size
+    // maximal passive message size
+	MAX_PASSIVE_MESSAGE_SIZE_ = ( ( _passiveBufSize - 4 * (int)sizeof(int) ) / 2 );
     PASSIVE_SENDRECVBUF_SIZE_ = ( MAX_PASSIVE_MESSAGE_SIZE_
-                                + (int)sizeof(int)                  // size for the message tag
-                                + (int)sizeof(int)                  // size for the message size
+                                + (int)sizeof(int)  // size for the message tag
+                                + (int)sizeof(int)  // size for the message size
                                 );
 
     // doing the passive forwarding initalization
@@ -698,8 +699,8 @@ Passive
 
     pthread_mutex_unlock(&passive_isendrcv_mutx_);
 
-    // do the communication
-
+    // do the communication, i.e. send the buffer description from
+    // source to target
     iSendRecvComm( srcTargetBufferDesc
                  , rcvTargetBufferDesc
                  , _context );
@@ -752,7 +753,8 @@ Passive
 
     pthread_mutex_unlock(&passive_isendrcv_mutx_);
 
-    // do the communication
+    // do the communication, i.e. send the buffer description from
+    // source to target
     iSendRecvComm( srcTargetBufferDesc
                  , rcvTargetBufferDesc
                  , _context );
