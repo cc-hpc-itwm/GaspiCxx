@@ -85,14 +85,45 @@ Context
     ( singlesided::BufferDescription sourceBufferDescription
     , singlesided::BufferDescription targetBufferDescription ) const
 {
-  if( sourceBufferDescription.size() >
-      targetBufferDescription.size() ) {
+  writePart
+    ( sourceBufferDescription
+    , targetBufferDescription
+    , sourceBufferDescription.size()
+    , 0 );
+}
 
+void
+Context
+  ::writePart
+    ( singlesided::BufferDescription sourceBufferDescription
+    , singlesided::BufferDescription targetBufferDescription
+    , std::size_t size
+    , std::size_t offset ) const
+{
+  if( (offset + size) > sourceBufferDescription.size() ) {
     std::stringstream ss;
 
     ss << CODE_ORIGIN
-       << "size of source buffer ("
+       << "Offset ("
+       << offset
+       << " byte) + size ("
+       << size
+       << " byte) > size of source buffer ("
        << sourceBufferDescription.size()
+       << " byte)";
+
+    throw std::runtime_error
+      (ss.str());
+  }
+
+  if( (offset + size) > targetBufferDescription.size() ) {
+    std::stringstream ss;
+
+    ss << CODE_ORIGIN
+       << "Offset ("
+       << offset
+       << " byte) + size ("
+       << size
        << " byte) > size of target buffer ("
        << targetBufferDescription.size()
        << " byte)";
@@ -101,17 +132,17 @@ Context
       (ss.str());
   }
 
-  if( sourceBufferDescription.size() > 0 ) {
+  if( size > 0 ) {
 
     gaspi_return_t ret(GASPI_ERROR);
 
     while( ( ret =  gaspi_write_notify
                      ( sourceBufferDescription.segmentId()
-                     , sourceBufferDescription.offset()
+                     , sourceBufferDescription.offset() + offset
                      , targetBufferDescription.rank()
                      , targetBufferDescription.segmentId()
                      , targetBufferDescription.offset()
-                     , targetBufferDescription.size()
+                     , size
                      , targetBufferDescription.notificationId()
                      , 1
                      , _pQueue->get()

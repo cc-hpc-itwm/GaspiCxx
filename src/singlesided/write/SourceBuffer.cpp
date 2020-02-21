@@ -114,6 +114,22 @@ SourceBuffer
      , Endpoint::otherBufferDesc() );
 }
 
+void
+SourceBuffer
+  ::initTransferPart
+   ( Context & context
+   , std::size_t size
+   , std::size_t offset )
+{
+  assert(Endpoint::isConnected());
+
+  context.writePart
+     ( Endpoint::localBufferDesc()
+     , Endpoint::otherBufferDesc()
+     , size
+     , offset );
+}
+
 bool
 SourceBuffer
   ::checkForTransferAck

@@ -97,6 +97,13 @@ class Context
       , singlesided::BufferDescription targetBufferDescription ) const;
 
     void
+    writePart
+      ( singlesided::BufferDescription sourceBufferDescription
+      , singlesided::BufferDescription targetBufferDescription
+      , std::size_t size
+      , std::size_t offset ) const;
+
+    void
     notify
       ( singlesided::BufferDescription targetBufferDescription ) const;
 

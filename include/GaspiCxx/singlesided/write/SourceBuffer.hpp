@@ -81,6 +81,12 @@ class SourceBuffer : public Endpoint {
     initTransfer
       ( Context & context );
 
+    void
+    initTransferPart
+      ( Context & context
+      , std::size_t size
+      , std::size_t offset = 0 );
+
     bool
     checkForTransferAck
       ( );
