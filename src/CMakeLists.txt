@@ -38,7 +38,7 @@ target_include_directories(GaspiCxx
 
 target_link_libraries(GaspiCxx
 	GPI2::GPI2
-	pthread)
+	Threads::Threads)
 
 # 'make install' to the correct locations (provided by GNUInstallDirs).
 install(TARGETS GaspiCxx EXPORT GaspiCxxConfig
