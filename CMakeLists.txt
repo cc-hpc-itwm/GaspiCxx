@@ -5,7 +5,7 @@ project (GaspiCxx)
 
 include(GNUInstallDirs)
 
-set (Test on)
+option (ENABLE_TESTS "Compile tests [default: disabled]" off)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
@@ -18,6 +18,6 @@ find_package(GPI2)
 
 add_subdirectory (src)
 add_subdirectory (examples)
-if (Test)
+if(ENABLE_TESTS)
   add_subdirectory (tests)
-endif (Test)  
+endif()
