@@ -1,4 +1,6 @@
 cmake_minimum_required (VERSION 3.8)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 project (GaspiCxx)
 
 include(GNUInstallDirs)
@@ -9,11 +11,10 @@ set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
 
-# add GPI2
-FIND_PACKAGE(PkgConfig)
-PKG_CHECK_MODULES(GPI2 REQUIRED GPI2>=1.3.0)
-include_directories ( ${GPI2_INCLUDE_DIRS} )
-link_directories ( ${GPI2_LIBRARY_DIRS} )
+
+set(CMAKE_THREAD_PREFER_PTHREAD On)
+find_package(Threads REQUIRED)
+find_package(GPI2)
 
 add_subdirectory (src)
 add_subdirectory (examples)

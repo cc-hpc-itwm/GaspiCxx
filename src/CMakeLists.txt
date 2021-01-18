@@ -37,8 +37,8 @@ target_include_directories(GaspiCxx
    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(GaspiCxx
-	GPI2
-	pthread)
+	GPI2::GPI2
+	Threads::Threads)
 
 # 'make install' to the correct locations (provided by GNUInstallDirs).
 install(TARGETS GaspiCxx EXPORT GaspiCxxConfig

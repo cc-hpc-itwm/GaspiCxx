@@ -18,8 +18,8 @@ target_link_libraries( GaspiCxxTests LINK_PUBLIC
   	GTest::GTest 
 	GTest::Main 
 	GaspiCxx 
-	GPI2-dbg 
-	pthread 
+	GPI2::GPI2dbg
+	Threads::Threads
 	rt )
 
 add_custom_target (run_tests
