@@ -4,6 +4,7 @@
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+#include <GaspiCxx/collectives/non_blocking/AllreduceCommon.hpp>
 
 #include <atomic>
 #include <stdexcept>
@@ -14,91 +15,9 @@ namespace gaspi
 {
   namespace collectives
   {
-    enum class ReductionOp
-    {
-      SUM,
-      AVERAGE,
-    };
-
     enum class AllreduceAlgorithm
     {
       RING,
-    };
-
-    class AllreduceCommon : public Operator
-    {
-      public:
-        AllreduceCommon(gaspi::segment::Segment& segment, // provide this automatically from segment manager?
-                        gaspi::Context& context,
-                        // gaspi::group::Group const& group,
-                        std::size_t number_elements,
-                        ReductionOp reduction_op)
-        : state(Operator::State::NOT_STARTED),
-          segment(segment),
-          context(context),
-          // group(group),
-          number_elements(number_elements),
-          reduction_op(reduction_op)
-        { }
-
-        template<typename T>
-        virtual void start(std::vector<T> const& inputs) override
-        {
-          start(static_cast<void*>(inputs.data()));
-        }
-
-        void start(void* inputs) override
-        {
-          if (is_running())
-          {
-            throw std::logic_error("[AllreduceCommon::start] Operation already started.");
-          }
-          if (is_finished())
-          {
-            throw std::logic_error("[AllreduceCommon::start] Operation not reset after finish.");
-          }
-
-          copy_in(inputs);
-          state = Operator::State::RUNNING;
-        }
-
-        template<typename T>
-        virtual void reset_and_retrieve(std::vector<T>& outputs) override
-        {
-          reset_and_retrieve(static_cast<void*>(outputs.data()));
-        }
-
-        void reset_and_retrieve(void* outputs) override
-        {
-          if (is_running())
-          {
-            throw std::logic_error("[AllreduceCommon::reset_and_retrieve] Cannot reset while running.");
-          }
-
-          copy_out(outputs);
-          state = Operator::State::NOT_STARTED;
-        }
-
-        bool is_running() const override
-        {
-          return state == Operator::State::RUNNING;
-        };
-
-        bool is_finished() const override
-        {
-          return state == Operator::State::FINISHED;
-        }
-
-      protected:
-        std::atomic<Operator::State> state;
-        gaspi::segment::Segment& segment;
-        gaspi::Context& context;
-        // gaspi::group::Group const& group;
-        std::size_t number_elements;
-        ReductionOp reduction_op;
-
-        virtual void copy_in(void*);
-        virtual void copy_out(void*);
     };
 
     template<typename T, AllreduceAlgorithm Algorithm>
