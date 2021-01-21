@@ -18,8 +18,6 @@ namespace collectives
 
         // Initiates the Operator (non-blocking):
         // copies in the `inputs` and sets `is_running` to TRUE
-        template<typename T>
-        virtual void start(std::vector<T> const& inputs) = 0;
         virtual void start(void* inputs) = 0;
   
         // Makes partial progress towards computing the Operator's result
@@ -32,8 +30,6 @@ namespace collectives
         // Enables the Allreduce to be started again:
         // copies out the results to `outputs`
         // and sets `is_running` to FALSE and `is_finished` to FALSE
-        template<typename T>
-        virtual void reset_and_retrieve(std::vector<T>& outputs) = 0;
         virtual void reset_and_retrieve(void* outputs) = 0;
 
         // CAUTION:

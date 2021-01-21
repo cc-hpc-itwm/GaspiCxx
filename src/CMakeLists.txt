@@ -25,6 +25,7 @@ add_library ( GaspiCxx
 	      utility/Filesystem.cpp
               utility/LockGuard.cpp
               utility/serialization.cpp
+        collectives/non_blocking/AllreduceCommon.cpp
 	      )
 
 # Define headers for this library. PUBLIC headers are used for
