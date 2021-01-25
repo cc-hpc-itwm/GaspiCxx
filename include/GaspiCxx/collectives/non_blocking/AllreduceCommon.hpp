@@ -25,8 +25,7 @@ namespace gaspi
     {
       public:
         AllreduceCommon(gaspi::segment::Segment& segment, // provide this automatically from segment manager?
-                        gaspi::Context& context,
-                        // gaspi::group::Group const& group,
+                        gaspi::group::Group const& group,
                         std::size_t number_elements,
                         ReductionOp reduction_op);
 
@@ -44,8 +43,8 @@ namespace gaspi
       protected:
         std::atomic<Operator::State> state;
         gaspi::segment::Segment& segment;
-        gaspi::Context& context;
-        gaspi::group::Group const& group;
+        gaspi::group::Group const group;
+        gaspi::Context context;
         std::size_t number_elements;
         ReductionOp reduction_op;
 
