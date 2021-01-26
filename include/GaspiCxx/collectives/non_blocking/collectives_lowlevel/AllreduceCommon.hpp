@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GaspiCxx/collectives/non_blocking/Operator.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
@@ -21,36 +21,20 @@ namespace gaspi
       AVERAGE,
     };
 
-    class AllreduceCommon : public Operator
+    class AllreduceCommon : public CollectiveLowLevel
     {
       public:
-        AllreduceCommon(gaspi::segment::Segment& segment, // provide this automatically from segment manager?
+        AllreduceCommon(gaspi::segment::Segment& segment,
                         gaspi::group::Group const& group,
                         std::size_t number_elements,
                         ReductionOp reduction_op);
 
-        template<typename T>
-        void start(std::vector<T> const& inputs);
-        void start(void* inputs) override;
-
-        template<typename T>
-        void reset_and_retrieve(std::vector<T>& outputs);
-        void reset_and_retrieve(void* outputs) override;
-
-        bool is_running() const override;
-        bool is_finished() const override;
-
       protected:
-        std::atomic<Operator::State> state;
         gaspi::segment::Segment& segment;
         gaspi::group::Group const group;
         gaspi::Context context;
         std::size_t number_elements;
         ReductionOp reduction_op;
-
-      private:
-        virtual void copy_in(void*) = 0;
-        virtual void copy_out(void*) = 0;
     };
   }
 }
