@@ -117,7 +117,6 @@ namespace gaspi
         target_handles.push_back(
           target_buffers[i]->connectToRemoteSource(context, left_neighbor, target_tag));
       }
-      setup();
     }
 
     template<typename T>
