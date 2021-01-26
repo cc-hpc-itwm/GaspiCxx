@@ -28,23 +28,29 @@ namespace gaspi
                           std::size_t number_elements,
                           ReductionOp reduction_op)
         : AllreduceLowLevel<T, Algorithm>(segment, group, number_elements, reduction_op)
-        {}
+        {
+          setup();
+          // TODO here register with the progress engine
+        }
 
         void start(void* inputs) override
         {
-           this->copy_in(inputs);
+           copy_in(inputs);
            start();
         }
 
         void waitForCompletion(void* output) override
         {
           waitForCompletion();
-          this->copy_out(output);
+          copy_out(output);
         }
 
       private:
+        using AllreduceLowLevel<T, Algorithm>::setup;
         using AllreduceLowLevel<T, Algorithm>::start;
         using AllreduceLowLevel<T, Algorithm>::waitForCompletion;
+        using AllreduceLowLevel<T, Algorithm>::copy_in;
+        using AllreduceLowLevel<T, Algorithm>::copy_out;
     };
 
   
