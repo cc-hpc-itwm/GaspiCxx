@@ -35,6 +35,7 @@ namespace gaspi {
         gaspi::Context context;
     };
 
+    template<typename T, AllreduceAlgorithm Algorithm>
     class MakeResources
     {
       public:
@@ -49,12 +50,13 @@ namespace gaspi {
 
       private:
         gaspi::segment::Segment segment;
-        Allreduce<int, AllreduceAlgorithm::RING> allreduce;
+        Allreduce<T, Algorithm> allreduce;
     };
 
     TEST_F(AllreduceNonBlockingTest, start_allreduce)
     {
-      auto setup = MakeResources(group_all, 0UL);
+      using ElemType = int;
+      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0);
       auto& allreduce = setup.get_allreduce();
       std::vector<int> inputs;
       allreduce.start(inputs.data());
@@ -64,7 +66,8 @@ namespace gaspi {
 
     TEST_F(AllreduceNonBlockingTest, start_allreduce_twice)
     {
-      auto setup = MakeResources(group_all, 0UL);
+      using ElemType = int;
+      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0);
       auto& allreduce = setup.get_allreduce();
       std::vector<int> inputs;
       allreduce.start(inputs.data());
@@ -74,7 +77,8 @@ namespace gaspi {
 
     TEST_F(AllreduceNonBlockingTest, single_element_allreduce)
     {
-      auto setup = MakeResources(group_all, 1);
+      using ElemType = int;
+      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 1);
       auto& allreduce = setup.get_allreduce();
 
       int elem = 5;
@@ -93,8 +97,9 @@ namespace gaspi {
 
     TEST_F(AllreduceNonBlockingTest, multi_elem_allreduce)
     {
+      using ElemType = int;
       std::size_t num_elements = 9;
-      auto setup = MakeResources(group_all, num_elements);
+      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, num_elements);
       auto& allreduce = setup.get_allreduce();
 
       std::vector<int> inputs(num_elements);

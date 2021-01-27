@@ -35,7 +35,7 @@ namespace gaspi {
         gaspi::Context context;
     };
 
-    template<AllreduceAlgorithm Algorithm>
+    template<typename T, AllreduceAlgorithm Algorithm>
     class MakeResources
     {
       public:
@@ -50,44 +50,52 @@ namespace gaspi {
 
       private:
         gaspi::segment::Segment segment;
-        AllreduceLowLevel<int, Algorithm> allreduce;
+        AllreduceLowLevel<T, Algorithm> allreduce;
     };
 
     TEST_F(AllreduceNonBlockingLowLevelTest, start_allreduce)
     {
-      auto setup = MakeResources<AllreduceAlgorithm::RING>(group_all, 0UL);
+      using ElemType = int;
+      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0UL);
       auto& allreduce = setup.get_allreduce();
-      std::vector<int> inputs;
+
+      std::vector<ElemType> inputs;
+      allreduce.setup();
       allreduce.copy_in(inputs.data());
+
+      ASSERT_FALSE(allreduce.checkForCompletion());
       allreduce.start();
 
-      //ASSERT_TRUE(allreduce.is_running() || allreduce.is_finished());
+      ASSERT_FALSE(allreduce.checkForCompletion());
     }
 
-    // TEST_F(AllreduceNonBlockingLowLevelTest, start_allreduce_twice)
-    // {
-    //   auto setup = MakeResources(group_all, 0UL);
-    //   auto& allreduce = setup.get_allreduce();
-    //   std::vector<int> inputs;
-    //   allreduce.copy_in(inputs.data());
-    //   allreduce.start();
+    TEST_F(AllreduceNonBlockingLowLevelTest, DISABLED_start_allreduce_twice)
+    {
+      using ElemType = int;
+      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0UL);
+      auto& allreduce = setup.get_allreduce();
 
-    //   ASSERT_THROW(allreduce.start(), std::logic_error);
-    // }
+      allreduce.setup();
+      allreduce.start();
+
+      ASSERT_THROW(allreduce.start(), std::logic_error);
+    }
 
     TEST_F(AllreduceNonBlockingLowLevelTest, single_element_allreduce)
     {
-      auto setup = MakeResources(group_all, 1);
+      using ElemType = int;
+      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 1);
       auto& allreduce = setup.get_allreduce();
 
-      int elem = 5;
-      std::vector<int> inputs {elem};
-      std::vector<int> expected;
-      std::vector<int> outputs(1);
+      ElemType elem = 5;
+      std::vector<ElemType> inputs {elem};
+      std::vector<ElemType> expected;
+      std::vector<ElemType> outputs(1);
 
       auto size = group_all.size().get();
       expected.push_back(elem * size);
 
+      allreduce.setup();
       allreduce.copy_in(inputs.data());
       allreduce.start();
       allreduce.waitForCompletion();
