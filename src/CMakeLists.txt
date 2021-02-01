@@ -27,7 +27,9 @@ add_library ( GaspiCxx
               utility/serialization.cpp
               collectives/non_blocking/collectives_lowlevel/AllreduceCommon.cpp
               collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.cpp
-            )
+              progress_engine/ProgressEngine.cpp
+              progress_engine/ManagementThreadEngine.cpp
+              )
 
 # Define headers for this library. PUBLIC headers are used for
 # compiling the library, and will be added to consumers' build

@@ -13,7 +13,8 @@ add_executable ( GaspiCxxTests
       SingleSidedWriteBufferTest.cpp )
 
 target_include_directories (GaspiCxxTests PRIVATE 
-	${CMAKE_CURRENT_SOURCE_DIR} )	
+	${CMAKE_CURRENT_SOURCE_DIR}
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)	
 
 target_link_libraries( GaspiCxxTests LINK_PUBLIC  
   	GTest::GTest 
