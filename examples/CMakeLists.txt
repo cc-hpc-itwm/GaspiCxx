@@ -14,8 +14,12 @@ target_link_libraries (1D-wave LINK_PUBLIC
 			   GaspiCxx                            
 			   pthread
 			   rt)
+target_include_directories (1D-wave
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
 target_link_libraries (perf-measurement LINK_PUBLIC
 			   GaspiCxx
 			   pthread
 			   rt)
+target_include_directories (perf-measurement
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)

@@ -22,7 +22,7 @@
 #include <cstring>
 #include <memory>
 #include <GaspiCxx/Context.hpp>
-#include <GaspiCxx/progress_engine/ProgressEngine.hpp>
+#include <progress_engine/ProgressEngine.hpp>
 
 extern "C" {
 #include <GASPI.h>
@@ -101,6 +101,11 @@ namespace passive { class Passive; }
     passive::Passive &
     passive() {
       return *_ppassive;
+    }
+
+    ProgressEngine &
+    engine() {
+      return *_pengine;
     }
 
     void
