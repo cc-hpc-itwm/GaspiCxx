@@ -101,53 +101,53 @@ class CollectiveLowLevel {
 
 public:
 
-	enum class State
-	{
-	  UNINITIALIZED,
-	  READY,
-	  RUNNING,
+  enum class State
+  {
+    UNINITIALIZED,
+    READY,
+    RUNNING,
     FINISHED
-	};
+  };
 
-	// Returned by setup in order to be able to separate
-	// initiation of setup process from its completion
-	// Required to be able to avoid deadlock in case that
-	// there is no globally consistent order of setup
-	// calls across different collectives.
+  // Returned by setup in order to be able to separate
+  // initiation of setup process from its completion
+  // Required to be able to avoid deadlock in case that
+  // there is no globally consistent order of setup
+  // calls across different collectives.
 
-	//
-	class SetupHandle
-	{
-		public:
+  //
+  class SetupHandle
+  {
+    public:
 
-		virtual
-		~SetupHandle() = default;
+    virtual
+    ~SetupHandle() = default;
 
-		virtual void
-		waitForCompletion() = 0;
+    virtual void
+    waitForCompletion() = 0;
 
-	};
+  };
 
-	CollectiveLowLevel();
-	virtual ~CollectiveLowLevel() = default;
+  CollectiveLowLevel();
+  virtual ~CollectiveLowLevel() = default;
 
-	void setup();
-	void start();
-	bool checkForCompletion();
-	bool waitForCompletion();
+  void setup();
+  void start();
+  bool checkForCompletion();
+  bool waitForCompletion();
   bool triggerProgress();
   void copy_in(void* inputs);
   void copy_out(void* outputs);
 
 protected:
-	virtual void setup_impl() = 0;
+  virtual void setup_impl() = 0;
   virtual void init_communication_impl() = 0;
   virtual bool trigger_progress_impl() = 0;
 
   virtual void copy_in_impl(void*) = 0;
   virtual void copy_out_impl(void*) = 0;
 
-	State _state; // atomic? (because of waitForcompletion)
+  State _state; // atomic? (because of waitForcompletion)
   std::mutex _state_mutex;
 };
 

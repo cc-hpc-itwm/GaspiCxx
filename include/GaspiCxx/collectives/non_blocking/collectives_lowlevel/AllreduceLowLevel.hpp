@@ -36,9 +36,9 @@ namespace gaspi
         using AllreduceCommon::AllreduceCommon;
 
         AllreduceLowLevel(gaspi::segment::Segment& segment,
-                  gaspi::group::Group const& group,
-                  std::size_t number_elements,
-                  ReductionOp reduction_op);
+                          gaspi::group::Group const& group,
+                          std::size_t number_elements,
+                          ReductionOp reduction_op);
 
       private:
         enum class RingStage
@@ -72,10 +72,7 @@ namespace gaspi
         void algorithm_reset_state();
         void apply_reduce_op(SourceBuffer& source_comm, TargetBuffer& target_comm);
         void copy_to_source(SourceBuffer& source_comm, TargetBuffer& target_comm);
-
-
     };
-
 
     template<typename T>
     AllreduceLowLevel<T, AllreduceAlgorithm::RING>::AllreduceLowLevel(
@@ -92,10 +89,12 @@ namespace gaspi
     {
       auto const number_ranks = group.size().get();
 
+      // neighbor ranks within the group
       auto const left_neighbor = (group.rank() - 1 + number_ranks) % number_ranks;
       auto const right_neighbor = (group.rank() + 1) % number_ranks;
 
-      auto const number_elements_buffer = number_elements / number_ranks + (number_elements % number_ranks != 0);
+      auto const number_elements_buffer = number_elements / number_ranks +
+                                          (number_elements % number_ranks != 0 ? 1 : 0);
       auto const size_buffer = sizeof(T) * number_elements_buffer;
 
       // create buffers
@@ -136,6 +135,7 @@ namespace gaspi
     template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::init_communication_impl()
     {
+      algorithm_reset_state();
     }
 
     template<typename T>
@@ -170,14 +170,13 @@ namespace gaspi
         }
       }
 
-      update_current_step();
-      update_current_stage();
-
-      if (_state == State::RUNNING && algorithm_final_state())
+      if (algorithm_final_state())
       {
-        _state = State::READY;
         return true;
       }
+
+      update_current_step();
+      update_current_stage();
       return false;
     }
 
@@ -257,12 +256,7 @@ namespace gaspi
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::algorithm_final_state()
     {
       // check whether the algorithm reached the final step of the final stage
-      if (current_step == steps_per_stage - 1
-         && stage == RingStage::GATHER)
-      {
-        return true;
-      }
-      return false;
+      return (current_step == steps_per_stage - 1 && stage == RingStage::GATHER);
     }
 
     template<typename T>
