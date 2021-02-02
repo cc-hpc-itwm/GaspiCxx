@@ -33,7 +33,7 @@ class GlobalTestConfiguration
 {
 private:
 
-  gaspi::Runtime     _runtime;
+  gaspi::Runtime &     _runtime;
 
 //  gaspi_group_t      _group;
 //  bool               _customGroup;
