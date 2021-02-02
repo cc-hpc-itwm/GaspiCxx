@@ -3,138 +3,126 @@
 namespace gaspi {
 namespace collectives {
 
-	// Instantiation
-	// -> local allocation of resources
-	CollectiveLowLevel::CollectiveLowLevel()
-	: _state(State::UNINITIALIZED)
-	{}
+  // Instantiation phase
+  // ===================
+  // -> local allocation of resources
+  CollectiveLowLevel::CollectiveLowLevel()
+  : _state(State::UNINITIALIZED)
+  {}
 
-	// Setup phase
-	// -> exchange of meta information
-	// -> local
-	// setup is a collective operation, i.e. it needs to be
-	// invoked by all members in the group
-	// Can be invoked only once during life time
-	// Has to be invoked
-	// SetupHandle::waitForCompletion changes state
-	// from UNITIALIZED to READY
-	// virtual std::unique_ptr<SetupHandle>
-	void CollectiveLowLevel::setup()
+  // Setup phase
+  // ===========
+  // -> exchange of meta information
+  // -> collective operation, i.e. needs to be
+  // invoked by all members in the group
+  // Has to be invoked exactly once during life time
+  // `waitForSetup` changes state from UNITIALIZED to INITIALIZED
+  void CollectiveLowLevel::waitForSetup()
   {
     std::lock_guard<std::mutex> const lock(_state_mutex);
     if(_state != State::UNINITIALIZED)
     {
       throw std::logic_error(
-        "[CollectiveLowLevel::setup] Collective already initialized.");
+        "[CollectiveLowLevel::waitForSetup] Collective already initialized.");
     }
-    setup_impl();
+    waitForSetupImpl();
+    _state = State::INITIALIZED;
+  }
+
+  // Execution phase
+  // ===============
+  // Copy data to communication buffers before execution
+  // Changes state from INITIALIZED to READY
+  void CollectiveLowLevel::copyIn(void* inputs)
+  {
+    std::lock_guard<std::mutex> const lock(_state_mutex);
+    if(_state != State::INITIALIZED)
+    {
+      throw std::logic_error(
+        "[CollectiveLowLevel::copyIn] Collective is not in the INITIALIZED state.");
+    }
+    copyInImpl(inputs);
     _state = State::READY;
   }
 
-	// Execution phase
-
-	// Start collective operation
-	// Has to be invoked by a single thread only in
-	// each member of the group (collective operation)
-	// After start has been invoked, eventual source buffers
-	// may not be overwritten and eventual target buffers may
-	// not be read until check for completion returns true
-	// or waitForCompletion has been invoked
-	void
-	CollectiveLowLevel::start()
-	{
+  // Start collective operation
+  // Only one thread should invoke `start`, which will initiate the 
+  // algorithm and change the state from INITIALIZED to RUNNING.
+  void CollectiveLowLevel::start()
+  {
     std::lock_guard<std::mutex> const lock(_state_mutex);
 
-	  if(_state != State::READY)
+    if(_state != State::READY)
     {
       throw std::logic_error(
         "[CollectiveLowLevel::start] Collective already started or not initialized.");
     }
-    init_communication_impl();
+    startImpl();
     _state = State::RUNNING;
-	}
+  }
 
-	// After successful completion, i.e. return value true,
-	// eventual target buffers may be read and eventual source
-	// buffers may be overwritten
-	// May be invoked by more than a single thread. However, only
-	// a single thread completes
-	// Might require several invocations before successful completion
-	bool
-    CollectiveLowLevel::checkForCompletion()
-	{
-    std::unique_lock<std::mutex> lock(_state_mutex, std::defer_lock);
-    bool isCompleted = false;
-
-		if(lock.try_lock())
-    {
-		  isCompleted = (_state == State::FINISHED);
-    }
-		return isCompleted;
-	}
-  
-	// After completion, eventual target buffers may be read and
-	// eventual source buffers may be overwritten
-	// May be invoked by more than a single thread.
-	// Return value true is only given by a single thread
-	bool
-	CollectiveLowLevel::waitForCompletion()
-	{
-	  bool thisThreadCompletes (false);
-	  while(!thisThreadCompletes && _state == State::RUNNING)
-	  {
-      thisThreadCompletes = triggerProgress();
-	  };
-	  return thisThreadCompletes;
-	}
-
-	// Implements generation of progress
-	// Invoked by a single thread only.
-	// It is ensured that there is only a single exclusive call of
-	// trigger_progress at any time
-	// It is only invoked when state is RUNNING
-	// Has to changes state from RUNNING to READY if
-	// the generated progress completes the collective
-	// Has to ensure that eventual output buffers are ready,
-	// i.e. contain valid data, if the generated progress completes
-	// the collective
-  bool
-	CollectiveLowLevel::triggerProgress()
+  // Implements generation of progress.
+  // Can be called in any state, but only one thread will
+  // trigger progress if and only if state equals RUNNING.
+  // Changes state from RUNNING to FINISHED if
+  // the generated progress completes the collective.
+  bool CollectiveLowLevel::triggerProgress()
   {
     std::unique_lock<std::mutex> lock(_state_mutex, std::defer_lock);
     bool isCompleted = false;
 
-		if(lock.try_lock())
+    if(lock.try_lock())
     {
-		  if(_state == State::RUNNING) {
-        isCompleted = trigger_progress_impl();
+      if(_state == State::RUNNING) {
+        isCompleted = triggerProgressImpl();
         if (isCompleted)
         {
           _state = State::FINISHED;
         }
-		  }
+      }
     }
     return isCompleted;
   }
 
-  void CollectiveLowLevel::copy_in(void* inputs)
+  // Write results to `outputs` as a contiguous buffer.
+  // Changes state from FINISHED to INITIALIZED,
+  // which allows to re-execute the collective
+  // (after resetting the input data with `copyIn`).
+  void CollectiveLowLevel::copyOut(void* outputs)
   {
     std::lock_guard<std::mutex> const lock(_state_mutex);
-    if(_state == State::READY)
+    if(_state != State::FINISHED)
     {
-      copy_in_impl(inputs);
+      throw std::logic_error(
+        "[CollectiveLowLevel::copyOut] Collective is not in the FINISHED state.");
     }
+    copyOutImpl(outputs);
+    _state = State::INITIALIZED;
   }
 
-  void CollectiveLowLevel::copy_out(void* outputs)
+  // Convenience functions
+  // =====================
+  // Checks whether the operation has completed.
+  bool CollectiveLowLevel::checkForCompletion()
   {
-    std::lock_guard<std::mutex> const lock(_state_mutex);
-    if(_state == State::FINISHED)
+    return (_state == State::FINISHED);
+  }
+  
+  // If in state RUNNING, blocks until completion of the collective
+  // (through calling trigger progress).
+  // If called in another state, does nothing.
+  // May be invoked by more than a single thread.
+  // The thread that triggered the final step of the algorithm will 
+  // return `true`, all others will return `false`.
+  bool CollectiveLowLevel::waitForCompletion()
+  {
+    bool thisThreadCompletes (false);
+    while(!thisThreadCompletes && _state == State::RUNNING)
     {
-      copy_out_impl(outputs);
-      _state = State::READY;
-    }
+      thisThreadCompletes = triggerProgress();
+    };
+    return thisThreadCompletes;
   }
 
-  }
-  }
+}
+}
