@@ -61,10 +61,14 @@ namespace passive { class Passive; }
   {
   private:
 
+    gaspi_size_t _segmentSize;
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
 
-    //! A runtime cannot be copied.
+    //! A runtime is a singleton.
+    Runtime
+      ();
+
     Runtime
       (const Runtime&) = delete;
 
@@ -79,11 +83,12 @@ namespace passive { class Passive; }
     //! Construct a GASPI interface from a group and a segment.
     //! \note GASPI and the given segment must be initialized on
     //!       all ranks of the given group!
-    Runtime
-      ();
-    //! The destructor
+    static
+    Runtime &
+    getRuntime();
+
     ~Runtime
-      ();
+      () = default;
 
     //! Return the segment
     segment::Segment &
@@ -97,11 +102,11 @@ namespace passive { class Passive; }
     }
   };
 
-  bool
-  isRuntimeAvailable();
-
   Runtime &
   getRuntime();
+
+  void
+  initGaspiCxx();
 
 } // namespace gaspi
 

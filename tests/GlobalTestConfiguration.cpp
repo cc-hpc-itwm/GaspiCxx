@@ -26,7 +26,7 @@ GlobalTestConfiguration
   ::GlobalTestConfiguration
    ( int /*argc*/
    , char */*argv*/[] )
-: _runtime()
+: _runtime(gaspi::getRuntime())
 {
 //  // Initialize with default configuration.
 //  _numThreads  = DEFAULT_NUM_THREADS;

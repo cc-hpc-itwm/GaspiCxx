@@ -250,7 +250,7 @@ main
   ( int /*argc*/
   , char *[] /*argv*/) try {
 
-  gaspi::Runtime runtime;
+  gaspi::initGaspiCxx();
 
   gaspi::Context context;
 
