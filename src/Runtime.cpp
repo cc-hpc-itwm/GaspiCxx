@@ -56,6 +56,12 @@ Runtime
 , _psegment(std::make_unique<segment::Segment>(_segmentSize))
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
+{ }
+
+void
+Runtime
+  ::synchCurrentWorkingDirectory
+    ()
 {
   if(rank() == group::Rank(0)) {
 
@@ -83,7 +89,6 @@ Runtime
     setCurrentWorkingDirectory(dir);
 
   }
-
 }
 
 Runtime &
