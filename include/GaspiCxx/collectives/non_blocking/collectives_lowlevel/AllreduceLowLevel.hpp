@@ -7,6 +7,7 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceCommon.hpp>
 
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -53,8 +54,9 @@ namespace gaspi
         std::vector<gaspi::singlesided::Endpoint::ConnectHandle> target_handles;
       
         std::size_t current_step;
-        RingStage stage;
         std::size_t steps_per_stage;
+        std::size_t send_buffer_index;
+        std::size_t receive_buffer_index;
 
         void waitForSetupImpl() override;
         void copyInImpl(void*) override;
@@ -64,9 +66,8 @@ namespace gaspi
         bool triggerProgressImpl() override;
 
         // algorithm-specific methods
-        void update_current_step();
-        void update_current_stage();
-        bool algorithm_final_state();
+        auto algorithm_get_current_stage();
+        bool algorithm_is_finished();
         void algorithm_reset_state();
         void apply_reduce_op(SourceBuffer& source_comm, TargetBuffer& target_comm);
         void copy_to_source(SourceBuffer& source_comm, TargetBuffer& target_comm);
@@ -81,9 +82,7 @@ namespace gaspi
     : AllreduceCommon(segment, group, number_elements, reduction_op),
       source_buffers(),
       target_buffers(),
-      current_step(0),
-      stage(RingStage::REDUCE),
-      steps_per_stage(group.size().get())
+      steps_per_stage(group.size().get()-1)
     {
       auto const number_ranks = group.size().get();
 
@@ -110,10 +109,11 @@ namespace gaspi
         SourceBuffer::Tag source_tag = i;
         TargetBuffer::Tag target_tag = i;
         source_handles.push_back(
-          source_buffers[i]->connectToRemoteTarget(context, right_neighbor, source_tag));
+          source_buffers[i]->connectToRemoteTarget(context, left_neighbor, source_tag));
         target_handles.push_back(
-          target_buffers[i]->connectToRemoteSource(context, left_neighbor, target_tag));
+          target_buffers[i]->connectToRemoteSource(context, right_neighbor, target_tag));
       }
+      algorithm_reset_state();
     }
 
     template<typename T>
@@ -140,42 +140,29 @@ namespace gaspi
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::triggerProgressImpl()
     {
       auto const number_ranks = group.size().get();
-      auto const rank = group.rank().get();
 
-      switch(stage)
+      send_buffer_index = (send_buffer_index + 1) % number_ranks;
+      receive_buffer_index = (receive_buffer_index + 1) % number_ranks;
+
+      source_buffers[send_buffer_index]->initTransfer(context);
+      target_buffers[receive_buffer_index]->waitForCompletion();
+
+      switch(algorithm_get_current_stage())
       {
         case RingStage::REDUCE:
         {
-          auto const send_buffer_index = (rank - current_step + number_ranks) % number_ranks;
-          auto const receive_buffer_index = (rank - current_step + number_ranks - 1) % number_ranks;
-
-          source_buffers[send_buffer_index]->initTransfer(context);
-          target_buffers[receive_buffer_index]->waitForCompletion();
-
           apply_reduce_op(*source_buffers[receive_buffer_index], *target_buffers[receive_buffer_index]);
           break;
         }
         case RingStage::GATHER:
         {
-          auto const send_buffer_index = (rank - current_step + 1 + number_ranks) % number_ranks;
-          auto const receive_buffer_index = (rank - current_step + number_ranks) % number_ranks;
-
-          source_buffers[send_buffer_index]->initTransfer(context);
-          target_buffers[receive_buffer_index]->waitForCompletion();
-
           copy_to_source(*source_buffers[receive_buffer_index], *target_buffers[receive_buffer_index]);
           break;
         }
       }
 
-      if (algorithm_final_state())
-      {
-        return true;
-      }
-
-      update_current_step();
-      update_current_stage();
-      return false;
+      current_step++;
+      return algorithm_is_finished();
     }
 
     template<typename T>
@@ -231,37 +218,27 @@ namespace gaspi
     }
 
     template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::update_current_step()
+    auto AllreduceLowLevel<T, AllreduceAlgorithm::RING>::algorithm_get_current_stage()
     {
-      current_step++;
-      if (current_step == steps_per_stage)
-      {
-        // move to next stage
-        current_step = 0;
-      }
+      return (current_step / steps_per_stage == 0)? RingStage::REDUCE : RingStage::GATHER;
     }
 
     template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::update_current_stage()
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::algorithm_is_finished()
     {
-      if (current_step == 0) // step count was just reset
-      {
-        stage = (stage == RingStage::REDUCE)? RingStage::GATHER : RingStage::REDUCE;
-      }
-    }
-
-    template<typename T>
-    bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::algorithm_final_state()
-    {
-      // check whether the algorithm reached the final step of the final stage
-      return (current_step == steps_per_stage - 1 && stage == RingStage::GATHER);
+      // check whether the algorithm reached the final step of the second stage
+      return (algorithm_get_current_stage() == RingStage::GATHER &&
+              current_step == 2 * steps_per_stage);
     }
 
     template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::algorithm_reset_state()
     {
+      auto const number_ranks = group.size().get();
+
       current_step = 0;
-      stage = RingStage::REDUCE;
+      receive_buffer_index = group.rank().get();
+      send_buffer_index = (receive_buffer_index - 1 + number_ranks) % number_ranks;
     }
 
     template<typename T>
