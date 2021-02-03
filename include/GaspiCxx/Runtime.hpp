@@ -100,6 +100,9 @@ namespace passive { class Passive; }
     passive() {
       return *_ppassive;
     }
+
+    void
+    synchCurrentWorkingDirectory();
   };
 
   Runtime &
