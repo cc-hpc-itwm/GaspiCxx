@@ -7,7 +7,6 @@
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/Context.hpp>
 
-#include <cstring>
 #include <stdexcept>
 #include <vector>
 
@@ -59,9 +58,7 @@ namespace gaspi {
       auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0);
       auto& allreduce = setup.get_allreduce();
       std::vector<int> inputs;
-      allreduce.start(inputs.data());
-
-      //ASSERT_TRUE(allreduce.is_running() || allreduce.is_finished());
+      ASSERT_NO_THROW(allreduce.start(inputs.data()));
     }
 
     TEST_F(AllreduceNonBlockingTest, start_allreduce_twice)

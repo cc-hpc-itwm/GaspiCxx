@@ -1,17 +1,7 @@
 #pragma once
 
-#include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/LocalBuffer.hpp>
-#include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
-#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/collectives/non_blocking/Collective.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceLowLevel.hpp>
-
-#include <atomic>
-#include <memory>
-#include <stdexcept>
-#include <vector>
 
 namespace gaspi
 {
@@ -29,28 +19,28 @@ namespace gaspi
                           ReductionOp reduction_op)
         : AllreduceLowLevel<T, Algorithm>(segment, group, number_elements, reduction_op)
         {
-          setup();
+          waitForSetup();
           // TODO here register with the progress engine
         }
 
         void start(void* inputs) override
         {
-           copy_in(inputs);
+           copyIn(inputs);
            start();
         }
 
         void waitForCompletion(void* output) override
         {
           waitForCompletion();
-          copy_out(output);
+          copyOut(output);
         }
 
       private:
-        using AllreduceLowLevel<T, Algorithm>::setup;
+        using AllreduceLowLevel<T, Algorithm>::waitForSetup;
         using AllreduceLowLevel<T, Algorithm>::start;
         using AllreduceLowLevel<T, Algorithm>::waitForCompletion;
-        using AllreduceLowLevel<T, Algorithm>::copy_in;
-        using AllreduceLowLevel<T, Algorithm>::copy_out;
+        using AllreduceLowLevel<T, Algorithm>::copyIn;
+        using AllreduceLowLevel<T, Algorithm>::copyOut;
     };
 
   
