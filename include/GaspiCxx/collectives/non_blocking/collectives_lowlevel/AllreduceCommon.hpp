@@ -1,15 +1,9 @@
 #pragma once
 
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
+#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
-#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
-
-#include <atomic>
-#include <stdexcept>
-#include <memory>
-#include <vector>
+#include <GaspiCxx/segment/Segment.hpp>
 
 namespace gaspi
 {

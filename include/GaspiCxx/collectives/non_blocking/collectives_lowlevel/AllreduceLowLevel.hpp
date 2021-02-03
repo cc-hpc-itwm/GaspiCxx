@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/LocalBuffer.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
@@ -8,7 +7,6 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceCommon.hpp>
 
-#include <atomic>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -58,12 +56,12 @@ namespace gaspi
         RingStage stage;
         std::size_t steps_per_stage;
 
-        void setup_impl() override;
-        void copy_in_impl(void*) override;
-        void copy_out_impl(void*) override;
+        void waitForSetupImpl() override;
+        void copyInImpl(void*) override;
+        void copyOutImpl(void*) override;
 
-        void init_communication_impl() override;
-        bool trigger_progress_impl() override;
+        void startImpl() override;
+        bool triggerProgressImpl() override;
 
         // algorithm-specific methods
         void update_current_step();
@@ -119,7 +117,7 @@ namespace gaspi
     }
 
     template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::setup_impl()
+    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::waitForSetupImpl()
     {
       // wait for connections
       for (auto& handle : source_handles)
@@ -133,13 +131,13 @@ namespace gaspi
     }
 
     template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::init_communication_impl()
+    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::startImpl()
     {
       algorithm_reset_state();
     }
 
     template<typename T>
-    bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::trigger_progress_impl()
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::triggerProgressImpl()
     {
       auto const number_ranks = group.size().get();
       auto const rank = group.rank().get();
@@ -181,7 +179,7 @@ namespace gaspi
     }
 
     template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::copy_in_impl(void* inputs)
+    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::copyInImpl(void* inputs)
     {
       auto total_size = number_elements * sizeof(T);
       auto total_copied_size = 0UL;
@@ -207,7 +205,7 @@ namespace gaspi
     }
 
     template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::copy_out_impl(void* outputs)
+    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::copyOutImpl(void* outputs)
     {
       auto total_size = number_elements * sizeof(T);
       auto total_copied_size = 0UL;
