@@ -61,7 +61,7 @@ TEST_F(AllgatherTest, allgather)
 
    std::size_t elementSize(sizeof(int));
    std::size_t sourceSize(elementSize * 1 );
-   std::size_t targetSize(elementSize * context.size().get());
+   std::size_t targetSize(elementSize * context.size());
 
    char * gSource ( sourceSegment.allocator().allocate(sourceSize) );
    char * gTarget ( targetSegment.allocator().allocate(targetSize) );
@@ -75,9 +75,9 @@ TEST_F(AllgatherTest, allgather)
             , elementSize
             , context );
 
-   for( int i(0)
-      ;     i<context.size().get()
-      ;   ++i) {
+   for( auto i(0UL)
+      ;      i<context.size()
+      ;    ++i) {
      EXPECT_EQ( reinterpret_cast<int*>(gTarget)[i]
               , i );
    }
@@ -95,7 +95,7 @@ TEST_F(AllgatherTest, allgatherLoop)
 
    std::size_t elementSize(sizeof(int));
    std::size_t sourceSize(elementSize * 1 );
-   std::size_t targetSize(elementSize * context.size().get());
+   std::size_t targetSize(elementSize * context.size());
 
    char * gSource ( sourceSegment.allocator().allocate(sourceSize) );
    char * gTarget ( targetSegment.allocator().allocate(targetSize) );
@@ -114,9 +114,9 @@ TEST_F(AllgatherTest, allgatherLoop)
               , elementSize
               , context );
 
-     for(int i(0)
-        ;    i<context.size().get()
-        ;  ++i ) {
+     for(auto i(0UL)
+        ;     i<context.size()
+        ;   ++i ) {
        EXPECT_EQ( reinterpret_cast<int*>(gTarget)[i]
                 , i * iLoop );
      }
@@ -144,24 +144,24 @@ TEST_F(AllgatherTest, allgatherv)
 
    std::size_t elementSize(sizeof(int));
    std::size_t sourceSize(elementSize * (context.rank().get()+1) );
-   std::size_t targetSize(elementSize * (context.size().get()+1)
-                                      * (context.size().get()+0) / 2);
-   std::size_t * sizes(new std::size_t[context.size().get()]);
+   std::size_t targetSize(elementSize * (context.size()+1)
+                                      * (context.size()+0) / 2);
+   std::size_t * sizes(new std::size_t[context.size()]);
 
    char * gSource ( sourceSegment.allocator().allocate(sourceSize) );
    char * gTarget ( targetSegment.allocator().allocate(targetSize) );
 
-   for( int i(0)
-      ;     i<context.rank().get()+1
-      ;   ++i ) {
+   for( auto i(0)
+      ;      i<context.rank().get()+1
+      ;    ++i ) {
      reinterpret_cast<int*>(gSource)[i] = (context.rank().get()+1)
                                         * (context.rank().get()+0) / 2
                                         + i + 1;
    }
 
-   for( int i(0)
-      ;     i<context.size().get()
-      ;   ++i ) {
+   for( auto i(0UL)
+      ;      i<context.size() 
+      ;    ++i ) {
      sizes[i] = (i + 1) * elementSize;
    }
 
@@ -172,10 +172,10 @@ TEST_F(AllgatherTest, allgatherv)
              , sizes
              , context );
 
-   for( int i(0)
-      ;     i< (context.size().get()+1)
-             * (context.size().get()+0) / 2
-      ;   ++i) {
+   for( auto i(0UL)
+      ;      i< (context.size()+1)
+              * (context.size()+0) / 2
+      ;    ++i) {
      EXPECT_EQ( reinterpret_cast<int*>(gTarget)[i]
               , i+1 );
    }

@@ -110,8 +110,8 @@ class Endpoint : public Buffer {
     ConnectHandle
     connectToRemotePartner
       ( Context & context
-      , group::Rank & rank
-      , Tag & tag );
+      , group::Rank const& rank
+      , Tag const& tag );
 
     bool
     isConnected

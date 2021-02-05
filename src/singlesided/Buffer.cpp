@@ -53,7 +53,7 @@ class MemoryAllocation {
     void *
     pointer
       () const {
-      return reinterpret_cast<void * const>(_pointer);
+      return reinterpret_cast<void *>(_pointer);
     }
 
   private:
@@ -159,8 +159,7 @@ Buffer
    () const
 {
   BufferDescription desc
-    ( group::groupToGlobalRank( getRuntime().group()
-                              , getRuntime().rank() )
+    ( getRuntime().group().toGlobalRank( getRuntime().rank() )
     , _segment.id()
     , _segment.pointerToOffset
         (_pointer)

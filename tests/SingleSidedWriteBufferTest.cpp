@@ -57,7 +57,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 {
   Context context;
 
-  if(context.size().get() == 1) return;
+  if(context.size() == 1) return;
 
   group::Rank rightNeighbour( ( context.rank()
                               + context.size()
@@ -95,7 +95,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
     source.initTransfer( context );
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.size().get());
+    EXPECT_EQ(itarget,context.size());
 
   }
   else {
@@ -160,7 +160,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 {
   Context context;
 
-  if(context.size().get() == 1) return;
+  if(context.size() == 1) return;
 
   group::Rank rightNeighbour( ( context.rank()
                               + context.size()
@@ -202,7 +202,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
     source.initTransfer( context );
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.size().get());
+    EXPECT_EQ(itarget,context.size());
 
   }
   else {

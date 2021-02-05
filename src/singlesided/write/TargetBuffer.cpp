@@ -88,8 +88,8 @@ Endpoint::ConnectHandle
 TargetBuffer
   ::connectToRemoteSource
    ( Context & context
-   , group::Rank & rank
-   , Tag & tag )
+   , group::Rank const& rank
+   , Tag const& tag )
 {
   return Endpoint::connectToRemotePartner
       ( context

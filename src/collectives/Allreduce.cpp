@@ -116,7 +116,7 @@ allreduce
 
   T result(input);
 
-  if(context.size().get() > 1) {
+  if(context.size() > 1) {
     GASPI_CHECK(
       gaspi_allreduce
         ( const_cast<T * const>(&input)
@@ -146,7 +146,7 @@ allreduce<std::complex<float> >
 
   std::complex<float> result(input);
 
-  if(context.size().get() > 1) {
+  if(context.size() > 1) {
     GASPI_CHECK(
       gaspi_allreduce
         ( const_cast<float * const>
@@ -178,7 +178,7 @@ allreduce<std::complex<double> >
 
   std::complex<double> result(input);
 
-  if(context.size().get() > 1) {
+  if(context.size() > 1) {
     GASPI_CHECK(
       gaspi_allreduce
         ( const_cast<double * const>

@@ -44,40 +44,40 @@ Passive
 , _passiveBufPointer( _segment.allocator().allocate(_passiveBufSize) )
 {
     // maximal passive message size
-	MAX_PASSIVE_MESSAGE_SIZE_ = ( ( _passiveBufSize - 4 * (int)sizeof(int) ) / 2 );
-    PASSIVE_SENDRECVBUF_SIZE_ = ( MAX_PASSIVE_MESSAGE_SIZE_
-                                + (int)sizeof(int)  // size for the message tag
-                                + (int)sizeof(int)  // size for the message size
-                                );
+  MAX_PASSIVE_MESSAGE_SIZE_ = ( ( _passiveBufSize - 4 * (int)sizeof(int) ) / 2 );
+  PASSIVE_SENDRECVBUF_SIZE_ = ( MAX_PASSIVE_MESSAGE_SIZE_
+                              + (int)sizeof(int)  // size for the message tag
+                              + (int)sizeof(int)  // size for the message size
+                              );
 
-    // doing the passive forwarding initalization
-    {
-        passive_isendrcv_bool_ = false;
+  // doing the passive forwarding initalization
+  {
+      passive_isendrcv_bool_ = false;
 
-        pthread_mutex_init( &passive_isendrcv_mutx_
-                , NULL );
-        pthread_cond_init ( &passive_isendrcv_cond_
-                , NULL );
+      pthread_mutex_init( &passive_isendrcv_mutx_
+              , NULL );
+      pthread_cond_init ( &passive_isendrcv_cond_
+              , NULL );
 
-        passive_fwd_recv_bool_ = false;
+      passive_fwd_recv_bool_ = false;
 
-        pthread_mutex_init( &passive_fwd_recv_mutx_
-                , NULL );
-        pthread_cond_init ( &passive_fwd_recv_cond_
-                , NULL );
-    }
+      pthread_mutex_init( &passive_fwd_recv_mutx_
+              , NULL );
+      pthread_cond_init ( &passive_fwd_recv_cond_
+              , NULL );
+  }
 
-    // For portability, explicitly create threads in a joinable state
-    pthread_attr_init(&gpi_passive_thread_attr_);
-    pthread_attr_setdetachstate
-      ( &gpi_passive_thread_attr_
-      , PTHREAD_CREATE_JOINABLE );
+  // For portability, explicitly create threads in a joinable state
+  pthread_attr_init(&gpi_passive_thread_attr_);
+  pthread_attr_setdetachstate
+    ( &gpi_passive_thread_attr_
+    , PTHREAD_CREATE_JOINABLE );
 
-    // spawning the passive receive thread
-    pthread_create( &gpi_passive_thread_id_
-            , &gpi_passive_thread_attr_
-            , &passive_thread_func_
-            , reinterpret_cast<void *>(this) );
+  // spawning the passive receive thread
+  pthread_create( &gpi_passive_thread_id_
+          , &gpi_passive_thread_attr_
+          , &passive_thread_func_
+          , reinterpret_cast<void *>(this) );
 }
 
 Passive
@@ -95,23 +95,23 @@ Passive
   ::sendError
    (const std::string & ErrMsg )
 {
-	const char * const pMessage = ErrMsg.c_str();
-	int                size     = (int)ErrMsg.size();
-	unsigned int       destRank = 0;
+  const char * const pMessage = ErrMsg.c_str();
+  int                size     = (int)ErrMsg.size();
+  unsigned int       destRank = 0;
 
-	return sendPassive( GERR
-			          , pMessage
-					  , size
-					  , destRank
-					  );
+  return sendPassive( GERR
+                , pMessage
+            , size
+            , destRank
+            );
 }
 
 bool
 Passive
   ::sendMessg
      ( const char *  const pData
-	 , const size_t datSize
-	 , const int targetRank )
+   , const size_t datSize
+   , const int targetRank )
 {
 
   /// Request target buffer description as target for
@@ -184,7 +184,7 @@ Passive
 
 bool
 Passive::recvMessg( std::vector<char> & Data
-		          , int & rank )
+              , int & rank )
 {
   bool finished = false;
 
@@ -436,37 +436,36 @@ Passive::passive_thread_func_(void * arg)
     {
       case GERR:
       {
+        std::string buf_string(msg_ptr.get(),msg_size);
 
-          std::string buf_string(msg_ptr.get(),msg_size);
+        size_t sub_beg(0);
+        size_t sub_end(0);
 
-          size_t sub_beg(0);
-          size_t sub_end(0);
+        std::cout<<std::endl<<std::endl;
 
-          std::cout<<std::endl<<std::endl;
+        while( sub_beg < buf_string.size() )
+        {
+          size_t const pos = buf_string.find('\n', sub_beg );
 
-          while( sub_beg < buf_string.size() )
-          {
-              size_t const pos = buf_string.find('\n', sub_beg );
-
-              sub_end = ( pos == std::string::npos ) ? buf_string.size()
-                      : pos;
-
-              std::cout<<"Exception[ rank "<<msg_rank<<" ] : ";
-              std::cout<<buf_string.substr( sub_beg , sub_end - sub_beg )
-                       <<std::endl;
-
-              sub_beg = sub_end + 1;
-          }
+          sub_end = ( pos == std::string::npos ) ? buf_string.size()
+                  : pos;
 
           std::cout<<"Exception[ rank "<<msg_rank<<" ] : ";
-          raise(SIGINT);
-          break;
+          std::cout<<buf_string.substr( sub_beg , sub_end - sub_beg )
+                    <<std::endl;
+
+          sub_beg = sub_end + 1;
+        }
+
+        std::cout<<"Exception[ rank "<<msg_rank<<" ] : ";
+        raise(SIGINT);
+        break;
       }
 
       case FNSH:
       {
-          FINISHED = true;
-          break;
+        FINISHED = true;
+        break;
       }
 
       case RTBD:
@@ -474,13 +473,13 @@ Passive::passive_thread_func_(void * arg)
         Tag rcvTargetBufferTag;
         singlesided::BufferDescription rcvTargetBufferDesc;
         {
-            char * cPtr( msg_ptr.get() );
-            cPtr += serialization::deserialize
-                ( rcvTargetBufferTag, cPtr);
-            cPtr += serialization::deserialize
-                ( rcvTargetBufferDesc, cPtr);
+          char * cPtr( msg_ptr.get() );
+          cPtr += serialization::deserialize
+              ( rcvTargetBufferTag, cPtr);
+          cPtr += serialization::deserialize
+              ( rcvTargetBufferDesc, cPtr);
 
-            msg_ptr.reset( nullptr );
+          msg_ptr.reset( nullptr );
         }
 
         Key key(rcvTargetBufferTag,msg_rank);
@@ -495,7 +494,7 @@ Passive::passive_thread_func_(void * arg)
 
       case DATP:
       {
-          // make the same as DATE
+        // make the same as DATE
       }
 
       case DATE:
@@ -507,13 +506,13 @@ Passive::passive_thread_func_(void * arg)
 
           singlesided::BufferDescription remoteInfoBufferDesc;
           {
-              char * cPtr( msg_ptr.get() );
-              cPtr += serialization::deserialize
-                  ( g_requested_size, cPtr);
-              cPtr += serialization::deserialize
-                  ( remoteInfoBufferDesc, cPtr);
+            char * cPtr( msg_ptr.get() );
+            cPtr += serialization::deserialize
+                ( g_requested_size, cPtr);
+            cPtr += serialization::deserialize
+                ( remoteInfoBufferDesc, cPtr);
 
-              msg_ptr.reset( nullptr );
+            msg_ptr.reset( nullptr );
           }
 
           segment::Segment & _segment( pPassiveCommMan->_segment );
@@ -570,9 +569,6 @@ Passive::passive_thread_func_(void * arg)
         }
         pthread_mutex_unlock(&pPassiveCommMan->passive_fwd_recv_mutx_);
 
-
-
-
         pthread_mutex_lock(&pPassiveCommMan->passive_fwd_recv_mutx_);
         {
           if (!pPassiveCommMan->passive_fwd_recv_bool_)
@@ -602,38 +598,38 @@ Passive::passive_thread_func_(void * arg)
 bool
 Passive
   ::sendPassive( int msg_tag
-		       , const char * const pMessage
+               , const char * const pMessage
                , int srcSize
                , unsigned int destRank )
 {
-	//const unsigned long localOffset( PASSIVE_SENDBUF_OFF_ );
-	const int           size( (int)(srcSize + 2 * sizeof(int) ) );
-	const unsigned int  rank(destRank);
+  //const unsigned long localOffset( PASSIVE_SENDBUF_OFF_ );
+  const int           size( (int)(srcSize + 2 * sizeof(int) ) );
+  const unsigned int  rank(destRank);
 
-	char * g_ptr (_segment.allocator().allocate(size));
+  char * g_ptr (_segment.allocator().allocate(size));
 
-	int * const pMsgTag  = reinterpret_cast<int *> ( g_ptr + 0 * sizeof(int) );
-	int * const pMsgSize = reinterpret_cast<int *> ( g_ptr + 1 * sizeof(int) );
-	char * const pMsg    = reinterpret_cast<char *>( g_ptr + 2 * sizeof(int) );
+  int * const pMsgTag  = reinterpret_cast<int *> ( g_ptr + 0 * sizeof(int) );
+  int * const pMsgSize = reinterpret_cast<int *> ( g_ptr + 1 * sizeof(int) );
+  char * const pMsg    = reinterpret_cast<char *>( g_ptr + 2 * sizeof(int) );
 
-	*pMsgTag  = msg_tag;
-	*pMsgSize = srcSize;
+  *pMsgTag  = msg_tag;
+  *pMsgSize = srcSize;
 
-	memcpy( reinterpret_cast<void *>(pMsg)
-		  , reinterpret_cast<const void *>(pMessage)
-		  , srcSize );
+  memcpy( reinterpret_cast<void *>(pMsg)
+      , reinterpret_cast<const void *>(pMessage)
+      , srcSize );
 
-	GASPI_CHECK
-	  ( gaspi_passive_send
-	    ( _segment.id()
-	    , _segment.pointerToOffset(g_ptr)
-	    , rank
-	    , size
-	    , GASPI_BLOCK ) );
+  GASPI_CHECK
+    ( gaspi_passive_send
+      ( _segment.id()
+      , _segment.pointerToOffset(g_ptr)
+      , rank
+      , size
+      , GASPI_BLOCK ) );
 
-	_segment.allocator().deallocate(g_ptr,size);
+  _segment.allocator().deallocate(g_ptr,size);
 
-	return true;
+  return true;
 }
 
 std::unique_ptr<char>
@@ -643,37 +639,37 @@ Passive
    , int & size
    , int & srcRank )
 {
-    gaspi_rank_t  senderRank;
+  gaspi_rank_t  senderRank;
 
-    char * g_ptr (_segment.allocator().allocate(PASSIVE_SENDRECVBUF_SIZE_) );
+  char * g_ptr (_segment.allocator().allocate(PASSIVE_SENDRECVBUF_SIZE_) );
 
-    GASPI_CHECK
-      ( gaspi_passive_receive
-        ( _segment.id()
-        , _segment.pointerToOffset(g_ptr)
-        , &senderRank
-        , PASSIVE_SENDRECVBUF_SIZE_
-        , GASPI_BLOCK ) );
+  GASPI_CHECK
+    ( gaspi_passive_receive
+      ( _segment.id()
+      , _segment.pointerToOffset(g_ptr)
+      , &senderRank
+      , PASSIVE_SENDRECVBUF_SIZE_
+      , GASPI_BLOCK ) );
 
-    srcRank = senderRank;
+  srcRank = senderRank;
 
-	int * const  pMsgTag  = reinterpret_cast<int *> ( g_ptr + 0L * sizeof(int) );
-	int * const  pMsgSize = reinterpret_cast<int *> ( g_ptr + 1L * sizeof(int) );
-	char * const pMsgData = reinterpret_cast<char *>( g_ptr + 2L * sizeof(int) );
+  int * const  pMsgTag  = reinterpret_cast<int *> ( g_ptr + 0L * sizeof(int) );
+  int * const  pMsgSize = reinterpret_cast<int *> ( g_ptr + 1L * sizeof(int) );
+  char * const pMsgData = reinterpret_cast<char *>( g_ptr + 2L * sizeof(int) );
 
-	msg_tag = *pMsgTag;
-	size = *pMsgSize;
+  msg_tag = *pMsgTag;
+  size = *pMsgSize;
 
-	std::unique_ptr<char> pMsg( new char[size] );
+  std::unique_ptr<char> pMsg( new char[size] );
 
 
-    memcpy( reinterpret_cast<void *>(pMsg.get())
-          , reinterpret_cast<const void *>(pMsgData)
-          , size );
+  memcpy( reinterpret_cast<void *>(pMsg.get())
+        , reinterpret_cast<const void *>(pMsgData)
+        , size );
 
-	_segment.allocator().deallocate(g_ptr,PASSIVE_SENDRECVBUF_SIZE_);
+  _segment.allocator().deallocate(g_ptr,PASSIVE_SENDRECVBUF_SIZE_);
 
-	return pMsg;
+  return pMsg;
 }
 
 void

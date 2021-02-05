@@ -63,15 +63,15 @@ TEST_F(AlltoallTest, alltoall)
    std::size_t size(sizeof(int));
 
    char * gSource ( sourceSegment.allocator()
-                      .allocate(size * context.size().get() ) );
+                      .allocate(size * context.size() ) );
    char * gTarget ( targetSegment.allocator()
-                      .allocate(size * context.size().get() ) );
+                      .allocate(size * context.size() ) );
 
-   for( int i(0)
-      ;     i<context.size().get()
-      ;   ++i ) {
+   for( auto i(0UL)
+      ;      i<context.size()
+      ;    ++i ) {
      *(reinterpret_cast<int*>(gSource)+i) = context.rank().get()
-                                          * context.size().get()
+                                          * context.size()
                                           + i;
    }
 
@@ -82,19 +82,19 @@ TEST_F(AlltoallTest, alltoall)
            , size
            , context );
 
-   for( int i(0)
-     ;     i<context.size().get()
-     ;   ++i ) {
+   for( auto i(0UL)
+     ;      i<context.size()
+     ;    ++i ) {
      EXPECT_EQ( *(reinterpret_cast<int*>(gTarget)+i)
               , i
-              * context.size().get()
+              * context.size()
               + context.rank().get() );
    }
 
    sourceSegment.allocator()
-       .deallocate( gSource, size * context.size().get() );
+       .deallocate( gSource, size * context.size() );
    targetSegment.allocator()
-       .deallocate( gTarget, size * context.size().get() );
+       .deallocate( gTarget, size * context.size() );
 
 }
 
@@ -108,18 +108,18 @@ TEST_F(AlltoallTest, alltoallLoop)
    std::size_t size(sizeof(int));
 
    char * gSource ( sourceSegment.allocator()
-                     .allocate(size * context.size().get() ) );
+                     .allocate(size * context.size() ) );
    char * gTarget ( targetSegment.allocator()
-                     .allocate(size * context.size().get() ) );
+                     .allocate(size * context.size() ) );
 
    int const nLoop(10);
    for(int iLoop(0);iLoop<nLoop;++iLoop) {
 
-     for( int i(0)
-           ;     i<context.size().get()
-           ;   ++i ) {
+     for( auto i(0UL)
+        ;      i<context.size()
+        ;   ++i ) {
        *(reinterpret_cast<int*>(gSource)+i) = ( context.rank().get()
-                                              * context.size().get()
+                                              * context.size()
                                               + i ) * iLoop;
      }
 
@@ -130,20 +130,20 @@ TEST_F(AlltoallTest, alltoallLoop)
              , size
              , context );
 
-     for( int i(0)
-        ;     i<context.size().get()
-        ;   ++i ) {
+     for( auto i(0UL)
+        ;      i<context.size()
+        ;    ++i ) {
         EXPECT_EQ( *(reinterpret_cast<int*>(gTarget)+i)
                  , ( i
-                   * context.size().get()
+                   * context.size()
                    + context.rank().get() ) * iLoop );
       }
    }
 
    sourceSegment.allocator()
-      .deallocate( gSource, size * context.size().get() );
+      .deallocate( gSource, size * context.size() );
    targetSegment.allocator()
-      .deallocate( gTarget, size * context.size().get() );
+      .deallocate( gTarget, size * context.size() );
 
 }
 
@@ -162,29 +162,24 @@ TEST_F(AlltoallTest, alltoallv)
    segment::Segment targetSegment(1024);
 
    std::size_t elementSize(sizeof(int));
-   std::size_t sourceSize(elementSize * (context.size().get()+1)
-                                      * (context.size().get()+0) / 2);
-   std::size_t targetSize(elementSize * (context.size().get()+1)
-                                      * (context.size().get()+0) / 2);
-   std::size_t * sourceSizes(new std::size_t[context.size().get()]);
-   std::size_t * targetSizes(new std::size_t[context.size().get()]);
+   std::size_t sourceSize(elementSize * (context.size()+1)
+                                      * (context.size()+0) / 2);
+   std::size_t targetSize(elementSize * (context.size()+1)
+                                      * (context.size()+0) / 2);
+   std::size_t * sourceSizes(new std::size_t[context.size()]);
+   std::size_t * targetSizes(new std::size_t[context.size()]);
 
    char * gSource ( sourceSegment.allocator().allocate(sourceSize) );
    char * gTarget ( targetSegment.allocator().allocate(targetSize) );
 
    int k(0);
-   for( int i(0)
-      ;     i<context.size().get()
-      ;   ++i ) {
+   for( auto i(0UL)
+      ;      i<context.size()
+      ;    ++i ) {
      group::Rank rightNeighbour( ( context.rank().get()
-                                 + group::Rank(i).get()
-                                 + context.size().get()
-                                 + 1 ) % context.size().get() );
-
-     group::Rank leftNeighbour ( ( context.rank().get()
-                                 + group::Rank(i).get()
-                                 + context.size().get()
-                                 - 1 ) % context.size().get() );
+                                 + i
+                                 + context.size()
+                                 + 1 ) % context.size() );
 
      for( int j(0)
         ;     j<rightNeighbour.get()+1
@@ -196,7 +191,7 @@ TEST_F(AlltoallTest, alltoallv)
      }
 
      sourceSizes[i] = (rightNeighbour.get() + 1) * elementSize;
-     targetSizes[i] = (rightNeighbour.get()  + 1) * elementSize;
+     targetSizes[i] = (rightNeighbour.get() + 1) * elementSize;
    }
 
    alltoallv( gSource
@@ -207,10 +202,10 @@ TEST_F(AlltoallTest, alltoallv)
             , targetSizes
             , context );
 
-   for( int i(0)
-      ;     i< (context.size().get()+1)
-             * (context.size().get()+0) / 2
-      ;   ++i) {
+   for( auto i(0UL)
+      ;      i< (context.size()+1)
+              * (context.size()+0) / 2
+      ;    ++i) {
      EXPECT_EQ( reinterpret_cast<int*>(gTarget)[i]
               , reinterpret_cast<int*>(gSource)[i] );
    }
