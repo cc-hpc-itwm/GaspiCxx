@@ -91,8 +91,7 @@ namespace gaspi {
       std::vector<ElemType> expected;
       std::vector<ElemType> outputs(1);
 
-      auto size = group_all.size().get();
-      expected.push_back(elem * size);
+      expected.push_back(elem * group_all.size());
 
       allreduce.waitForSetup();
       allreduce.copyIn(inputs.data());
@@ -117,7 +116,7 @@ namespace gaspi {
       // fill in input buffer
       std::iota(inputs.begin(), inputs.end(), 1);
 
-      auto size = group_all.size().get();
+      auto size = group_all.size();
       std::transform(inputs.begin(), inputs.end(), expected.begin(),
                     [&size](int elem) { return elem * size; });
 

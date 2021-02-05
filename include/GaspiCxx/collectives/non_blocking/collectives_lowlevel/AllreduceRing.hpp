@@ -73,9 +73,9 @@ namespace gaspi
     : AllreduceCommon(segment, group, number_elements, reduction_op),
       source_buffers(),
       target_buffers(),
-      steps_per_stage(group.size().get()-1)
+      steps_per_stage(group.size()-1)
     {
-      auto const number_ranks = group.size().get();
+      auto const number_ranks = group.size();
 
       // neighbor ranks within the group
       auto const left_neighbor = (group.rank() - 1 + number_ranks) % number_ranks;
@@ -86,7 +86,7 @@ namespace gaspi
       auto const size_buffer = sizeof(T) * number_elements_buffer;
 
       // create buffers
-      for (auto i = 0; i < number_ranks; ++i)
+      for (auto i = 0UL; i < number_ranks; ++i)
       {
         source_buffers.push_back(
           std::make_unique<SourceBuffer>(segment, size_buffer));
@@ -95,7 +95,7 @@ namespace gaspi
       }
 
       // connect buffers
-      for (auto i = 0; i < number_ranks; ++i)
+      for (auto i = 0UL; i < number_ranks; ++i)
       {
         SourceBuffer::Tag source_tag = i;
         TargetBuffer::Tag target_tag = i;
@@ -130,7 +130,7 @@ namespace gaspi
     template<typename T>
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::triggerProgressImpl()
     {
-      auto const number_ranks = group.size().get();
+      auto const number_ranks = group.size();
 
       send_buffer_index = (send_buffer_index + 1) % number_ranks;
       receive_buffer_index = (receive_buffer_index + 1) % number_ranks;
@@ -225,7 +225,7 @@ namespace gaspi
     template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::algorithm_reset_state()
     {
-      auto const number_ranks = group.size().get();
+      auto const number_ranks = group.size();
 
       current_step = 0;
       receive_buffer_index = group.rank().get();
