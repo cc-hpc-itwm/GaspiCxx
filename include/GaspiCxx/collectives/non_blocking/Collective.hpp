@@ -14,5 +14,21 @@ public:
 
 };
 
+class RootedSendCollective : public Collective
+{
+public:
+
+  virtual void start() = 0;
+
+};
+
+class RootedReceiveCollective : public Collective
+{
+public:
+
+  virtual void waitForCompletion() = 0;
+
+};
+
 }
 }

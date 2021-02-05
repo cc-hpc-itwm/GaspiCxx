@@ -41,6 +41,8 @@ public:
     FINISHED        // communication finished and ready to read out results
   };
 
+  static auto const NO_DATA = nullptr;
+
   CollectiveLowLevel();
   virtual ~CollectiveLowLevel() = default;
 
