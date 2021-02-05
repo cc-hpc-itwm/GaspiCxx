@@ -26,7 +26,7 @@ main
   double aggregate_init_time = 0.0;
   double aggregate_wait_time = 0.0;
 
-  gaspi::Runtime runtime;
+  gaspi::initGaspiCxx();
 
   gaspi::Context context;
 

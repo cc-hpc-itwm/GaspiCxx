@@ -47,31 +47,22 @@ RuntimeBase
   GASPI_CHECK_NOTHROW(gaspi_proc_term(GASPI_BLOCK));
 }
 
-static Runtime * pGRuntime = nullptr;
-
 Runtime
   ::Runtime
    ()
 : RuntimeBase()
 , Context()
-, _psegment()
+, _segmentSize(1024*1024)
+, _psegment(std::make_unique<segment::Segment>(_segmentSize))
+, _ppassive(std::make_unique<passive::Passive>( *_psegment
+                                              , *this ) )
+{ }
+
+void
+Runtime
+  ::synchCurrentWorkingDirectory
+    ()
 {
-
-  if( pGRuntime != nullptr ) {
-    throw std::runtime_error
-      (CODE_ORIGIN + "Only a single Instance allowed at a time");
-  }
-  pGRuntime = this;
-
-  gaspi_size_t       segmentSize(1024*1024);
-
-  _psegment.reset
-    ( new segment::Segment(segmentSize) );
-
-  _ppassive.reset
-    ( new passive::Passive( *_psegment
-                          , *this ) );
-
   if(rank() == group::Rank(0)) {
 
     std::string const dir(getCurrentWorkingDirectory());
@@ -98,34 +89,29 @@ Runtime
     setCurrentWorkingDirectory(dir);
 
   }
-
 }
 
+Runtime &
 Runtime
-  ::~Runtime
-   ()
+  ::getRuntime
+    ()
 {
-  _ppassive.reset( nullptr );
-
-  _psegment.reset( nullptr );
-
-  pGRuntime = nullptr;
-}
-
-bool
-isRuntimeAvailable()
-{
-  return !(pGRuntime == nullptr);
+  static auto instance = new Runtime();
+  return *instance;
 }
 
 Runtime &
 getRuntime()
 {
-  if( pGRuntime == nullptr ) {
-    throw std::runtime_error
-      (CODE_ORIGIN + "Runtime has not been initialized yet");
-  }
-  return *pGRuntime;
+  return Runtime::getRuntime();
+}
+
+void
+initGaspiCxx()
+{
+  // Initialize GPI, create management segment
+  // and setup passive communication
+  Runtime::getRuntime();
 }
 
 } // namespace gaspi
