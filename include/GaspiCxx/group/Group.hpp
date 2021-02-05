@@ -22,8 +22,10 @@
 #ifndef GROUP_HPP_
 #define GROUP_HPP_
 
+#include <GaspiCxx/group/Rank.hpp>
+
 #include <memory>
-#include <set>
+#include <vector>
 
 extern "C" {
 #include <GASPI.h>
@@ -32,14 +34,15 @@ extern "C" {
 namespace gaspi {
 namespace group {
 
-class Rank;
+using GlobalRank = unsigned short;
 
 class Group
 {
   private:
 
-    //! The group of ranks that constitute the interface
-    std::unique_ptr<gaspi_group_t> _pgroup;
+    //! The group of global ranks
+    std::vector<GlobalRank> const _group;
+    Rank _group_rank;
 
   public:
 
@@ -47,39 +50,36 @@ class Group
       ();
 
     Group
-      (Group &&);
-
-    Group
-      (std::set<gaspi_rank_t> const &);
+      (std::vector<GlobalRank> const &);
 
     virtual
-    ~Group();
+    ~Group() = default;
 
-    gaspi_group_t const &
+    std::vector<GlobalRank> const &
     group
       () const;
 
-    Rank
+    std::size_t
     size
       () const;
 
-//    bool
-//    contains
-//      () const;
+    bool
+    contains_rank
+      (GlobalRank const &) const;
 
+    // returns a Rank between [0, size-1] that corresponds to
+    // the global GlobalRank of the current process
     Rank
     rank() const;
+
+    GlobalRank
+    toGlobalRank
+      ( Rank const & );
+
+    Rank
+    toGroupRank
+      ( GlobalRank const & );
 };
-
-gaspi_rank_t
-groupToGlobalRank
-  ( Group const & group
-  , Rank const & rank );
-
-Rank
-globalToGroupRank
-  ( Group const & group
-  , gaspi_rank_t const & rank );
 
 } /* namespace group */
 } /* namespace gaspi */

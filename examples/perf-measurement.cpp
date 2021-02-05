@@ -46,14 +46,14 @@ main
   gaspi::singlesided::write::TargetBuffer rh2(segment2,size);
 
   gaspi::group::Rank rightNeighbour
-    ( ( context.rank().get()
-      + context.size().get()
-      + 1 ) % context.size().get() );
+    ( ( context.rank()
+      + context.size()
+      + 1 ) % context.size() );
 
   gaspi::group::Rank leftNeighbour
-    ( ( context.rank().get()
-      + context.size().get()
-      - 1 ) % context.size().get() );
+    ( ( context.rank()
+      + context.size()
+      - 1 ) % context.size() );
 
   int lb1_tag(1);
   int rb1_tag(2);

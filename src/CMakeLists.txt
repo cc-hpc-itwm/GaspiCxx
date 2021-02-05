@@ -7,7 +7,6 @@ add_library ( GaspiCxx
               Context.cpp 
 	      Runtime.cpp
 	      collectives/Allgather.cpp
-	      collectives/Allreduce.cpp
 	      collectives/Alltoall.cpp
 	      group/Group.cpp
 	      group/Rank.cpp

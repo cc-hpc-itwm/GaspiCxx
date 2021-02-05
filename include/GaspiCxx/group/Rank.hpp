@@ -42,6 +42,10 @@ public:
   Rank
     ( Type rank );
 
+  Rank
+    ( Rank const&) = default;
+  ~Rank() = default;
+
   Type
   get
     () const;
@@ -72,6 +76,9 @@ public:
 
   Rank
   operator%(Rank const & other) const;
+
+  Rank
+  operator%(int const & other) const;
 
   bool
   operator==( Rank const & other ) const;

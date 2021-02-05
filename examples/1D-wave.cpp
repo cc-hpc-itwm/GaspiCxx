@@ -76,7 +76,7 @@ class Field1D {
       , gaspi::segment::Segment & segment
       , gaspi::Context & context )
     : _nInner1D
-        (UniformPartition<int>(0,nInner1D,context.size().get())
+        (UniformPartition<int>(0,nInner1D,context.size())
            .size(context.rank().get()))
     , _nBound1D
         (nBound1D)
@@ -294,7 +294,7 @@ main
     unew.waitForHalos();
   }
 
-  for(int i(0);i<context.size().get();++i) {
+  for(auto i(0UL);i<context.size();++i) {
     if(context.rank() == gaspi::group::Rank(i)) {
       for(int ix(0);ix<250;++ix) {
         std::cout << (*pFields[0])[4+ix] << std::endl;

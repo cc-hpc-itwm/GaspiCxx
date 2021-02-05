@@ -63,15 +63,15 @@ Runtime
   ::synchCurrentWorkingDirectory
     ()
 {
-  if(rank() == group::Rank(0)) {
+  if(group().toGlobalRank(rank()) == group::GlobalRank(0)) {
 
     std::string const dir(getCurrentWorkingDirectory());
 
-    for( group::Rank targetRank(1);targetRank < size(); ++targetRank) {
+    for( group::GlobalRank targetRank(1);targetRank < size(); ++targetRank) {
       _ppassive->sendMessg
         ( dir.c_str()
         , dir.size()
-        , targetRank.get() );
+        , targetRank );
     }
   }
   else {

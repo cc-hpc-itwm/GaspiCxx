@@ -40,7 +40,7 @@ class MemoryManagerTest : public ::testing::Test
 
   ~MemoryManagerTest()
   {
-    delete[] reinterpret_cast<char* const>(_memory_block_pointer);
+    delete[] reinterpret_cast<char*>(_memory_block_pointer);
   }
 };
 

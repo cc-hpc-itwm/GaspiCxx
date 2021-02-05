@@ -74,8 +74,8 @@ class SourceBuffer : public Endpoint {
     Endpoint::ConnectHandle
     connectToRemoteTarget
       ( Context & context
-      , group::Rank & rank
-      , Tag & tag );
+      , group::Rank const& rank
+      , Tag const& tag );
 
     void
     initTransfer

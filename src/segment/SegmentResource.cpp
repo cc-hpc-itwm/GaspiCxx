@@ -121,7 +121,7 @@ SegmentResource
 void
 SegmentResource
   ::remoteRegistration
-   ( Rank rank )
+   ( group::GlobalRank const& rank )
 {
   GASPI_CHECK
       ( gaspi_segment_register ( _segmentId
