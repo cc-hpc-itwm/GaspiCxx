@@ -56,6 +56,7 @@ Runtime
 , _psegment(std::make_unique<segment::Segment>(_segmentSize))
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
+, _pengine(std::make_unique<ProgressEngine>())
 { }
 
 void
