@@ -23,182 +23,138 @@
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
+#include <algorithm>
+#include <numeric>
+#include <unordered_set>
+
 namespace gaspi {
 namespace group {
 
 namespace detail {
 
-std::set<gaspi_rank_t>
-generate_group_all_set()
+std::vector<GlobalRank>
+generate_group_all()
 {
-  std::set<gaspi_rank_t> group_all_set;
-
   gaspi_rank_t nProc;
   GASPI_CHECK( gaspi_proc_num(&nProc) );
+  std::vector<GlobalRank> group_all(nProc);
 
-  for( gaspi_rank_t iProc(0)
-     ;              iProc < nProc
-     ;            ++iProc ) {
-    group_all_set.insert(iProc);
-  }
+  std::iota(group_all.begin(), group_all.end(), 0);
+  return group_all;
+}
 
-  return group_all_set;
+GlobalRank
+generate_current_rank()
+{
+  gaspi_rank_t global_rank;
+  GASPI_CHECK
+    (gaspi_proc_rank(&global_rank) );
+  return GlobalRank(global_rank);
 }
 
 } /* namespace detail */
 
 Group
   ::Group()
-: Group( detail::generate_group_all_set() )
+: Group( detail::generate_group_all() )
 { }
 
 Group
-  ::Group( std::set<gaspi_rank_t> const & group_ranks )
-: _pgroup(new gaspi_group_t)
+  ::Group( std::vector<GlobalRank> const & group_ranks )
+: _group(group_ranks.begin(), group_ranks.end()),
+  _group_rank(0)
 {
-
-  GASPI_CHECK
-    ( gaspi_group_create(_pgroup.get()) );
-
-  for( auto rank : group_ranks ) {
-    GASPI_CHECK
-      (gaspi_group_add( *_pgroup, rank ) );
+  if (_group.size() == 0)
+  {
+    throw std::runtime_error(CODE_ORIGIN + "Cannot create empty group");
   }
 
-  if( group_ranks.size() > 1 ) {
-    GASPI_CHECK
-      (gaspi_group_commit(*_pgroup,GASPI_BLOCK));
+  std::unordered_set<GlobalRank> unique_ranks(group_ranks.begin(), group_ranks.end());
+  if (unique_ranks.size() != group_ranks.size())
+  {
+    throw std::runtime_error(CODE_ORIGIN + "Cannot create group containing duplicated ranks");
   }
 
+  auto const global_rank = detail::generate_current_rank();
+  auto const iter = std::find(_group.begin(), _group.end(), global_rank);
+  if (iter == _group.end())
+  {
+    throw std::runtime_error
+      (CODE_ORIGIN + "Current rank does not belong to group");
+  }
+  _group_rank = Rank(std::distance(_group.begin(), iter));
 }
 
-Group
-  ::Group(Group && other)
-: _pgroup(other._pgroup.release())
-{}
-
-Group
-  ::~Group()
-{
-  if(static_cast<bool>(_pgroup)) {
-    GASPI_CHECK_NOTHROW
-      (gaspi_group_delete(*_pgroup));
-  }
-}
-
-gaspi_group_t const &
+std::vector<GlobalRank> const &
 Group
   ::group() const
 {
-  if(!static_cast<bool>(_pgroup)) {
-    throw std::runtime_error
-      (CODE_ORIGIN+"Group not active");
-  }
-  return *_pgroup;
+  return _group;
 }
 
-Rank
+std::size_t
 Group
   ::size() const
 {
-
-  if(!static_cast<bool>(_pgroup)) {
-    throw std::runtime_error
-    (CODE_ORIGIN+"Group not active");
-  }
-
-  gaspi_number_t group_size;
-  GASPI_CHECK
-    ( gaspi_group_size ( *_pgroup, &group_size ) );
-
-  return Rank(group_size);
+  return _group.size();
 }
 
 Rank
 Group
   ::rank() const
 {
-  std::unique_ptr<gaspi_rank_t[]> ranksInGroup
-    (new gaspi_rank_t[size().get()]);
-
-  GASPI_CHECK
-    (gaspi_group_ranks
-       ( group()
-       , ranksInGroup.get()));
-
-  gaspi_rank_t globalRank;
-
-  GASPI_CHECK
-    (gaspi_proc_rank(&globalRank) );
-
-  Rank::Type groupRank ( 0 );
-  while(globalRank != ranksInGroup[groupRank]) {
-    groupRank++;
-  }
-
-  return Rank(groupRank);
+  return _group_rank;
 }
 
-gaspi_rank_t
-groupToGlobalRank
- ( Group const & group
- , Rank  const & rank )
+bool
+Group
+  ::contains_rank(GlobalRank const& global_rank) const
 {
-  if( (rank >= group.size()) ||
-      (rank < Rank(0)) ) {
+  auto const iter = std::find(_group.begin(), _group.end(), global_rank);
+  return iter != _group.end();
+}
+
+GlobalRank
+Group
+  ::toGlobalRank
+ ( Rank  const & group_rank )
+{
+  if(group_rank.get() >= size())
+  {
     std::stringstream ss;
 
-    ss << "Invalid group Rank "
-       << rank.get()
+    ss << "Invalid group GlobalRank "
+       << group_rank.get()
        << ". Allowed range [0,"
-       << group.size().get()
+       << size()
        <<")!";
 
     throw std::runtime_error
     (CODE_ORIGIN+ss.str());
   }
 
-  std::unique_ptr<gaspi_rank_t[]> ranksInGroup
-    (new gaspi_rank_t[group.size().get()]);
-
-  GASPI_CHECK
-    (gaspi_group_ranks(group.group(), ranksInGroup.get()));
-
-  return ranksInGroup[rank.get()];
+  return group()[group_rank.get()];
 }
 
 Rank
-globalToGroupRank
- ( Group const & group
- , gaspi_rank_t  const & rank )
+Group
+  ::toGroupRank
+ ( GlobalRank const & global_rank )
 {
-
-  std::unique_ptr<gaspi_rank_t[]> ranksInGroup
-    (new gaspi_rank_t[group.size().get()]);
-
-
-  GASPI_CHECK
-    (gaspi_group_ranks
-       ( group.group()
-       , ranksInGroup.get()));
-
-  Rank groupRank (0);
-  while(rank != ranksInGroup[groupRank.get()]) {
-     ++groupRank;
+  auto const iter = std::find(group().begin(), group().end(),
+                              global_rank);
+  if (iter != group().end())
+  {
+    return Rank(std::distance(group().begin(), iter));
   }
 
-  if(groupRank == group.size()) {
-    std::stringstream ss;
+  std::stringstream ss;
+  ss << "Global GlobalRank "
+     << global_rank
+     << " not part of group!";
 
-    ss << "Global Rank "
-       << rank
-       << " not part of group!";
-
-    throw std::runtime_error
-      (CODE_ORIGIN+ss.str());
-  }
-
-  return groupRank;
+  throw std::runtime_error
+    (CODE_ORIGIN+ss.str());
 }
 
 

@@ -92,7 +92,7 @@ TEST_F(PassiveTest, SendMessg)
 
    if( getRuntime().rank() == group::Rank(0) ) {
 
-     int nRecv( getRuntime().size().get() - 1 );
+     int nRecv( getRuntime().size() - 1 );
 
      for(int iRecv(0)
         ;    iRecv<nRecv
@@ -138,9 +138,9 @@ TEST_F(PassiveTest, iSendRecvTest)
 
    using Buffer = singlesided::write::TargetBuffer;
 
-   if( getRuntime().rank().get() == 0 ) {
+   if( getRuntime().rank() == group::Rank(0) ) {
 
-     int nRecv( getRuntime().size().get() - 1 );
+     int nRecv( getRuntime().size() - 1 );
 
      for(int iRecv(0)
         ;    iRecv<nRecv

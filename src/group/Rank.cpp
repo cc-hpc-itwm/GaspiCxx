@@ -98,6 +98,11 @@ Rank
   return Rank(this->get()%other.get());
 }
 
+Rank
+Rank
+  ::operator%(int const & other) const {
+  return Rank(this->get()%other);
+}
 
 bool
 Rank

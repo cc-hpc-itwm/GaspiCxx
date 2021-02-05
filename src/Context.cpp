@@ -32,33 +32,20 @@ Context
   ::Context
     ()
 : Context(group::Group())
-{
-
-}
+{ }
 
 Context
   ::Context
-    (group::Group && group)
-: _rank(0)
-, _pGroup(std::make_unique<group::Group>(std::move(group)))
+    (group::Group const& group)
+: _group(group)
 , _pQueue(std::make_unique<singlesided::Queue>())
-{
-  GASPI_CHECK
-    (gaspi_proc_rank(&_rank));
-}
+{ }
 
-Context
-  ::~Context
-   ()
-{
-
-}
-
-group::Group const &
+group::Group
 Context
   ::group() const
 {
-  return *_pGroup;
+  return _group;
 }
 
 /// Returns the rank of this process in the communicator
@@ -67,16 +54,16 @@ Context
   ::rank
     () const
 {
-  return _pGroup->rank();
+  return _group.rank();
 }
 
 /// Returns the size of this communicator
-group::Rank
+std::size_t
 Context
   ::size
     () const
 {
-  return _pGroup->size();
+  return _group.size();
 }
 
 void
@@ -286,9 +273,17 @@ Context
   ::barrier
     () const
 {
-  if(size().get() > 1) {
+  // FIXME: replace with group-level, custom barrier
+  if(size() > 1) {
+    gaspi_rank_t nProc;
+    GASPI_CHECK( gaspi_proc_num(&nProc) );
+    if (size() != nProc)
+    {
+      throw std::runtime_error(
+        "[Contxt::barrier] cannot execute barrier on a subgroup ranks.");
+    }
     GASPI_CHECK
-      (gaspi_barrier(_pGroup->group(), GASPI_BLOCK));
+      (gaspi_barrier(GASPI_GROUP_ALL, GASPI_BLOCK));
   }
 }
 

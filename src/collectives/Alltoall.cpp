@@ -47,38 +47,33 @@ alltoall
   // generate sourceBuffer description for every
 
   std::vector<singlesided::BufferDescription>
-        localSourceDescriptions(context.size().get());
+        localSourceDescriptions(context.size());
   std::vector<singlesided::BufferDescription>
-        localTargetDescriptions(context.size().get());
+        localTargetDescriptions(context.size());
   std::vector<singlesided::BufferDescription>
-        remoteSourceDescriptions(context.size().get());
+        remoteSourceDescriptions(context.size());
   std::vector<singlesided::BufferDescription>
-        remoteTargetDescriptions(context.size().get());
+        remoteTargetDescriptions(context.size());
 
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionSendBuffers( context.size().get() );
+      descriptionSendBuffers( context.size() );
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionRecvBuffers( context.size().get() );
+      descriptionRecvBuffers( context.size() );
 
-  for( int i(0)
-     ;     i<context.size().get()
-     ;   ++i ) {
+  for( auto i(0UL)
+     ;      i<context.size()
+     ;    ++i ) {
 
     group::Rank iGroup(i);
 
-    gaspi_rank_t const iGlobalRank
-      (group::groupToGlobalRank
-         ( context.group()
-         , iGroup ) );
+    auto const iGlobalRank(context.group().toGlobalRank( iGroup ) );
 
     sourceSegment.remoteRegistration( iGlobalRank );
     targetSegment.remoteRegistration( iGlobalRank );
 
     {
       localSourceDescriptions[i].rank()
-          = group::groupToGlobalRank
-              ( context.group()
-              , context.rank() );
+          = context.group().toGlobalRank( context.rank() );
       localSourceDescriptions[i].segmentId()
           = sourceSegment.id();
       localSourceDescriptions[i].offset()
@@ -92,9 +87,7 @@ alltoall
 
     {
       localTargetDescriptions[i].rank()
-          = group::groupToGlobalRank
-              ( context.group()
-              , context.rank() );
+          = context.group().toGlobalRank( context.rank() );
       localTargetDescriptions[i].segmentId()
           = targetSegment.id();
       localTargetDescriptions[i].offset()
@@ -135,9 +128,9 @@ alltoall
       , *descriptionRecvBuffers[i] );
   }
 
-  for(int i(0)
-     ;    i<context.size().get()
-     ;  ++i) {
+  for(auto i(0UL)
+     ;     i<context.size()
+     ;   ++i) {
 
     descriptionRecvBuffers[i]->waitForNotification();
     {
@@ -153,9 +146,9 @@ alltoall
   }
 
   // release notifications of target segment;
-  for(int i(0)
-     ;    i<context.size().get()
-     ;  ++i) {
+  for(auto i(0UL)
+     ;     i<context.size()
+     ;   ++i) {
 
     context.waitForBufferNotification(localTargetDescriptions[i]);
 
@@ -165,9 +158,9 @@ alltoall
       (localTargetDescriptions[i].notificationId());
   }
 
-  for(int i(0)
-     ;    i<context.size().get()
-     ;  ++i) {
+  for(auto i(0UL)
+     ;     i<context.size()
+     ;   ++i) {
 
     context.waitForBufferNotification(localSourceDescriptions[i]);
 
@@ -196,41 +189,36 @@ alltoallv
   // generate sourceBuffer description for every
 
   std::vector<singlesided::BufferDescription>
-        localSourceDescriptions(context.size().get());
+        localSourceDescriptions(context.size());
   std::vector<singlesided::BufferDescription>
-        localTargetDescriptions(context.size().get());
+        localTargetDescriptions(context.size());
   std::vector<singlesided::BufferDescription>
-        remoteSourceDescriptions(context.size().get());
+        remoteSourceDescriptions(context.size());
   std::vector<singlesided::BufferDescription>
-        remoteTargetDescriptions(context.size().get());
+        remoteTargetDescriptions(context.size());
 
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionSendBuffers( context.size().get() );
+      descriptionSendBuffers( context.size() );
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionRecvBuffers( context.size().get() );
+      descriptionRecvBuffers( context.size() );
 
   std::size_t sourceOffset(0);
   std::size_t targetOffset(0);
 
-  for( int i(0)
-     ;     i<context.size().get()
-     ;   ++i ) {
+  for( auto i(0UL)
+     ;      i<context.size()
+     ;    ++i ) {
 
     group::Rank iGroup(i);
 
-    gaspi_rank_t const iGlobalRank
-      (group::groupToGlobalRank
-         ( context.group()
-         , iGroup ) );
+    auto const iGlobalRank(context.group().toGlobalRank( iGroup ) );
 
     sourceSegment.remoteRegistration( iGlobalRank );
     targetSegment.remoteRegistration( iGlobalRank );
 
     {
       localSourceDescriptions[i].rank()
-          = group::groupToGlobalRank
-              ( context.group()
-              , context.rank() );
+          = context.group().toGlobalRank( context.rank() );
       localSourceDescriptions[i].segmentId()
           = sourceSegment.id();
       localSourceDescriptions[i].offset()
@@ -246,9 +234,7 @@ alltoallv
 
     {
       localTargetDescriptions[i].rank()
-          = group::groupToGlobalRank
-              ( context.group()
-              , context.rank() );
+          = context.group().toGlobalRank( context.rank() );
       localTargetDescriptions[i].segmentId()
           = targetSegment.id();
       localTargetDescriptions[i].offset()
@@ -291,9 +277,9 @@ alltoallv
       , *descriptionRecvBuffers[i] );
   }
 
-  for(int i(0)
-     ;    i<context.size().get()
-     ;  ++i) {
+  for(auto i(0UL)
+     ;     i<context.size()
+     ;   ++i) {
 
     descriptionRecvBuffers[i]->waitForNotification();
     {
@@ -309,9 +295,9 @@ alltoallv
   }
 
   // release notifications of target segment;
-  for(int i(0)
-     ;    i<context.size().get()
-     ;  ++i) {
+  for(auto i(0UL)
+     ;     i<context.size()
+     ;   ++i) {
 
     context.waitForBufferNotification(localTargetDescriptions[i]);
 
@@ -321,9 +307,9 @@ alltoallv
       (localTargetDescriptions[i].notificationId());
   }
 
-  for(int i(0)
-     ;    i<context.size().get()
-     ;  ++i) {
+  for(auto i(0UL)
+     ;     i<context.size()
+     ;   ++i) {
 
     context.waitForBufferNotification(localSourceDescriptions[i]);
 

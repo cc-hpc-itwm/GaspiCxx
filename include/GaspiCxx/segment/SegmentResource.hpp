@@ -22,6 +22,7 @@
 #ifndef SEGMENT_RESOURCE_HPP_
 #define SEGMENT_RESOURCE_HPP_
 
+#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/segment/SegmentManager.hpp>
 #include <GaspiCxx/segment/Types.hpp>
 #include <GaspiCxx/type_defs.hpp>
@@ -49,7 +50,7 @@ class SegmentResource
 
     void
     remoteRegistration
-      ( Rank );
+      ( group::GlobalRank const&);
 
     static SegmentID
     getFreeLocalSegmentId();

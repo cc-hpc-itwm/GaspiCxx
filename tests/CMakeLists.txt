@@ -5,7 +5,6 @@ add_executable ( GaspiCxxTests
       run_tests.cpp
       GlobalTestConfiguration.cpp
       AllgatherTest.cpp
-      AllreduceTest.cpp
       AlltoallTest.cpp
       PassiveTest.cpp
       SegmentMemoryManagerTest.cpp 
