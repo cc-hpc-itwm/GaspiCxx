@@ -3,6 +3,7 @@
 #include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/non_blocking/Allreduce.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRing.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/Context.hpp>
