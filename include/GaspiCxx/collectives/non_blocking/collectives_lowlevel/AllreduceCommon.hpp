@@ -15,6 +15,11 @@ namespace gaspi
       AVERAGE,
     };
 
+    enum class AllreduceAlgorithm
+    {
+      RING,
+    };
+
     class AllreduceCommon : public CollectiveLowLevel
     {
       public:
@@ -30,5 +35,9 @@ namespace gaspi
         std::size_t number_elements;
         ReductionOp reduction_op;
     };
+
+    template<typename T, AllreduceAlgorithm Algorithm>
+    class AllreduceLowLevel : public AllreduceCommon
+    { };
   }
 }

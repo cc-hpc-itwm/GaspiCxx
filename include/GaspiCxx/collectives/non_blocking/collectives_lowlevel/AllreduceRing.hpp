@@ -16,15 +16,6 @@ namespace gaspi
 {
   namespace collectives
   {
-    enum class AllreduceAlgorithm
-    {
-      RING,
-    };
-
-    template<typename T, AllreduceAlgorithm Algorithm>
-    class AllreduceLowLevel : public AllreduceCommon
-    { };
-
     template<typename T>
     class AllreduceLowLevel<T, AllreduceAlgorithm::RING> : public AllreduceCommon
     {

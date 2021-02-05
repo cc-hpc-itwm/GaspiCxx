@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GaspiCxx/collectives/non_blocking/Collective.hpp>
-#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceLowLevel.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceCommon.hpp>
 
 namespace gaspi
 {
