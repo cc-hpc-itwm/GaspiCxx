@@ -25,6 +25,7 @@ add_library ( GaspiCxx
               utility/Filesystem.cpp
               utility/LockGuard.cpp
               utility/serialization.cpp
+              collectives/Barrier.cpp
               collectives/non_blocking/collectives_lowlevel/AllreduceCommon.cpp
               collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.cpp
               progress_engine/RoundRobinDedicatedThread.cpp
