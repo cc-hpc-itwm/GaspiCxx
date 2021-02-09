@@ -75,34 +75,37 @@ namespace gaspi
       target_buffers(),
       steps_per_stage(group.size()-1)
     {
-      auto const number_ranks = group.size();
-
-      // neighbor ranks within the group
-      auto const left_neighbor = (group.rank() - 1 + number_ranks) % number_ranks;
-      auto const right_neighbor = (group.rank() + 1) % number_ranks;
-
-      auto const number_elements_buffer = number_elements / number_ranks +
-                                          (number_elements % number_ranks != 0 ? 1 : 0);
-      auto const size_buffer = sizeof(T) * number_elements_buffer;
-
-      // create buffers
-      for (auto i = 0UL; i < number_ranks; ++i)
+      if (number_elements > 0 && steps_per_stage > 0)
       {
-        source_buffers.push_back(
-          std::make_unique<SourceBuffer>(segment, size_buffer));
-        target_buffers.push_back(
-          std::make_unique<TargetBuffer>(segment, size_buffer));
-      }
+        auto const number_ranks = group.size();
 
-      // connect buffers
-      for (auto i = 0UL; i < number_ranks; ++i)
-      {
-        SourceBuffer::Tag source_tag = i;
-        TargetBuffer::Tag target_tag = i;
-        source_handles.push_back(
-          source_buffers[i]->connectToRemoteTarget(context, left_neighbor, source_tag));
-        target_handles.push_back(
-          target_buffers[i]->connectToRemoteSource(context, right_neighbor, target_tag));
+        // neighbor ranks within the group
+        auto const left_neighbor = (group.rank() - 1 + number_ranks) % number_ranks;
+        auto const right_neighbor = (group.rank() + 1) % number_ranks;
+
+        auto const number_elements_buffer = number_elements / number_ranks +
+                                            (number_elements % number_ranks != 0 ? 1 : 0);
+        auto const size_buffer = sizeof(T) * number_elements_buffer;
+
+        // create buffers
+        for (auto i = 0UL; i < number_ranks; ++i)
+        {
+          source_buffers.push_back(
+            std::make_unique<SourceBuffer>(segment, size_buffer));
+          target_buffers.push_back(
+            std::make_unique<TargetBuffer>(segment, size_buffer));
+        }
+
+        // connect buffers
+        for (auto i = 0UL; i < number_ranks; ++i)
+        {
+          SourceBuffer::Tag source_tag = i;
+          TargetBuffer::Tag target_tag = i;
+          source_handles.push_back(
+            source_buffers[i]->connectToRemoteTarget(context, left_neighbor, source_tag));
+          target_handles.push_back(
+            target_buffers[i]->connectToRemoteSource(context, right_neighbor, target_tag));
+        }
       }
       algorithm_reset_state();
     }
@@ -130,6 +133,11 @@ namespace gaspi
     template<typename T>
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::triggerProgressImpl()
     {
+      if (algorithm_is_finished())
+      {
+        return true;
+      }
+
       auto const number_ranks = group.size();
 
       send_buffer_index = (send_buffer_index + 1) % number_ranks;
@@ -211,7 +219,9 @@ namespace gaspi
     template<typename T>
     auto AllreduceLowLevel<T, AllreduceAlgorithm::RING>::algorithm_get_current_stage()
     {
-      return (current_step / steps_per_stage == 0)? RingStage::REDUCE : RingStage::GATHER;
+      return ((steps_per_stage > 0)
+             && (current_step / steps_per_stage == 0))
+             ? RingStage::REDUCE : RingStage::GATHER;
     }
 
     template<typename T>
