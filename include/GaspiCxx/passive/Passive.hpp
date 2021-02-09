@@ -126,7 +126,7 @@ class Passive
                , int size
                , unsigned int destRank );
 
-    std::unique_ptr<char>
+    std::unique_ptr<char[]>
     recvPassive( int & msg_tag
                , int & size
                , int & srcRank );
