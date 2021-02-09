@@ -161,6 +161,13 @@ namespace gaspi
       }
 
       current_step++;
+
+      // acknowledge data transfer in the last step
+      if (algorithm_is_finished())
+      {
+        target_buffers[receive_buffer_index]->ackTransfer(context);
+        source_buffers[send_buffer_index]->waitForTransferAck();
+      }
       return algorithm_is_finished();
     }
 
@@ -239,7 +246,7 @@ namespace gaspi
 
       current_step = 0;
       receive_buffer_index = group.rank().get();
-      send_buffer_index = (receive_buffer_index - 1 + number_ranks) % number_ranks;
+      send_buffer_index = (number_ranks + receive_buffer_index - 1) % number_ranks;
     }
 
     template<typename T>
