@@ -8,6 +8,7 @@
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/Context.hpp>
 
+#include <numeric>
 #include <stdexcept>
 #include <vector>
 
