@@ -8,7 +8,6 @@ namespace gaspi
                                      std::size_t number_elements,
                                      gaspi::group::Rank const& root_rank)
     : segment(segment),
-      group(group),
       context(group),
       number_elements(number_elements),
       root_rank(root_rank)

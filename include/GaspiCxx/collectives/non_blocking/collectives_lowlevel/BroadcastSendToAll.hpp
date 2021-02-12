@@ -37,13 +37,13 @@ namespace gaspi
         gaspi::group::Rank root;
         std::size_t number_ranks;
         std::size_t buffer_size_bytes;
-        void * source_memory;
+        void* source_memory;
 
         std::vector<std::unique_ptr<SourceBuffer>> source_buffers;
         std::unique_ptr<TargetBuffer> target_buffer;
 
         std::vector<ConnectHandle> source_handles;
-        ConnectHandle target_handle;
+        std::unique_ptr<ConnectHandle> target_handle;
 
         void waitForSetupImpl() override;
         void copyInImpl(void*) override;
@@ -55,86 +55,17 @@ namespace gaspi
         // implementation details
         void check_root_is_in_group() const;
         std::vector<gaspi::group::Rank> generate_non_root_ranks() const;
-        void create_and_connect_first_source_buffer(gaspi::segment::Segment&,
-                                                    std::size_t,
-                                                    gaspi::group::Rank const&) const;
+        void create_and_connect_first_source_buffer(
+          gaspi::segment::Segment&,
+          std::size_t,
+          gaspi::group::Rank const&);
         void create_and_connect_remaining_source_buffers(
-            gaspi::segment::Segment&,
-            std::size_t,
-            std::vector<gaspi::group::Rank>::const_iterator,
-            std::vector<gaspi::group::Rank>::const_iterator) const;
+          gaspi::segment::Segment&,
+          std::size_t,
+          std::vector<gaspi::group::Rank> const&);
         void create_and_connect_target_buffer(gaspi::segment::Segment &,
-                                              std::size_t) const;
+                                              std::size_t);
     };
-
-    template<typename T>
-    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
-      ::check_root_is_in_group() const
-    {
-      if (root >= gaspi::group::Rank(number_ranks))
-      {
-        throw std::logic_error(
-          "BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>: "
-          "`group` must contain `root`");
-      }
-    }
-
-    template<typename T>
-    std::vector<gaspi::group::Rank>
-    BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>::generate_non_root_ranks() const
-    {
-      std::vector<gaspi::group::Rank> ranks(number_ranks);
-      std::iota(ranks.begin(), ranks.end(), gapsi::group::Rank(0));
-      ranks.erase(std::remove(ranks.begin(), ranks.end(), root), ranks.end());
-      return ranks
-    }
-
-    template<typename T>
-    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
-      ::create_and_connect_first_source_buffer(
-                      gaspi::segment::Segment& segment,
-                      std::size_t size_bytes,
-                      gaspi::group::Rank const& rank) const
-    {
-      SourceBuffer::Tag const tag = rank;
-      source_buffers.push_back(
-          std::make_unique<SourceBuffer>(segment, size_bytes));
-      source_handles.push_back(
-          source_buffers.back()->connectToRemoteTarget(
-              context, rank, tag));
-      source_memory = source_buffers.back()->address();
-    }
-
-    template<typename T>
-    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
-      ::create_and_connect_remaining_source_buffers(
-        gaspi::segment::Segment& segment,
-        std::size_t size_bytes,
-        std::vector<gaspi::group::Rank>::const_iterator begin,
-        std::vector<gaspi::group::Rank>::const_iterator end) const
-    {
-      for (auto rank = begin; rank != end; ++rank)
-      {
-        SourceBuffer::Tag const tag = rank;
-        source_buffers.push_back(
-            std::make_unique<SourceBuffer>(source_memory, segment, size_bytes));
-        source_handles.push_back(
-            source_buffers.back()->connectToRemoteTarget(context, rank, tag));
-      }
-    }
-
-    template<typename T>
-    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
-      ::create_and_connect_target_buffer(
-        gaspi::segment::Segment& segment,
-        std::size_t size_bytes) const
-    {
-      TargetBuffer::Tag const tag = rank;
-      target_buffer->reset(new TargetBuffer(segment, size_bytes));
-      target_handle = target_buffer->connectToRemoteSource(context,
-                                                           root,
-                                                           tag);
-    }
 
     template<typename T>
     BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>::BroadcastLowLevel(
@@ -151,7 +82,7 @@ namespace gaspi
       source_buffers(),
       target_buffer(),
       source_handles(),
-      target_handle
+      target_handle()
     {
       check_root_is_in_group();
 
@@ -162,12 +93,12 @@ namespace gaspi
 
       if (rank == root)
       {
-        auto const non_root_ranks = generate_non_root_ranks();
+        auto non_root_ranks = generate_non_root_ranks();
         create_and_connect_first_source_buffer(
-          segment, buffer_size_bytes, non_root_ranks.front());
+          segment, buffer_size_bytes, non_root_ranks.back());
+        non_root_ranks.pop_back();
         create_and_connect_remaining_source_buffers(
-          segment, buffer_size_bytes,
-          non_root_ranks.begin() + 1, non_root_ranks.end());
+          segment, buffer_size_bytes, non_root_ranks);
       }
       else
       {
@@ -180,14 +111,14 @@ namespace gaspi
     {
       if (rank == root)
       {
-        for (auto const& source_handle : source_handles)
+        for (auto& source_handle : source_handles)
         {
           source_handle.waitForCompletion();
         }
       }
       else
       {
-        target_handle.waitForCompletion();
+        target_handle->waitForCompletion();
       }
     }
 
@@ -196,7 +127,7 @@ namespace gaspi
     {
       if (rank == root)
       {
-        for (auto const& source_buffer : source_buffers)
+        for (auto& source_buffer : source_buffers)
         {
           source_buffer->initTransfer(context);
         }
@@ -208,7 +139,7 @@ namespace gaspi
     {
       if (rank == root)
       {
-        for (auto const& source_buffer : source_buffers)
+        for (auto& source_buffer : source_buffers)
         {
           source_buffer->waitForTransferAck();
         }
@@ -218,6 +149,7 @@ namespace gaspi
         target_buffer->waitForCompletion();
         target_buffer->ackTransfer(context);
       }
+      return true;
     }
 
     template<typename T>
@@ -240,6 +172,79 @@ namespace gaspi
       {
         std::memcpy(outputs, target_buffer->address(), buffer_size_bytes);
       }
+    }
+
+    template<typename T>
+    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
+      ::check_root_is_in_group() const
+    {
+      if (root >= gaspi::group::Rank(number_ranks))
+      {
+        throw std::logic_error(
+          "BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>: "
+          "`group` must contain `root`");
+      }
+    }
+
+    template<typename T>
+    std::vector<gaspi::group::Rank>
+    BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
+      ::generate_non_root_ranks() const
+    {
+      std::vector<gaspi::group::Rank> ranks;
+      for (auto i = 0UL; i < number_ranks; ++i)
+      {
+        if(root != gaspi::group::Rank(i))
+        {
+          ranks.push_back(gaspi::group::Rank(i));
+        }
+      }
+      return ranks;
+    }
+
+    template<typename T>
+    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
+      ::create_and_connect_first_source_buffer(
+                      gaspi::segment::Segment& segment,
+                      std::size_t size_bytes,
+                      gaspi::group::Rank const& other_rank)
+    {
+      SourceBuffer::Tag const tag = other_rank.get();
+      source_buffers.push_back(
+          std::make_unique<SourceBuffer>(segment, size_bytes));
+      source_handles.push_back(
+          source_buffers.back()->connectToRemoteTarget(
+              context, other_rank, tag));
+      source_memory = source_buffers.back()->address();
+    }
+
+    template<typename T>
+    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
+      ::create_and_connect_remaining_source_buffers(
+        gaspi::segment::Segment& segment,
+        std::size_t size_bytes,
+        std::vector<gaspi::group::Rank> const& ranks)
+    {
+      for (auto const& rank : ranks)
+      {
+        SourceBuffer::Tag const tag = rank.get();
+        source_buffers.push_back(
+            std::make_unique<SourceBuffer>(source_memory, segment, size_bytes));
+        source_handles.push_back(
+            source_buffers.back()->connectToRemoteTarget(context, rank, tag));
+      }
+    }
+
+    template<typename T>
+    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>
+      ::create_and_connect_target_buffer(
+        gaspi::segment::Segment& segment,
+        std::size_t size_bytes)
+    {
+      TargetBuffer::Tag const tag = rank.get();
+      target_buffer = std::make_unique<TargetBuffer>(segment, size_bytes);
+      target_handle = std::make_unique<ConnectHandle>(
+        target_buffer->connectToRemoteSource(context, root, tag));
     }
   }
 }
