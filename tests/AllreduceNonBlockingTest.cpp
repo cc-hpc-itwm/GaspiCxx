@@ -6,7 +6,6 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRing.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/Context.hpp>
 
 #include <numeric>
 #include <stdexcept>
@@ -21,8 +20,7 @@ namespace gaspi {
     {
       protected:
         AllreduceNonBlockingTest()
-        : group_all(),
-          context(group_all)
+        : group_all()
         {
           getRuntime().barrier();
         }
@@ -33,7 +31,6 @@ namespace gaspi {
         }
 
         gaspi::group::Group const group_all;
-        gaspi::Context context;
     };
 
     template<typename T, AllreduceAlgorithm Algorithm>
@@ -54,24 +51,16 @@ namespace gaspi {
         Allreduce<T, Algorithm> allreduce;
     };
 
-    TEST_F(AllreduceNonBlockingTest, start_allreduce)
+    TEST_F(AllreduceNonBlockingTest, empty_allreduce)
     {
       using ElemType = int;
       auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0);
       auto& allreduce = setup.get_allreduce();
-      std::vector<int> inputs;
+      std::vector<ElemType> inputs;
+      std::vector<ElemType> outputs;
+
       ASSERT_NO_THROW(allreduce.start(inputs.data()));
-    }
-
-    TEST_F(AllreduceNonBlockingTest, start_allreduce_twice)
-    {
-      using ElemType = int;
-      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0);
-      auto& allreduce = setup.get_allreduce();
-      std::vector<int> inputs;
-      allreduce.start(inputs.data());
-
-      ASSERT_THROW(allreduce.start(inputs.data()), std::logic_error);
+      ASSERT_NO_THROW(allreduce.waitForCompletion(outputs.data()));
     }
 
     TEST_F(AllreduceNonBlockingTest, single_element_allreduce)
@@ -80,10 +69,10 @@ namespace gaspi {
       auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 1);
       auto& allreduce = setup.get_allreduce();
 
-      int elem = 5;
-      std::vector<int> inputs {elem};
-      std::vector<int> expected;
-      std::vector<int> outputs(1);
+      ElemType elem = 5;
+      std::vector<ElemType> inputs {elem};
+      std::vector<ElemType> expected;
+      std::vector<ElemType> outputs(1);
 
       expected.push_back(elem * group_all.size());
 
@@ -95,21 +84,20 @@ namespace gaspi {
 
     TEST_F(AllreduceNonBlockingTest, multi_elem_allreduce)
     {
-      using ElemType = int;
+      using ElemType = float;
       std::size_t num_elements = 9;
       auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, num_elements);
       auto& allreduce = setup.get_allreduce();
 
-      std::vector<int> inputs(num_elements);
-      std::vector<int> expected(num_elements);
-      std::vector<int> outputs(num_elements);
+      std::vector<ElemType> inputs(num_elements);
+      std::vector<ElemType> expected(num_elements);
+      std::vector<ElemType> outputs(num_elements);
 
-      // fill in input buffer
       std::iota(inputs.begin(), inputs.end(), 1);
 
       auto size = group_all.size();
       std::transform(inputs.begin(), inputs.end(), expected.begin(),
-                    [&size](int elem) { return elem * size; });
+                    [&size](auto elem) { return elem * size; });
 
       allreduce.start(inputs.data());
       allreduce.waitForCompletion(outputs.data());
