@@ -24,7 +24,6 @@ namespace gaspi
 
       protected:
         gaspi::segment::Segment& segment;
-        gaspi::group::Group const group;
         gaspi::Context context;
         std::size_t number_elements;
         gaspi::group::Rank root_rank;

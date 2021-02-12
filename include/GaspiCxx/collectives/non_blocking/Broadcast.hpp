@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GaspiCxx/collectives/non_blocking/Collective.hpp>
-#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastLowLevel.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastCommon.hpp>
 
 #include <stdexcept>
 
@@ -11,54 +11,65 @@ namespace gaspi
   {
 
     template<typename T, BroadcastAlgorithm Algorithm>
-    class Broadcast : public RootedSendCollective, 
-                      private BroadcastLowLevel<T, Algorithm>
+    class Broadcast : public RootedSendCollective
     { 
       public:
         Broadcast(gaspi::segment::Segment& segment,
                   gaspi::group::Group const& group,
                   std::size_t number_elements,
-                  gaspi::group::Rank const& root_rank)
-        : BroadcastLowLevel<T, Algorithm>(segment, group, number_elements, root_rank)
-        {
-          waitForSetup();
-          // TODO here register with the progress engine
-        }
+                  gaspi::group::Rank const& root_rank);
 
-        void start(void* inputs) override
-        {
-          if(group.rank() != root_rank)
-          {
-            throw std::logic_error("Broadcast: start(void* inputs) may only be called on root rank.");
-          }
-          copyIn(inputs);
-          start();
-        }
+        void start(void* inputs) override;
+        void start() override;
 
-        void start() override
-        {
-          if(group.rank() == root_rank)
-          {
-            throw std::logic_error("Broadcast: start() may only be called on non-root ranks.");
-          }
-          copyIn(CollectiveLowLevel::NO_DATA);
-          start();
-        }
-
-        void waitForCompletion(void* output) override
-        {
-          waitForCompletion();
-          copyOut(output);
-        }
+        void waitForCompletion(void* output) override;
 
       private:
-        using BroadcastLowLevel<T, Algorithm>::waitForSetup;
-        using BroadcastLowLevel<T, Algorithm>::start;
-        using BroadcastLowLevel<T, Algorithm>::waitForCompletion;
-        using BroadcastLowLevel<T, Algorithm>::copyIn;
-        using BroadcastLowLevel<T, Algorithm>::copyOut;
+        BroadcastLowLevel<T, Algorithm> broadcast_impl;
+        gaspi::group::Rank root_rank;
+        gaspi::group::Rank rank;
     };
 
-  
+    template<typename T, BroadcastAlgorithm Algorithm>
+    Broadcast<T, Algorithm>::Broadcast(gaspi::segment::Segment& segment,
+                                       gaspi::group::Group const& group,
+                                       std::size_t number_elements,
+                                       gaspi::group::Rank const& root_rank)
+    : broadcast_impl(segment, group, number_elements, root_rank),
+      root_rank(root_rank),
+      rank(group.rank())
+    {
+      broadcast_impl.waitForSetup();
+      // TODO here register with the progress engine
+    }
+
+    template<typename T, BroadcastAlgorithm Algorithm>
+    void Broadcast<T, Algorithm>::start(void* inputs)
+    {
+      if(rank != root_rank)
+      {
+        throw std::logic_error("Broadcast: start(void* inputs) may only be called on root rank.");
+      }
+      broadcast_impl.copyIn(inputs);
+      broadcast_impl.start();
+    }
+
+    template<typename T, BroadcastAlgorithm Algorithm>
+    void Broadcast<T, Algorithm>::start()
+    {
+      if(rank == root_rank)
+      {
+        throw std::logic_error("Broadcast: start() may only be called on non-root ranks.");
+      }
+      broadcast_impl.copyIn(CollectiveLowLevel::NO_DATA);
+      broadcast_impl.start();
+    }
+
+    template<typename T, BroadcastAlgorithm Algorithm>
+    void Broadcast<T, Algorithm>::waitForCompletion(void* output)
+    {
+      broadcast_impl.waitForCompletion();
+      broadcast_impl.copyOut(output);
+    }
   }
 }
