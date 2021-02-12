@@ -5,7 +5,6 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRing.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/Context.hpp>
 
 #include <numeric>
 #include <stdexcept>
@@ -20,8 +19,7 @@ namespace gaspi {
     {
       protected:
         AllreduceNonBlockingLowLevelTest()
-        : group_all(),
-          context(group_all)
+        : group_all()
         {
           getRuntime().barrier();
         }
@@ -32,7 +30,6 @@ namespace gaspi {
         }
 
         gaspi::group::Group const group_all;
-        gaspi::Context context;
     };
 
     template<typename T, AllreduceAlgorithm Algorithm>
@@ -53,7 +50,7 @@ namespace gaspi {
         AllreduceLowLevel<T, Algorithm> allreduce;
     };
 
-    TEST_F(AllreduceNonBlockingLowLevelTest, start_allreduce)
+    TEST_F(AllreduceNonBlockingLowLevelTest, start_empty_allreduce)
     {
       using ElemType = int;
       std::vector<ElemType> inputs;
@@ -65,20 +62,6 @@ namespace gaspi {
 
       allreduce.start();
       ASSERT_NO_THROW(allreduce.checkForCompletion());
-    }
-
-    TEST_F(AllreduceNonBlockingLowLevelTest, DISABLED_start_allreduce_twice)
-    {
-      using ElemType = int;
-      std::vector<ElemType> inputs;
-      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0UL);
-      auto& allreduce = setup.get_allreduce();
-
-      allreduce.waitForSetup();
-      allreduce.copyIn(inputs.data());
-      allreduce.start();
-
-      ASSERT_THROW(allreduce.start(), std::logic_error);
     }
 
     TEST_F(AllreduceNonBlockingLowLevelTest, single_element_allreduce)
@@ -105,21 +88,20 @@ namespace gaspi {
 
     TEST_F(AllreduceNonBlockingLowLevelTest, multi_elem_allreduce)
     {
-      using ElemType = int;
+      using ElemType = float;
       std::size_t num_elements = 9;
       auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, num_elements);
       auto& allreduce = setup.get_allreduce();
 
-      std::vector<int> inputs(num_elements);
-      std::vector<int> expected(num_elements);
-      std::vector<int> outputs(num_elements);
+      std::vector<ElemType> inputs(num_elements);
+      std::vector<ElemType> expected(num_elements);
+      std::vector<ElemType> outputs(num_elements);
 
-      // fill in input buffer
       std::iota(inputs.begin(), inputs.end(), 1);
 
       auto size = group_all.size();
       std::transform(inputs.begin(), inputs.end(), expected.begin(),
-                    [&size](int elem) { return elem * size; });
+                    [&size](auto elem) { return elem * size; });
 
       allreduce.waitForSetup();
       allreduce.copyIn(inputs.data());
