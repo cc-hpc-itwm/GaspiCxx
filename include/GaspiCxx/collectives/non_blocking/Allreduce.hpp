@@ -9,40 +9,45 @@ namespace gaspi
   {
 
     template<typename T, AllreduceAlgorithm Algorithm>
-    class Allreduce : public Collective, 
-                      private AllreduceLowLevel<T, Algorithm>
+    class Allreduce : public Collective
     { 
       public:
         Allreduce(gaspi::segment::Segment& segment,
-                          gaspi::group::Group const& group,
-                          std::size_t number_elements,
-                          ReductionOp reduction_op)
-        : AllreduceLowLevel<T, Algorithm>(segment, group, number_elements, reduction_op)
-        {
-          waitForSetup();
-          // TODO here register with the progress engine
-        }
+                  gaspi::group::Group const& group,
+                  std::size_t number_elements,
+                  ReductionOp reduction_op);
 
-        void start(void* inputs) override
-        {
-           copyIn(inputs);
-           start();
-        }
-
-        void waitForCompletion(void* output) override
-        {
-          waitForCompletion();
-          copyOut(output);
-        }
+        void start(void* inputs) override;
+        void waitForCompletion(void* output) override;
 
       private:
-        using AllreduceLowLevel<T, Algorithm>::waitForSetup;
-        using AllreduceLowLevel<T, Algorithm>::start;
-        using AllreduceLowLevel<T, Algorithm>::waitForCompletion;
-        using AllreduceLowLevel<T, Algorithm>::copyIn;
-        using AllreduceLowLevel<T, Algorithm>::copyOut;
+        AllreduceLowLevel<T, Algorithm> allreduce_impl;
     };
 
+    template<typename T, AllreduceAlgorithm Algorithm>
+    Allreduce<T, Algorithm>::Allreduce(gaspi::segment::Segment& segment,
+                                       gaspi::group::Group const& group,
+                                       std::size_t number_elements,
+                                       ReductionOp reduction_op)
+    : allreduce_impl(segment, group, number_elements, reduction_op)
+    {
+      allreduce_impl.waitForSetup();
+      // TODO here register with the progress engine
+    }
+
+    template<typename T, AllreduceAlgorithm Algorithm>
+    void Allreduce<T, Algorithm>::start(void* inputs)
+    {
+      allreduce_impl.copyIn(inputs);
+      allreduce_impl.start();
+    }
+
+    template<typename T, AllreduceAlgorithm Algorithm>
+    void Allreduce<T, Algorithm>::waitForCompletion(void* output)
+    {
+      allreduce_impl.waitForCompletion();
+      allreduce_impl.copyOut(output);
+    }
   
   }
 }
