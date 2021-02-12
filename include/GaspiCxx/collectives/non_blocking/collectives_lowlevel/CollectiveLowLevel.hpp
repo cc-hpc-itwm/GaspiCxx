@@ -31,7 +31,6 @@ namespace collectives {
 class CollectiveLowLevel {
 
 public:
-
   enum class State
   {
     UNINITIALIZED,  // object created but connections not yet established
@@ -43,20 +42,61 @@ public:
 
   static constexpr auto NO_DATA = nullptr;
 
+  // Instantiation phase
+  // ===================
+  // -> local allocation of resources
   CollectiveLowLevel();
   virtual ~CollectiveLowLevel() = default;
 
+  // Setup phase
+  // ===========
+  // -> exchange of meta information
+  // -> collective operation, i.e. needs to be
+  // invoked by all members in the group
+  // Has to be invoked exactly once during life time
+  // `waitForSetup` changes state from UNITIALIZED to INITIALIZED
   void waitForSetup();
-  void start();
-  bool checkForCompletion();
-  bool waitForCompletion();
-  bool triggerProgress();
+
+  // Execution phase
+  // ===============
+  // Copy data to communication buffers before execution
+  // Changes state from INITIALIZED to READY
   void copyIn(void* inputs);
   template<typename T>
   void copyIn(std::vector<T> const& inputs);
+
+  // Start collective operation
+  // Only one thread should invoke `start`, which will initiate the 
+  // algorithm and change the state from INITIALIZED to RUNNING.
+  void start();
+
+  // Implements generation of progress.
+  // Can be called in any state, but only one thread will
+  // trigger progress if and only if state equals RUNNING.
+  // Changes state from RUNNING to FINISHED if
+  // the generated progress completes the collective.
+  bool triggerProgress();
+
+  // Write results to `outputs` as a contiguous buffer.
+  // Changes state from FINISHED to INITIALIZED,
+  // which allows to re-execute the collective
+  // (after resetting the input data with `copyIn`).
   void copyOut(void* outputs);
   template<typename T>
   void copyOut(std::vector<T>& outputs);
+
+  // Convenience functions
+  // =====================
+  // Checks whether the operation has completed.
+  bool checkForCompletion();
+
+  // If in state RUNNING, blocks until completion of the collective
+  // (through calling trigger progress).
+  // If called in another state, does nothing.
+  // May be invoked by more than a single thread.
+  // The thread that triggered the final step of the algorithm will 
+  // return `true`, all others will return `false`.
+  bool waitForCompletion();
 
 protected:
   virtual void waitForSetupImpl() = 0;
