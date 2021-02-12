@@ -42,6 +42,7 @@ namespace gaspi
         std::vector<std::unique_ptr<TargetBuffer>> target_buffers;
         std::vector<ConnectHandle> source_handles;
         std::vector<ConnectHandle> target_handles;
+        std::vector<T> data_for_1rank_case;
       
         std::size_t current_step;
         std::size_t steps_per_stage;
@@ -74,9 +75,10 @@ namespace gaspi
       number_ranks(group.size()),
       source_buffers(), target_buffers(),
       source_handles(), target_handles(),
+      data_for_1rank_case(),
       steps_per_stage(group.size()-1)
     {
-      if (number_elements > 0 && steps_per_stage > 0)
+      if (number_elements > 0 && number_ranks > 1)
       {
         auto const left_neighbor = (rank - 1 + number_ranks) % number_ranks;
         auto const right_neighbor = (rank + 1) % number_ranks;
@@ -103,6 +105,10 @@ namespace gaspi
             target_buffers[i]->connectToRemoteSource(context, right_neighbor, target_tag));
         }
       }
+      else
+      {
+        data_for_1rank_case.resize(number_elements);
+      }
     }
 
     template<typename T>
@@ -121,21 +127,22 @@ namespace gaspi
     template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::startImpl()
     {
-      algorithm_reset_state();
+      if (number_elements > 0 && number_ranks > 1)
+      {
+        algorithm_reset_state();
+        send_buffer_index = (send_buffer_index + 1) % number_ranks;
+        source_buffers[send_buffer_index]->initTransfer(context);
+      }
     }
 
     template<typename T>
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::triggerProgressImpl()
     {
-      if (algorithm_is_finished())
-      {
-        return true;
-      }
+      if (number_elements == 0 || number_ranks == 1) { return true; }
 
-      send_buffer_index = (send_buffer_index + 1) % number_ranks;
+      if (algorithm_is_finished()) { return true; }
+
       receive_buffer_index = (receive_buffer_index + 1) % number_ranks;
-
-      source_buffers[send_buffer_index]->initTransfer(context);
       target_buffers[receive_buffer_index]->waitForCompletion();
 
       switch(algorithm_get_current_stage())
@@ -157,8 +164,13 @@ namespace gaspi
       // acknowledge data transfer in the last step
       if (algorithm_is_finished())
       {
-        target_buffers[receive_buffer_index]->ackTransfer(context);
-        source_buffers[send_buffer_index]->waitForTransferAck();
+        //target_buffers[receive_buffer_index]->ackTransfer(context);
+        //source_buffers[send_buffer_index]->waitForTransferAck();
+      }
+      else
+      {
+        send_buffer_index = (send_buffer_index + 1) % number_ranks;
+        source_buffers[send_buffer_index]->initTransfer(context);
       }
       return algorithm_is_finished();
     }
@@ -169,22 +181,30 @@ namespace gaspi
       auto total_copied_elements = 0UL;
       auto current_begin = static_cast<T*>(inputs);
 
-      for (auto& buffer : source_buffers)
+      if (number_ranks == 1)
       {
-        auto elements_to_copy = buffer->description().size()/sizeof(T);
-        if (total_copied_elements + elements_to_copy > number_elements)
+        std::copy(current_begin, current_begin + number_elements,
+                  data_for_1rank_case.begin());
+      }
+      else
+      {
+        for (auto& buffer : source_buffers)
         {
-          elements_to_copy = number_elements - total_copied_elements;
-        }
+          auto elements_to_copy = buffer->description().size()/sizeof(T);
+          if (total_copied_elements + elements_to_copy > number_elements)
+          {
+            elements_to_copy = number_elements - total_copied_elements;
+          }
 
-        auto const current_end = current_begin + elements_to_copy;
-        std::copy(current_begin, current_end, static_cast<T*>(buffer->address()));
-        current_begin = current_end;
-        total_copied_elements += elements_to_copy;
+          auto const current_end = current_begin + elements_to_copy;
+          std::copy(current_begin, current_end, static_cast<T*>(buffer->address()));
+          current_begin = current_end;
+          total_copied_elements += elements_to_copy;
 
-        if (total_copied_elements >= number_elements)
-        {
-          break;
+          if (total_copied_elements >= number_elements)
+          {
+            break;
+          }
         }
       }
     }
@@ -195,23 +215,31 @@ namespace gaspi
       auto total_copied_elements = 0UL;
       auto current_start = static_cast<T*>(outputs);
 
-      for (auto& buffer : source_buffers)
+      if (number_ranks == 1)
       {
-        auto elements_to_copy = buffer->description().size()/sizeof(T);
-        if (total_copied_elements + elements_to_copy > number_elements)
+        std::copy(data_for_1rank_case.begin(), data_for_1rank_case.end(),
+                  current_start);
+      }
+      else
+      {
+        for (auto& buffer : source_buffers)
         {
-          elements_to_copy = number_elements - total_copied_elements;
-        }
+          auto elements_to_copy = buffer->description().size()/sizeof(T);
+          if (total_copied_elements + elements_to_copy > number_elements)
+          {
+            elements_to_copy = number_elements - total_copied_elements;
+          }
 
-        auto const buffer_start = static_cast<T*>(buffer->address());
-        auto const buffer_end = buffer_start + elements_to_copy;
-        std::copy(buffer_start, buffer_end, current_start);
-        current_start = current_start + elements_to_copy;
-        total_copied_elements += elements_to_copy;
+          auto const buffer_start = static_cast<T*>(buffer->address());
+          auto const buffer_end = buffer_start + elements_to_copy;
+          std::copy(buffer_start, buffer_end, current_start);
+          current_start = current_start + elements_to_copy;
+          total_copied_elements += elements_to_copy;
 
-        if (total_copied_elements >= number_elements)
-        {
-          break;
+          if (total_copied_elements >= number_elements)
+          {
+            break;
+          }
         }
       }
     }
