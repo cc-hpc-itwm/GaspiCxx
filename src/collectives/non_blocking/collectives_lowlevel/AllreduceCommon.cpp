@@ -9,7 +9,6 @@ namespace gaspi
                                      std::size_t number_elements,
                                      ReductionOp reduction_op)
     : segment(segment),
-      group(group),
       context(group),
       number_elements(number_elements),
       reduction_op(reduction_op)

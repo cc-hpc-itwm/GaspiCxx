@@ -30,7 +30,6 @@ namespace gaspi
 
       protected:
         gaspi::segment::Segment& segment;
-        gaspi::group::Group const group;
         gaspi::Context context;
         std::size_t number_elements;
         ReductionOp reduction_op;
