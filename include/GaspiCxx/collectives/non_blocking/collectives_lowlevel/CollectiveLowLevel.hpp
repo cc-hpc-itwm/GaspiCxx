@@ -61,7 +61,7 @@ public:
   // ===============
   // Copy data to communication buffers before execution
   // Changes state from INITIALIZED to READY
-  void copyIn(void* inputs);
+  void copyIn(void const* inputs);
   template<typename T>
   void copyIn(std::vector<T> const& inputs);
 
@@ -103,7 +103,7 @@ protected:
   virtual void startImpl() = 0;
   virtual bool triggerProgressImpl() = 0;
 
-  virtual void copyInImpl(void*) = 0;
+  virtual void copyInImpl(void const*) = 0;
   virtual void copyOutImpl(void*) = 0;
 
   std::atomic<State> _state;

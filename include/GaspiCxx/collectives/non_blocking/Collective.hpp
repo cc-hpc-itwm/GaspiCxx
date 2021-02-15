@@ -13,7 +13,7 @@ class Collective
   public:
     //! Start non-blocking collective operation
     //! with data provided in `inputs`
-    virtual void start(void* inputs) = 0;
+    virtual void start(void const* inputs) = 0;
 
     //! Blocking wait until the execution is finished
     //! and copy results to `outputs`
@@ -29,7 +29,7 @@ class RootedSendCollective : public Collective
 {
   public:
     //! Start non-blocking collective on the root rank
-    virtual void start(void* inputs) = 0;
+    virtual void start(void const* inputs) = 0;
     //! Start non-blocking collective on all non-root ranks
     virtual void start() = 0;
 
