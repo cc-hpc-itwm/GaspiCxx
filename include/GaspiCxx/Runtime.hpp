@@ -24,6 +24,7 @@
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 #include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
+#include <GaspiCxx/collectives/Barrier.hpp>
 
 extern "C" {
 #include <GASPI.h>
@@ -67,6 +68,7 @@ namespace passive { class Passive; }
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
     std::unique_ptr<progress_engine::ProgressEngine> _pengine;
+    std::unique_ptr<gaspi::collectives::blocking::Barrier> _pglobal_barrier;
 
     //! A runtime is a singleton.
     Runtime
@@ -116,6 +118,9 @@ namespace passive { class Passive; }
 
     void
     synchCurrentWorkingDirectory();
+
+    void
+    barrier();
   };
 
   Runtime &
