@@ -21,19 +21,10 @@ namespace gaspi
   {
     while (!terminate_man_thread)
     {
-      while (true)
+      std::lock_guard<std::mutex> const lock(operators_mutex);
+      for (auto& handle_and_operator : operators)
       {
-        if (terminate_man_thread)
-        {
-          break;
-        }
-        {
-          std::lock_guard<std::mutex> const lock(operators_mutex);
-          for (auto& handle_and_operator : operators)
-          {
-            handle_and_operator.second->triggerProgress();
-          }
-        }
+        handle_and_operator.second->triggerProgress();
       }
     }
   }

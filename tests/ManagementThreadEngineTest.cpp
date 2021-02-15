@@ -21,6 +21,13 @@ namespace gaspi
         {}
         ~CollectiveMock() = default;
 
+        void init()
+        {
+          waitForSetup();
+          copyIn(nullptr);
+          start();
+        }
+
       private:
         std::size_t const nsteps = 100;
         std::size_t current_step = 0;
@@ -28,7 +35,7 @@ namespace gaspi
         void waitForSetupImpl() override
         {}
 
-        void copyInImpl(void*) override
+        void copyInImpl(void const*) override
         {}
         void copyOutImpl(void*) override
         {}
@@ -55,127 +62,73 @@ namespace gaspi
 
   TEST(ManagementThreadEngineTest, register_collective)
   {
-    auto engine = std::make_unique<ManagementThreadEngine>();
+    ManagementThreadEngine engine;
     auto col = std::make_shared<CollectiveMock>();
 
-    ASSERT_NO_THROW(engine->register_collective(col));
+    ASSERT_NO_THROW(engine.register_collective(col));
   }
 
   TEST(ManagementThreadEngineTest, deregister_collective)
   {
-    auto engine = std::make_unique<ManagementThreadEngine>();
+    ManagementThreadEngine engine;
     auto col = std::make_shared<CollectiveMock>();
 
-    auto handle = engine->register_collective(col);
-    ASSERT_NO_THROW(engine->deregister_collective(handle));
+    auto handle = engine.register_collective(col);
+    ASSERT_NO_THROW(engine.deregister_collective(handle));
   }
 
-  TEST(ManagementThreadEngineTest, execute_collectives)
+  TEST(ManagementThreadEngineTest, execute_collective)
   {
-    auto engine = std::make_unique<ManagementThreadEngine>();
+    ManagementThreadEngine engine;
     auto collective = std::make_shared<CollectiveMock>();
 
-    auto handle = engine->register_collective(collective);
-    std::vector<int> in_buffer;
-    collective->waitForSetup();
-    collective->copyIn(in_buffer.data());
-    collective->start();
+    auto handle = engine.register_collective(collective);
+    collective->init();
 
-    collective->waitForCompletion();
-    ASSERT_TRUE(collective->checkForCompletion());
-    ASSERT_NO_THROW(engine->deregister_collective(handle));
-  }
-
-  namespace
-  {
-    auto register_collectives(ManagementThreadEngine& engine,
-                      std::vector<std::shared_ptr<collectives::CollectiveLowLevel>>& data)
+    while(true)
     {
-      std::vector<std::future<ProgressEngine::CollectiveHandle>> futures;
-      std::vector<ProgressEngine::CollectiveHandle> handles;
-
-      // create multiple allreduce calls in parallel
-      for (auto &col : data)
-      {
-        futures.emplace_back(std::async(
-            std::launch::async,
-            [&engine](std::shared_ptr<collectives::CollectiveLowLevel> col) 
-                              -> ProgressEngine::CollectiveHandle
-            {
-              auto handle = engine.register_collective(col);
-              return handle;
-            },
-            col));
-      }
-      // wait for all allreduce operations to be submitted
-      for (auto &f : futures)
-      {
-        handles.push_back(f.get());
-      }
-      return handles;
+      if (collective->checkForCompletion()) break;
     }
+
+    ASSERT_NO_THROW(engine.deregister_collective(handle));
   }
 
-  TEST(ManagementThreadEngineTest, multiple_async_collectives_start_stop)
+  TEST(ManagementThreadEngineTest, execute_multiple_collectives)
   {
-    auto n_collectives = 10UL;
     ManagementThreadEngine engine;
-    std::vector<std::shared_ptr<collectives::CollectiveLowLevel>> collectives;
+    auto collective1 = std::make_shared<CollectiveMock>();
+    auto collective2 = std::make_shared<CollectiveMock>();
+    auto collective3 = std::make_shared<CollectiveMock>();
 
-    // create collective ops
-    for (auto i=0UL; i<n_collectives; i++)
+    auto handle1 = engine.register_collective(collective1);
+    collective1->init();
+
+    auto handle2 = engine.register_collective(collective2);
+    collective2->init();
+
+    while(true)
     {
-      collectives.push_back(std::make_shared<CollectiveMock>());
+      if (collective1->checkForCompletion()) break;
     }
 
-    // add them asynchronously to the management engine
-    auto handles = register_collectives(engine, collectives);
+    auto handle3 = engine.register_collective(collective3);
 
-    // remove collectives from the management thread
-    for (auto const& handle : handles)
+    engine.deregister_collective(handle1);
+
+    collective3->init();
+
+    while(true)
     {
-      ASSERT_NO_THROW(engine.deregister_collective(handle));
-
-      // deregister again should fail
-      ASSERT_THROW(engine.deregister_collective(handle), std::logic_error);
-    }
-  }
-
-  TEST(ManagementThreadEngineTest, multiple_async_collectives)
-  {
-    auto n_collectives = 10UL;
-    ManagementThreadEngine engine;
-    std::vector<std::shared_ptr<collectives::CollectiveLowLevel>> collectives;
-
-    // create collective ops
-    for (auto i=0UL; i<n_collectives; i++)
-    {
-      collectives.push_back(std::make_shared<CollectiveMock>());
+      if (collective3->checkForCompletion()) break;
     }
 
-    // add them asynchronously to the management engine
-    auto handles = register_collectives(engine, collectives);
-    
-    // start collectives so that they can make progress
-    for (auto const& collective : collectives)
+    while(true)
     {
-      std::vector<int> in_buffer;
-      collective->waitForSetup();
-      collective->copyIn(in_buffer.data());
-      collective->start();
+      if (collective2->checkForCompletion()) break;
     }
 
-    for (auto const& collective : collectives)
-    {
-      collective->waitForCompletion();
-      ASSERT_TRUE(collective->checkForCompletion());
-    }
-
-    // remove collectives from the management thread
-    for (auto const& handle : handles)
-    {
-      ASSERT_NO_THROW(engine.deregister_collective(handle));
-    }
+    engine.deregister_collective(handle3);
+    engine.deregister_collective(handle2);
   }
  
 }
