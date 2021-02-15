@@ -4,6 +4,7 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastCommon.hpp>
 
 #include <stdexcept>
+#include <vector>
 
 namespace gaspi
 {
@@ -19,7 +20,7 @@ namespace gaspi
                   std::size_t number_elements,
                   gaspi::group::Rank const& root_rank);
 
-        void start(void* inputs) override;
+        void start(void const* inputs) override;
         void start(std::vector<T> const& inputs);
         void start() override;
 
@@ -46,11 +47,12 @@ namespace gaspi
     }
 
     template<typename T, BroadcastAlgorithm Algorithm>
-    void Broadcast<T, Algorithm>::start(void* inputs)
+    void Broadcast<T, Algorithm>::start(void const* inputs)
     {
       if(rank != root_rank)
       {
-        throw std::logic_error("Broadcast: start(void* inputs) may only be called on root rank.");
+        throw std::logic_error(
+          "Broadcast: start(void const* inputs) may only be called on root rank.");
       }
       broadcast_impl.copyIn(inputs);
       broadcast_impl.start();

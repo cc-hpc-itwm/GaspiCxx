@@ -46,7 +46,7 @@ namespace gaspi
         std::unique_ptr<ConnectHandle> target_handle;
 
         void waitForSetupImpl() override;
-        void copyInImpl(void*) override;
+        void copyInImpl(void const*) override;
         void copyOutImpl(void*) override;
 
         void startImpl() override;
@@ -153,7 +153,7 @@ namespace gaspi
     }
 
     template<typename T>
-    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>::copyInImpl(void* inputs)
+    void BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>::copyInImpl(void const* inputs)
     {
       if (rank == root)
       {
