@@ -17,7 +17,7 @@ namespace gaspi
                   std::size_t number_elements,
                   ReductionOp reduction_op);
 
-        void start(void* inputs) override;
+        void start(void const* inputs) override;
         void waitForCompletion(void* output) override;
 
       private:
@@ -36,7 +36,7 @@ namespace gaspi
     }
 
     template<typename T, AllreduceAlgorithm Algorithm>
-    void Allreduce<T, Algorithm>::start(void* inputs)
+    void Allreduce<T, Algorithm>::start(void const* inputs)
     {
       allreduce_impl.copyIn(inputs);
       allreduce_impl.start();

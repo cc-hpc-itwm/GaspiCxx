@@ -19,7 +19,7 @@ namespace collectives {
     _state = State::INITIALIZED;
   }
 
-  void CollectiveLowLevel::copyIn(void* inputs)
+  void CollectiveLowLevel::copyIn(void const* inputs)
   {
     std::lock_guard<std::mutex> const lock(_state_mutex);
     if(_state != State::INITIALIZED)

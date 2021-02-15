@@ -50,7 +50,7 @@ namespace gaspi
         std::size_t receive_buffer_index;
 
         void waitForSetupImpl() override;
-        void copyInImpl(void*) override;
+        void copyInImpl(void const*) override;
         void copyOutImpl(void*) override;
 
         void startImpl() override;
@@ -176,10 +176,10 @@ namespace gaspi
     }
 
     template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::copyInImpl(void* inputs)
+    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::copyInImpl(void const* inputs)
     {
       auto total_copied_elements = 0UL;
-      auto current_begin = static_cast<T*>(inputs);
+      auto current_begin = static_cast<T const*>(inputs);
 
       if (number_ranks == 1)
       {
