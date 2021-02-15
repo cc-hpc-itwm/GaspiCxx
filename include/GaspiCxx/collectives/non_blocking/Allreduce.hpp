@@ -3,6 +3,8 @@
 #include <GaspiCxx/collectives/non_blocking/Collective.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceCommon.hpp>
 
+#include <vector>
+
 namespace gaspi
 {
   namespace collectives
@@ -18,7 +20,10 @@ namespace gaspi
                   ReductionOp reduction_op);
 
         void start(void const* inputs) override;
-        void waitForCompletion(void* output) override;
+        void start(std::vector<T> const& inputs);
+
+        void waitForCompletion(void* outputs) override;
+        void waitForCompletion(std::vector<T>& outputs);
 
       private:
         AllreduceLowLevel<T, Algorithm> allreduce_impl;
@@ -43,11 +48,22 @@ namespace gaspi
     }
 
     template<typename T, AllreduceAlgorithm Algorithm>
-    void Allreduce<T, Algorithm>::waitForCompletion(void* output)
+    void Allreduce<T, Algorithm>::start(std::vector<T> const& inputs)
+    {
+      start(static_cast<void const *>(inputs.data()));
+    }
+
+    template<typename T, AllreduceAlgorithm Algorithm>
+    void Allreduce<T, Algorithm>::waitForCompletion(void* outputs)
     {
       allreduce_impl.waitForCompletion();
-      allreduce_impl.copyOut(output);
+      allreduce_impl.copyOut(outputs);
     }
   
+    template<typename T, AllreduceAlgorithm Algorithm>
+    void Allreduce<T, Algorithm>::waitForCompletion(std::vector<T>& outputs)
+    {
+      waitForCompletion(static_cast<void*>(outputs.data()));
+    }
   }
 }
