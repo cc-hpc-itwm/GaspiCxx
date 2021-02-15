@@ -20,9 +20,11 @@ namespace gaspi
                   gaspi::group::Rank const& root_rank);
 
         void start(void* inputs) override;
+        void start(std::vector<T> const& inputs);
         void start() override;
 
         void waitForCompletion(void* output) override;
+        void waitForCompletion(std::vector<T>& output);
 
       private:
         BroadcastLowLevel<T, Algorithm> broadcast_impl;
@@ -55,6 +57,12 @@ namespace gaspi
     }
 
     template<typename T, BroadcastAlgorithm Algorithm>
+    void Broadcast<T, Algorithm>::start(std::vector<T> const& inputs)
+    {
+      start(static_cast<void const *>(inputs.data()));
+    }
+
+    template<typename T, BroadcastAlgorithm Algorithm>
     void Broadcast<T, Algorithm>::start()
     {
       if(rank == root_rank)
@@ -70,6 +78,12 @@ namespace gaspi
     {
       broadcast_impl.waitForCompletion();
       broadcast_impl.copyOut(output);
+    }
+
+    template<typename T, BroadcastAlgorithm Algorithm>
+    void Broadcast<T, Algorithm>::waitForCompletion(std::vector<T>& output)
+    {
+      waitForCompletion(static_cast<void*>(output.data()));
     }
   }
 }
