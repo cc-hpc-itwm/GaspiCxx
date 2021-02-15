@@ -3,11 +3,7 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GlobalTestConfiguration.hpp>
-#include <progress_engine/ManagementThreadEngine.hpp>
-
-#include <future>
-#include <stdexcept>
-#include <vector>
+#include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
 
 extern GlobalTestConfiguration *globalTestConf;
 namespace gaspi
@@ -55,31 +51,31 @@ namespace gaspi
     };
   }
 
-  TEST(ManagementThreadEngineTest, init)
+  TEST(RoundRobinDedicatedThreadTest, init)
   {
-    ASSERT_NO_THROW(std::make_unique<ManagementThreadEngine>());
+    ASSERT_NO_THROW(std::make_unique<progress_engine::RoundRobinDedicatedThread>());
   }
 
-  TEST(ManagementThreadEngineTest, register_collective)
+  TEST(RoundRobinDedicatedThreadTest, register_collective)
   {
-    ManagementThreadEngine engine;
+    progress_engine::RoundRobinDedicatedThread engine;
     auto col = std::make_shared<CollectiveMock>();
 
     ASSERT_NO_THROW(engine.register_collective(col));
   }
 
-  TEST(ManagementThreadEngineTest, deregister_collective)
+  TEST(RoundRobinDedicatedThreadTest, deregister_collective)
   {
-    ManagementThreadEngine engine;
+    progress_engine::RoundRobinDedicatedThread engine;
     auto col = std::make_shared<CollectiveMock>();
 
     auto handle = engine.register_collective(col);
     ASSERT_NO_THROW(engine.deregister_collective(handle));
   }
 
-  TEST(ManagementThreadEngineTest, execute_collective)
+  TEST(RoundRobinDedicatedThreadTest, execute_collective)
   {
-    ManagementThreadEngine engine;
+    progress_engine::RoundRobinDedicatedThread engine;
     auto collective = std::make_shared<CollectiveMock>();
 
     auto handle = engine.register_collective(collective);
@@ -93,9 +89,9 @@ namespace gaspi
     ASSERT_NO_THROW(engine.deregister_collective(handle));
   }
 
-  TEST(ManagementThreadEngineTest, execute_multiple_collectives)
+  TEST(RoundRobinDedicatedThreadTest, execute_multiple_collectives)
   {
-    ManagementThreadEngine engine;
+    progress_engine::RoundRobinDedicatedThread engine;
     auto collective1 = std::make_shared<CollectiveMock>();
     auto collective2 = std::make_shared<CollectiveMock>();
     auto collective3 = std::make_shared<CollectiveMock>();
