@@ -27,11 +27,10 @@ class Barrier : public Collective
     void execute();
 
   private:
-    gaspi::group::Group group;
     gaspi::Context context;
     std::vector<std::unique_ptr<SourceBuffer>> source_buffers;
     std::vector<std::unique_ptr<TargetBuffer>> target_buffers;
-
+    std::size_t number_steps;
 };
 
 }
