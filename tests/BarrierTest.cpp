@@ -58,9 +58,9 @@ namespace gaspi {
       {
         group::Group generate_group_range(std::size_t start_rank, std::size_t nranks)
         {
-          std::vector<group::GlobalRank> ranks(nranks);
-          std::iota(ranks.begin(), ranks.end(), start_rank);
-          return group::Group(ranks);
+          std::vector<group::GlobalRank> global_ranks(nranks);
+          std::iota(global_ranks.begin(), global_ranks.end(), start_rank);
+          return group::Group(global_ranks);
         }
       }
 
@@ -109,7 +109,8 @@ namespace gaspi {
           }
         }
 
-        // cleanup queues
+        // FIXME: remove manual cleanup
+        // (needed to destroy queues in the right order)
         while(barriers.size() > 0)
         {
           barriers.pop_back();
