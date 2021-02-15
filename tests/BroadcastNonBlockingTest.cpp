@@ -59,60 +59,74 @@ namespace gaspi {
       auto setup = MakeResources<ElemType, BroadcastAlgorithm::SEND_TO_ALL>(
         group_all, 0, root);
       auto& broadcast = setup.get_broadcast();
-      std::vector<ElemType> inputs;
-      std::vector<ElemType> outputs;
+
+      std::vector<ElemType> const inputs {};
+      std::vector<ElemType> outputs {};
 
       if (group_all.rank() == root)
       {
-        ASSERT_NO_THROW(broadcast.start(inputs.data()));
+        ASSERT_NO_THROW(broadcast.start(inputs));
       }
       else
       {
         ASSERT_NO_THROW(broadcast.start());
       }
-      ASSERT_NO_THROW(broadcast.waitForCompletion(outputs.data()));
+      ASSERT_NO_THROW(broadcast.waitForCompletion(outputs));
     }
 
-    // TEST_F(BroadcastNonBlockingTest, single_element_allreduce)
-    // {
-    //   using ElemType = int;
-    //   auto setup = MakeResources<ElemType, BroadcastAlgorithm::RING>(group_all, 1);
-    //   auto& allreduce = setup.get_allreduce();
+    TEST_F(BroadcastNonBlockingTest, single_element_allreduce)
+    {
+      using ElemType = int;
+      auto const root = gaspi::group::Rank(group_all.size()-1);
+      auto setup = MakeResources<ElemType, BroadcastAlgorithm::SEND_TO_ALL>(
+        group_all, 1, root);
+      auto& broadcast = setup.get_broadcast();
 
-    //   ElemType elem = 5;
-    //   std::vector<ElemType> inputs {elem};
-    //   std::vector<ElemType> expected;
-    //   std::vector<ElemType> outputs(1);
+      ElemType elem = 5;
+      std::vector<ElemType> const inputs {elem};
+      std::vector<ElemType> const expected = inputs;
+      std::vector<ElemType> outputs(1);
 
-    //   expected.push_back(elem * group_all.size());
+      if (group_all.rank() == root)
+      {
+        broadcast.start(inputs);
+      }
+      else
+      {
+        broadcast.start();
+      }
+      broadcast.waitForCompletion(outputs);
 
-    //   allreduce.start(inputs.data());
-    //   allreduce.waitForCompletion(outputs.data());
+      ASSERT_EQ(outputs, expected);
+    }
 
-    //   ASSERT_EQ(outputs, expected);
-    // }
+    TEST_F(BroadcastNonBlockingTest, multi_elem_allreduce)
+    {
+      using ElemType = float;
+      std::size_t num_elements = 9;
 
-    // TEST_F(BroadcastNonBlockingTest, multi_elem_allreduce)
-    // {
-    //   using ElemType = float;
-    //   std::size_t num_elements = 9;
-    //   auto setup = MakeResources<ElemType, BroadcastAlgorithm::RING>(group_all, num_elements);
-    //   auto& allreduce = setup.get_allreduce();
+      auto const root = gaspi::group::Rank(group_all.size()-1);
+      auto setup = MakeResources<ElemType, BroadcastAlgorithm::SEND_TO_ALL>(
+        group_all, num_elements, root);
+      auto& broadcast = setup.get_broadcast();
 
-    //   std::vector<ElemType> inputs(num_elements);
-    //   std::vector<ElemType> expected(num_elements);
-    //   std::vector<ElemType> outputs(num_elements);
+      std::vector<ElemType> inputs(num_elements);
+      std::iota(inputs.begin(), inputs.end(), 42);
+      std::vector<ElemType> const expected = inputs;
+      std::vector<ElemType> outputs(num_elements);
 
-    //   std::iota(inputs.begin(), inputs.end(), 1);
+      if (group_all.rank() == root)
+      {
+        broadcast.start(inputs);
+      }
+      else
+      {
+        broadcast.start();
+      }
+      broadcast.waitForCompletion(outputs);
 
-    //   auto size = group_all.size();
-    //   std::transform(inputs.begin(), inputs.end(), expected.begin(),
-    //                 [&size](auto elem) { return elem * size; });
 
-    //   allreduce.start(inputs.data());
-    //   allreduce.waitForCompletion(outputs.data());
-
-    //   ASSERT_EQ(outputs, expected);
-    // }
+      ASSERT_EQ(outputs, expected);
+    }
   }
 }
