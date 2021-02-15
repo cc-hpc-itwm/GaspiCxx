@@ -40,7 +40,8 @@ class SingleSidedWriteBufferTest : public ::testing::Test
   protected:
 
   std::size_t _segmentSize;
-  Runtime & context;
+  gaspi::Runtime& context;
+
 
   SingleSidedWriteBufferTest()
   : _segmentSize(1024*1024)

@@ -26,7 +26,7 @@ main
   double aggregate_init_time = 0.0;
   double aggregate_wait_time = 0.0;
 
-  auto & context = gaspi::getRuntime();
+  auto& context = gaspi::getRuntime();
 
   gaspi::segment::Segment segment1(1024*1024);
   gaspi::segment::Segment segment2(1024*1024);
