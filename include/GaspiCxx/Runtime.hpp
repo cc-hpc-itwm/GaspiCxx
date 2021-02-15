@@ -22,7 +22,7 @@
 #include <cstring>
 #include <memory>
 #include <GaspiCxx/Context.hpp>
-#include <progress_engine/ProgressEngine.hpp>
+#include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 
 extern "C" {
 #include <GASPI.h>
@@ -65,7 +65,7 @@ namespace passive { class Passive; }
     gaspi_size_t _segmentSize;
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
-    std::unique_ptr<ProgressEngine> _pengine;
+    std::unique_ptr<progress_engine::ProgressEngine> _pengine;
 
     //! A runtime is a singleton.
     Runtime
@@ -103,7 +103,7 @@ namespace passive { class Passive; }
       return *_ppassive;
     }
 
-    ProgressEngine &
+    progress_engine::ProgressEngine &
     engine() {
       return *_pengine;
     }

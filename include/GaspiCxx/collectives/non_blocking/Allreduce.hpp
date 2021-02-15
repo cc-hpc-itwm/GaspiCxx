@@ -6,7 +6,6 @@
 #include <GaspiCxx/Runtime.hpp>
 
 #include <memory>
-
 #include <vector>
 
 namespace gaspi
@@ -31,8 +30,8 @@ namespace gaspi
         void waitForCompletion(std::vector<T>& outputs);
 
       private:
-        ProgressEngine& progress_engine;
-        ProgressEngine::CollectiveHandle handle;
+        progress_engine::ProgressEngine& progress_engine;
+        progress_engine::ProgressEngine::CollectiveHandle handle;
         std::shared_ptr<AllreduceLowLevel<T, Algorithm>> allreduce_impl;
     };
 
@@ -41,9 +40,10 @@ namespace gaspi
                                        gaspi::group::Group const& group,
                                        std::size_t number_elements,
                                        ReductionOp reduction_op)
-    : allreduce_impl(std::make_shared<AllreduceLowLevel<T, Algorithm>>(
-                     segment, group, number_elements, reduction_op)),
-      progress_engine(gaspi::getRuntime().engine())
+    : progress_engine(gaspi::getRuntime().engine()),
+      handle(),
+      allreduce_impl(std::make_shared<AllreduceLowLevel<T, Algorithm>>(
+                     segment, group, number_elements, reduction_op))
     {
       allreduce_impl->waitForSetup();
       handle = progress_engine.register_collective(allreduce_impl);

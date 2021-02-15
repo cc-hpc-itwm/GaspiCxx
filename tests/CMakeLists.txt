@@ -8,7 +8,7 @@ add_executable ( GaspiCxxTests
       AllreduceNonBlockingTest.cpp
       AllreduceNonBlockingLowLevelTest.cpp
       AlltoallTest.cpp
-      ManagementThreadEngineTest.cpp
+      RoundRobinDedicatedThreadTest.cpp
       PassiveTest.cpp
       SegmentMemoryManagerTest.cpp 
       SingleSidedWriteBufferTest.cpp )

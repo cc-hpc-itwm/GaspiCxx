@@ -1,32 +1,35 @@
 
-#include <progress_engine/ProgressEngine.hpp>
+#include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 
 namespace gaspi
 {
-  ProgressEngine::ProgressEngine()
-  : current_handle(0UL)
-  {}
-  
-  ProgressEngine::CollectiveHandle ProgressEngine::register_collective(
-            std::shared_ptr<collectives::CollectiveLowLevel> collective)
+  namespace progress_engine
   {
-    std::lock_guard<std::mutex> const lock(operators_mutex);
-    ++current_handle;
-    bool const is_okay = operators.insert({current_handle, collective}).second;
-    if(!is_okay)
+    ProgressEngine::ProgressEngine()
+    : current_handle(0UL)
+    {}
+    
+    ProgressEngine::CollectiveHandle ProgressEngine::register_collective(
+              std::shared_ptr<collectives::CollectiveLowLevel> collective)
     {
-      throw std::logic_error("ProgressEngine: Handle has already been used.");
+      std::lock_guard<std::mutex> const lock(operators_mutex);
+      ++current_handle;
+      bool const is_okay = operators.insert({current_handle, collective}).second;
+      if(!is_okay)
+      {
+        throw std::logic_error("ProgressEngine: Handle has already been used.");
+      }
+      return (current_handle);
     }
-    return (current_handle);
-  }
 
-  void ProgressEngine::deregister_collective(CollectiveHandle const& handle)
-  {
-    std::lock_guard<std::mutex> const lock(operators_mutex);
-    auto const count = operators.erase(handle);
-    if(count != 1)
+    void ProgressEngine::deregister_collective(CollectiveHandle const& handle)
     {
-      throw std::logic_error("ProgressEngine: Could not remove operator");
+      std::lock_guard<std::mutex> const lock(operators_mutex);
+      auto const count = operators.erase(handle);
+      if(count != 1)
+      {
+        throw std::logic_error("ProgressEngine: Could not remove operator");
+      }
     }
   }
 }
