@@ -23,7 +23,6 @@
 
 #include <atomic>
 #include <mutex>
-#include <vector>
 
 namespace gaspi {
 namespace collectives {
@@ -62,8 +61,6 @@ public:
   // Copy data to communication buffers before execution
   // Changes state from INITIALIZED to READY
   void copyIn(void const* inputs);
-  template<typename T>
-  void copyIn(std::vector<T> const& inputs);
 
   // Start collective operation
   // Only one thread should invoke `start`, which will initiate the 
@@ -82,8 +79,6 @@ public:
   // which allows to re-execute the collective
   // (after resetting the input data with `copyIn`).
   void copyOut(void* outputs);
-  template<typename T>
-  void copyOut(std::vector<T>& outputs);
 
   // Convenience functions
   // =====================
