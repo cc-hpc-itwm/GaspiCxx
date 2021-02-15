@@ -250,9 +250,7 @@ main
   ( int /*argc*/
   , char *[] /*argv*/) try {
 
-  gaspi::initGaspiCxx();
-
-  gaspi::Context context;
+  auto& context = gaspi::getRuntime();
 
   gaspi::segment::Segment segment(1024*1024);
 
