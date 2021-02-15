@@ -56,6 +56,7 @@ Runtime
 , _psegment(std::make_unique<segment::Segment>(_segmentSize))
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
+, _pglobal_barrier()
 { }
 
 void
@@ -98,6 +99,19 @@ Runtime
 {
   static auto instance = new Runtime();
   return *instance;
+}
+
+void
+Runtime
+  ::barrier
+    ()
+{
+  if (!_pglobal_barrier)
+  {
+    _pglobal_barrier = std::make_unique<gaspi::collectives::blocking::Barrier>(*_psegment, this->group());
+  }
+
+  _pglobal_barrier->execute();
 }
 
 Runtime &

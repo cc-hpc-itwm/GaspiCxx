@@ -111,10 +111,6 @@ class Context
     void
     flush
       () const;
-
-    /// Collective barrier call for all processes in `this` communicator.
-    void
-    barrier() const;
 };
 
 } /* namespace gaspi */
