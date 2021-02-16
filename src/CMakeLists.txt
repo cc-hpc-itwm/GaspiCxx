@@ -14,6 +14,7 @@ add_library ( GaspiCxx
               segment/Segment.cpp
               segment/SegmentManager.cpp
               segment/SegmentResource.cpp
+              segment/SingleSegmentPool.cpp
               segment/MemoryManager.cpp
               segment/NotificationManager.cpp
               singlesided/Buffer.cpp

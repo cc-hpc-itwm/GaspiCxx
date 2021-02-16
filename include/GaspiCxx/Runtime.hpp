@@ -22,6 +22,8 @@
 #include <cstring>
 #include <memory>
 #include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/collectives/Barrier.hpp>
+#include <GaspiCxx/segment/SegmentPool.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 #include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
 #include <GaspiCxx/collectives/Barrier.hpp>
@@ -67,6 +69,7 @@ namespace passive { class Passive; }
     gaspi_size_t _segmentSize;
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
+    std::unique_ptr<segment::SegmentPool> _psegment_pool;
     std::unique_ptr<progress_engine::ProgressEngine> _pengine;
     std::unique_ptr<gaspi::collectives::blocking::Barrier> _pglobal_barrier;
 
@@ -104,6 +107,11 @@ namespace passive { class Passive; }
     passive::Passive &
     passive() {
       return *_ppassive;
+    }
+
+    segment::Segment &
+    getFreeSegment(std::size_t size) {
+      return _psegment_pool->getSegment(size);
     }
 
     progress_engine::ProgressEngine &

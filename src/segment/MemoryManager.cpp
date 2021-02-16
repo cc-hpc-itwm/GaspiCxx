@@ -107,6 +107,25 @@ MemoryManager
   throw std::bad_alloc();
 }
 
+bool
+MemoryManager
+  ::canAllocate( std::size_t size_requested )
+{
+  if (size_requested == 0) return true;
+
+  LockGuard guard(_mutex);
+
+  for (auto const& block : _blocks)
+  {
+    if (block.free && block.size >= size_requested)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
  void
 MemoryManager
   ::deallocate

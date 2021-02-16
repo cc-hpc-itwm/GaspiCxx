@@ -71,6 +71,8 @@ class SegmentManager
     allocator
       ();
 
+    bool hasFreeMemory( std::size_t );
+
     Notification
     acquire_notification
       ();

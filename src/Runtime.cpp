@@ -27,6 +27,7 @@
 #include <GaspiCxx/segment/MemoryManager.hpp>
 #include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
+#include <GaspiCxx/segment/SingleSegmentPool.hpp>
 #include <GaspiCxx/utility/Filesystem.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
@@ -56,7 +57,8 @@ Runtime
 , _psegment(std::make_unique<segment::Segment>(_segmentSize))
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
-, _pengine()
+, _psegment_pool(std::make_unique<segment::SingleSegmentPool>(100*1024*1024)) // FIXME: Use a dynamic SegmentPool implementation
+, _pengine(std::make_unique<progress_engine::RoundRobinDedicatedThread>())
 , _pglobal_barrier()
 { }
 

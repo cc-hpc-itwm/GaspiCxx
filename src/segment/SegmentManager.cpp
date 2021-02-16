@@ -133,6 +133,13 @@ SegmentManager
   return Allocator<char>(_memoryManager.get());
 }
 
+bool
+SegmentManager
+  ::hasFreeMemory( std::size_t size )
+{
+  return _memoryManager->canAllocate(size);
+}
+
 Notification
 SegmentManager
   ::acquire_notification

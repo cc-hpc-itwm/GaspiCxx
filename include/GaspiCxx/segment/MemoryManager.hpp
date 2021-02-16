@@ -43,6 +43,10 @@ public:
   allocate
     ( std::size_t size );
 
+  bool
+  canAllocate
+    ( std::size_t size );
+
   void
   deallocate
     ( void * ptr
