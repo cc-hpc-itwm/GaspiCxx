@@ -20,6 +20,11 @@ namespace gaspi
         Allreduce(gaspi::segment::Segment& segment,
                   gaspi::group::Group const& group,
                   std::size_t number_elements,
+                  ReductionOp reduction_op,
+                  progress_engine::ProgressEngine& progress_engine);
+        Allreduce(gaspi::segment::Segment& segment,
+                  gaspi::group::Group const& group,
+                  std::size_t number_elements,
                   ReductionOp reduction_op);
         ~Allreduce();
 
@@ -36,11 +41,13 @@ namespace gaspi
     };
 
     template<typename T, AllreduceAlgorithm Algorithm>
-    Allreduce<T, Algorithm>::Allreduce(gaspi::segment::Segment& segment,
-                                       gaspi::group::Group const& group,
-                                       std::size_t number_elements,
-                                       ReductionOp reduction_op)
-    : progress_engine(gaspi::getRuntime().engine()),
+    Allreduce<T, Algorithm>::Allreduce(
+      gaspi::segment::Segment& segment,
+      gaspi::group::Group const& group,
+      std::size_t number_elements,
+      ReductionOp reduction_op,
+      progress_engine::ProgressEngine& progress_engine)
+    : progress_engine(progress_engine),
       handle(),
       allreduce_impl(std::make_shared<AllreduceLowLevel<T, Algorithm>>(
                      segment, group, number_elements, reduction_op))
@@ -48,6 +55,16 @@ namespace gaspi
       allreduce_impl->waitForSetup();
       handle = progress_engine.register_collective(allreduce_impl);
     }
+
+    template<typename T, AllreduceAlgorithm Algorithm>
+    Allreduce<T, Algorithm>::Allreduce(
+      gaspi::segment::Segment& segment,
+      gaspi::group::Group const& group,
+      std::size_t number_elements,
+      ReductionOp reduction_op)
+    : Allreduce(segment, group, number_elements, reduction_op,
+                gaspi::getRuntime().getDefaultProgressEngine())
+    { }
 
     template<typename T, AllreduceAlgorithm Algorithm>
     Allreduce<T, Algorithm>::~Allreduce()
