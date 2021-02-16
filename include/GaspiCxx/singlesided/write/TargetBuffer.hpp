@@ -43,7 +43,9 @@ class TargetBuffer : public Endpoint {
 
     using Tag = int;
 
-    // Allocates a buffer of
+    TargetBuffer
+      ( std::size_t size );
+
     TargetBuffer
       ( segment::Segment & segment
       , std::size_t size );
@@ -52,6 +54,11 @@ class TargetBuffer : public Endpoint {
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
+
+    TargetBuffer
+      ( std::size_t size
+      , segment
+          ::Notification notification );
 
     TargetBuffer
       ( segment::Segment & segment
@@ -65,6 +72,11 @@ class TargetBuffer : public Endpoint {
       , std::size_t size
       , segment
           ::Notification notification );
+
+    // Copy constructor creates a new `TargetBuffer`,
+    // which points to the same (segment) memory,
+    // but creates new notifications
+    TargetBuffer(TargetBuffer const&);
 
     // bilateral function
     // needs to be invoked by the correspondent

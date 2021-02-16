@@ -85,6 +85,13 @@ Endpoint
 
 Endpoint
   ::Endpoint
+   ( std::size_t size
+   , Type type )
+: Endpoint(gaspi::getRuntime().getFreeSegment(size), size, type)
+{ }
+
+Endpoint
+  ::Endpoint
    ( void * const pointer
    , segment::Segment & segment
    , std::size_t size
@@ -119,6 +126,15 @@ Endpoint
 , _isConnected(false)
 , _type(type)
 {}
+
+Endpoint
+  ::Endpoint
+   ( std::size_t size
+   , segment
+       ::Notification notification
+   , Type type )
+: Endpoint(gaspi::getRuntime().getFreeSegment(size), size, notification, type)
+{ }
 
 Endpoint
   ::Endpoint

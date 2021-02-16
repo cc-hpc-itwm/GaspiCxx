@@ -53,6 +53,9 @@ class Buffer {
   public:
 
     Buffer
+      ( std::size_t size );
+
+    Buffer
       ( segment::Segment & segment
       , std::size_t size );
 
@@ -60,6 +63,11 @@ class Buffer {
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
+
+    Buffer
+      ( std::size_t size
+      , segment
+          ::Notification notification );
 
     Buffer
       ( segment::Segment & segment
@@ -101,7 +109,7 @@ class Buffer {
 
   protected:
 
-    std::unique_ptr<MemoryAllocation>  _allocMemory;
+    std::shared_ptr<MemoryAllocation>  _allocMemory;
     std::unique_ptr<NotifyAllocation>  _allocNotify;
 
     void * const        _pointer;

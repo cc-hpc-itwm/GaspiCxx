@@ -36,6 +36,14 @@ namespace write {
 
 SourceBuffer
   ::SourceBuffer
+   ( std::size_t size )
+: Endpoint
+  ( size
+  , Endpoint::Type::SOURCE)
+{}
+
+SourceBuffer
+  ::SourceBuffer
    ( segment::Segment & segment
    , std::size_t size )
 : Endpoint
@@ -58,6 +66,17 @@ SourceBuffer
 
 SourceBuffer
   ::SourceBuffer
+   ( std::size_t size
+   , segment
+       ::Notification notification )
+: Endpoint
+  ( size
+  , notification
+  , Endpoint::Type::SOURCE )
+{}
+
+SourceBuffer
+  ::SourceBuffer
    ( segment::Segment & segment
    , std::size_t size
    , segment
@@ -83,6 +102,19 @@ SourceBuffer
   , notification
   , Endpoint::Type::SOURCE )
 {}
+
+SourceBuffer
+  ::SourceBuffer
+   ( SourceBuffer const& other )
+: Endpoint
+  ( other._pointer
+  , other._segment
+  , other._size
+  , Endpoint::Type::SOURCE )
+{
+  // Take shared ownership of existing memory allocation
+  _allocMemory = other._allocMemory;
+}
 
 SourceBuffer
   ::~SourceBuffer

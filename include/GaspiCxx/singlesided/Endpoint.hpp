@@ -73,6 +73,10 @@ class Endpoint : public Buffer {
     enum Type {SOURCE, TARGET, GENERIC};
 
     Endpoint
+      ( std::size_t size
+      , Type type = GENERIC );
+
+    Endpoint
       ( segment::Segment & segment
       , std::size_t size
       , Type type = GENERIC );
@@ -81,6 +85,12 @@ class Endpoint : public Buffer {
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size
+      , Type type = GENERIC);
+
+    Endpoint
+      ( std::size_t size
+      , segment
+          ::Notification notification
       , Type type = GENERIC);
 
     Endpoint

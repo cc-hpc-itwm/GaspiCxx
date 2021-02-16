@@ -36,6 +36,14 @@ namespace write {
 
 TargetBuffer
   ::TargetBuffer
+   ( std::size_t size )
+: Endpoint
+  ( size
+  , Endpoint::Type::TARGET )
+{}
+
+TargetBuffer
+  ::TargetBuffer
    ( segment::Segment & segment
    , std::size_t size )
 : Endpoint
@@ -53,6 +61,17 @@ TargetBuffer
   ( pointer
   , segment
   , size
+  , Endpoint::Type::TARGET )
+{}
+
+TargetBuffer
+  ::TargetBuffer
+   ( std::size_t size
+   , segment
+       ::Notification notification )
+: Endpoint
+  ( size
+  , notification
   , Endpoint::Type::TARGET )
 {}
 
@@ -83,6 +102,19 @@ TargetBuffer
   , notification
   , Endpoint::Type::TARGET )
 {}
+
+TargetBuffer
+  ::TargetBuffer
+   ( TargetBuffer const& other )
+: Endpoint
+  ( other._pointer
+  , other._segment
+  , other._size
+  , Endpoint::Type::TARGET )
+{
+  // Take shared ownership of existing memory allocation
+  _allocMemory = other._allocMemory;
+}
 
 Endpoint::ConnectHandle
 TargetBuffer

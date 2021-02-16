@@ -96,6 +96,13 @@ class NotifyAllocation {
 
 Buffer
   ::Buffer
+   ( std::size_t size )
+: Buffer(gaspi::getRuntime().getFreeSegment(size)
+  , size)
+{ }
+
+Buffer
+  ::Buffer
    ( segment::Segment & segment
    , std::size_t size )
 : _allocMemory(new MemoryAllocation(segment.allocator(),size))
@@ -118,6 +125,15 @@ Buffer
 , _notification(_allocNotify->notification())
 , _segment(segment)
 {}
+
+Buffer
+  ::Buffer
+   ( std::size_t size
+   , segment
+       ::Notification notification )
+: Buffer(gaspi::getRuntime().getFreeSegment(size)
+  , size, notification)
+{ }
 
 Buffer
   ::Buffer

@@ -44,6 +44,9 @@ class SourceBuffer : public Endpoint {
     using Tag = int;
 
     SourceBuffer
+      ( std::size_t size );
+
+    SourceBuffer
       ( segment::Segment & segment
       , std::size_t size );
 
@@ -51,6 +54,11 @@ class SourceBuffer : public Endpoint {
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
+
+    SourceBuffer
+      ( std::size_t size
+      , segment
+          ::Notification notification );
 
     SourceBuffer
       ( segment::Segment & segment
@@ -64,6 +72,11 @@ class SourceBuffer : public Endpoint {
       , std::size_t size
       , segment
           ::Notification notification );
+
+    // Copy constructor creates a new `SourceBuffer`,
+    // which points to the same (segment) memory,
+    // but creates new notifications
+    SourceBuffer(SourceBuffer const&);
 
     ~SourceBuffer
       ();
