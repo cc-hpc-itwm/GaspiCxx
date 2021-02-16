@@ -104,7 +104,7 @@ namespace passive { class Passive; }
     }
 
     progress_engine::ProgressEngine &
-    engine() {
+    getDefaultProgressEngine() {
       return *_pengine;
     }
 
