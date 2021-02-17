@@ -3,7 +3,6 @@
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/non_blocking/Allreduce.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRing.hpp>
-#include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
 #include <numeric>
@@ -30,29 +29,13 @@ namespace gaspi {
         gaspi::group::Group const group_all;
     };
 
-    template<typename T, AllreduceAlgorithm Algorithm>
-    class MakeResources
-    {
-      public:
-        MakeResources(gaspi::group::Group const& group,
-                      std::size_t number_elements,
-                      std::size_t segment_size = 1024UL)
-        : segment(segment_size),
-          allreduce(segment, group, number_elements, ReductionOp::SUM)
-        { }
-
-        auto& get_allreduce() { return allreduce; }
-
-      private:
-        gaspi::segment::Segment segment;
-        Allreduce<T, Algorithm> allreduce;
-    };
-
     TEST_F(AllreduceNonBlockingTest, empty_allreduce)
     {
       using ElemType = int;
-      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 0);
-      auto& allreduce = setup.get_allreduce();
+      auto const num_elements = 0UL;
+      Allreduce<ElemType, AllreduceAlgorithm::RING> allreduce(
+        group_all, num_elements, ReductionOp::SUM);
+
       std::vector<ElemType> const inputs {};
       std::vector<ElemType> outputs {};
 
@@ -63,13 +46,14 @@ namespace gaspi {
     TEST_F(AllreduceNonBlockingTest, single_element_allreduce)
     {
       using ElemType = int;
-      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, 1);
-      auto& allreduce = setup.get_allreduce();
+      auto const num_elements = 1UL;
+      Allreduce<ElemType, AllreduceAlgorithm::RING> allreduce(
+        group_all, num_elements, ReductionOp::SUM);
 
-      ElemType elem = 5;
+      ElemType const elem = 5;
       std::vector<ElemType> const inputs {elem};
       std::vector<ElemType> expected;
-      std::vector<ElemType> outputs(1);
+      std::vector<ElemType> outputs(num_elements);
 
       expected.push_back(elem * group_all.size());
 
@@ -82,9 +66,9 @@ namespace gaspi {
     TEST_F(AllreduceNonBlockingTest, multi_elem_allreduce)
     {
       using ElemType = float;
-      std::size_t const num_elements = 9;
-      auto setup = MakeResources<ElemType, AllreduceAlgorithm::RING>(group_all, num_elements);
-      auto& allreduce = setup.get_allreduce();
+      auto const num_elements = 9UL;
+      Allreduce<ElemType, AllreduceAlgorithm::RING> allreduce(
+        group_all, num_elements, ReductionOp::SUM);
 
       std::vector<ElemType> inputs(num_elements);
       std::vector<ElemType> expected(num_elements);

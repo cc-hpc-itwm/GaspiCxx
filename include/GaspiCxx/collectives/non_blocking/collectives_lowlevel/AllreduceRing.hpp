@@ -24,8 +24,7 @@ namespace gaspi
       public:
         using AllreduceCommon::AllreduceCommon;
 
-        AllreduceLowLevel(gaspi::segment::Segment& segment,
-                          gaspi::group::Group const& group,
+        AllreduceLowLevel(gaspi::group::Group const& group,
                           std::size_t number_elements,
                           ReductionOp reduction_op);
 
@@ -66,11 +65,10 @@ namespace gaspi
 
     template<typename T>
     AllreduceLowLevel<T, AllreduceAlgorithm::RING>::AllreduceLowLevel(
-                      gaspi::segment::Segment& segment,
                       gaspi::group::Group const& group,
                       std::size_t number_elements,
                       ReductionOp reduction_op)
-    : AllreduceCommon(segment, group, number_elements, reduction_op),
+    : AllreduceCommon(group, number_elements, reduction_op),
       rank(group.rank()),
       number_ranks(group.size()),
       source_buffers(), target_buffers(),
@@ -90,9 +88,9 @@ namespace gaspi
         for (auto i = 0UL; i < number_ranks; ++i)
         {
           source_buffers.push_back(
-            std::make_unique<SourceBuffer>(segment, size_padded));
+            std::make_unique<SourceBuffer>(size_padded));
           target_buffers.push_back(
-            std::make_unique<TargetBuffer>(segment, size_padded));
+            std::make_unique<TargetBuffer>(size_padded));
         }
 
         for (auto i = 0UL; i < number_ranks; ++i)
