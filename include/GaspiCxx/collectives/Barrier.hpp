@@ -3,7 +3,6 @@
 #include <GaspiCxx/collectives/Collective.hpp>
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 
@@ -20,8 +19,7 @@ class Barrier : public Collective
 
   public:
 
-    Barrier(gaspi::segment::Segment&,
-            gaspi::group::Group const&);
+    Barrier(gaspi::group::Group const&);
     ~Barrier() = default;
 
     void execute();

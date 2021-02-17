@@ -2,7 +2,6 @@
 
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/Barrier.hpp>
-#include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/Context.hpp>
 
@@ -33,16 +32,13 @@ namespace gaspi {
 
       TEST_F(BarrierTest, one_barrier)
       {
-        gaspi::segment::Segment segment(1024UL);
-
-        Barrier barrier(segment, group_all);
+        Barrier barrier(group_all);
         ASSERT_NO_THROW(barrier.execute());
       }
 
       TEST_F(BarrierTest, multiple_barriers)
       {
-        gaspi::segment::Segment segment(1024UL);
-        Barrier barrier(segment, group_all);
+        Barrier barrier(group_all);
 
         auto num_barrier_calls = 10UL;
         for (auto i = 0UL; i < num_barrier_calls; ++i)
@@ -63,38 +59,36 @@ namespace gaspi {
 
       TEST_F(BarrierTest, group_subset_ranks)
       {
-        gaspi::segment::Segment segment(1024UL);
         auto nranks = group_all.size();
 
         if (group_all.rank().get() < nranks/3)
         {
-          Barrier barrier(segment, generate_group_range(0, nranks/3));
+          Barrier barrier(generate_group_range(0, nranks/3));
           ASSERT_NO_THROW(barrier.execute());
         }
       }
 
       TEST_F(BarrierTest, overlapping_groups)
       {
-        gaspi::segment::Segment segment(1024UL);
         auto nranks = group_all.size();
 
         std::vector<std::unique_ptr<Barrier>> barriers;
         if (group_all.rank().get() < nranks/3)
         {
           auto const group = generate_group_range(0, nranks/3);
-          barriers.push_back(std::make_unique<Barrier>(segment, group));
+          barriers.push_back(std::make_unique<Barrier>(group));
         }
 
         if (group_all.rank().get() < nranks/2)
         {
           auto const group = generate_group_range(0, nranks/2);
-          barriers.push_back(std::make_unique<Barrier>(segment, group));
+          barriers.push_back(std::make_unique<Barrier>(group));
         }
 
         if (group_all.rank().get() < nranks-1)
         {
           auto const group = generate_group_range(0, nranks-1);
-          barriers.push_back(std::make_unique<Barrier>(segment, group));
+          barriers.push_back(std::make_unique<Barrier>(group));
         }
 
         auto num_barrier_calls = 5UL;

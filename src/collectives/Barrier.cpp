@@ -13,8 +13,7 @@ namespace gaspi {
   namespace collectives {
     namespace blocking {
 
-      Barrier::Barrier(gaspi::segment::Segment& segment,
-                       gaspi::group::Group const& group)
+      Barrier::Barrier(gaspi::group::Group const& group)
       : context(group),
         number_steps(std::ceil(std::log2(group.size())))
       {
@@ -26,9 +25,9 @@ namespace gaspi {
         for (auto i = 0UL; i < number_steps; ++i)
         {
           source_buffers.push_back(
-            std::make_unique<SourceBuffer>(segment, zero_size));
+            std::make_unique<SourceBuffer>(zero_size));
           target_buffers.push_back(
-            std::make_unique<TargetBuffer>(segment, zero_size));
+            std::make_unique<TargetBuffer>(zero_size));
         }
 
         // connect buffers
