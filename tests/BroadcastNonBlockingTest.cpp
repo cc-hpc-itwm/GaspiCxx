@@ -3,7 +3,6 @@
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/non_blocking/Broadcast.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastSendToAll.hpp>
-#include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
 #include <numeric>
@@ -30,32 +29,13 @@ namespace gaspi {
         gaspi::group::Group const group_all;
     };
 
-    template<typename T, BroadcastAlgorithm Algorithm>
-    class MakeResources
-    {
-      public:
-        MakeResources(gaspi::group::Group const& group,
-                      std::size_t number_elements,
-                      gaspi::group::Rank const& root,
-                      std::size_t segment_size = 1024UL)
-        : segment(segment_size),
-          broadcast(segment, group, number_elements, root)
-        { }
-
-        auto& get_broadcast() { return broadcast; }
-
-      private:
-        gaspi::segment::Segment segment;
-        Broadcast<T, Algorithm> broadcast;
-    };
-
     TEST_F(BroadcastNonBlockingTest, empty_broadcast)
     {
       using ElemType = int;
+      auto const num_elements = 0UL;
       auto const root = gaspi::group::Rank(group_all.size()-1);
-      auto setup = MakeResources<ElemType, BroadcastAlgorithm::SEND_TO_ALL>(
-        group_all, 0, root);
-      auto& broadcast = setup.get_broadcast();
+      Broadcast<ElemType, BroadcastAlgorithm::SEND_TO_ALL> broadcast(
+        group_all, num_elements, root);
 
       std::vector<ElemType> const inputs {};
       std::vector<ElemType> outputs {};
@@ -74,15 +54,15 @@ namespace gaspi {
     TEST_F(BroadcastNonBlockingTest, single_element_allreduce)
     {
       using ElemType = int;
+      auto const num_elements = 1UL;
       auto const root = gaspi::group::Rank(group_all.size()-1);
-      auto setup = MakeResources<ElemType, BroadcastAlgorithm::SEND_TO_ALL>(
-        group_all, 1, root);
-      auto& broadcast = setup.get_broadcast();
+      Broadcast<ElemType, BroadcastAlgorithm::SEND_TO_ALL> broadcast(
+        group_all, num_elements, root);
 
-      ElemType elem = 5;
+      ElemType const elem = 5;
       std::vector<ElemType> const inputs {elem};
       std::vector<ElemType> const expected = inputs;
-      std::vector<ElemType> outputs(1);
+      std::vector<ElemType> outputs(num_elements);
 
       if (group_all.rank() == root)
       {
@@ -100,12 +80,10 @@ namespace gaspi {
     TEST_F(BroadcastNonBlockingTest, multi_elem_allreduce)
     {
       using ElemType = float;
-      std::size_t num_elements = 9;
-
+      auto const num_elements = 9UL;
       auto const root = gaspi::group::Rank(group_all.size()-1);
-      auto setup = MakeResources<ElemType, BroadcastAlgorithm::SEND_TO_ALL>(
+      Broadcast<ElemType, BroadcastAlgorithm::SEND_TO_ALL> broadcast(
         group_all, num_elements, root);
-      auto& broadcast = setup.get_broadcast();
 
       std::vector<ElemType> inputs(num_elements);
       std::iota(inputs.begin(), inputs.end(), 42);

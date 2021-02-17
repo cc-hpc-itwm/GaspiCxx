@@ -18,13 +18,11 @@ namespace gaspi
     class Broadcast : public RootedSendCollective
     { 
       public:
-        Broadcast(gaspi::segment::Segment& segment,
-                  gaspi::group::Group const& group,
+        Broadcast(gaspi::group::Group const& group,
                   std::size_t number_elements,
                   gaspi::group::Rank const& root_rank,
                   gaspi::progress_engine::ProgressEngine& progress_engine);
-        Broadcast(gaspi::segment::Segment& segment,
-                  gaspi::group::Group const& group,
+        Broadcast(gaspi::group::Group const& group,
                   std::size_t number_elements,
                   gaspi::group::Rank const& root_rank);
         ~Broadcast();
@@ -47,7 +45,6 @@ namespace gaspi
 
     template<typename T, BroadcastAlgorithm Algorithm>
     Broadcast<T, Algorithm>::Broadcast(
-      gaspi::segment::Segment& segment,
       gaspi::group::Group const& group,
       std::size_t number_elements,
       gaspi::group::Rank const& root_rank,
@@ -55,7 +52,7 @@ namespace gaspi
     : progress_engine(progress_engine),
       handle(),
       broadcast_impl(std::make_shared<BroadcastLowLevel<T, Algorithm>>(
-        segment, group, number_elements, root_rank)),
+        group, number_elements, root_rank)),
       root_rank(root_rank),
       rank(group.rank())
     {
@@ -65,11 +62,10 @@ namespace gaspi
 
     template<typename T, BroadcastAlgorithm Algorithm>
     Broadcast<T, Algorithm>::Broadcast(
-      gaspi::segment::Segment& segment,
       gaspi::group::Group const& group,
       std::size_t number_elements,
       gaspi::group::Rank const& root_rank)
-    : Broadcast(segment, group, number_elements, root_rank,
+    : Broadcast(group, number_elements, root_rank,
                 gaspi::getRuntime().getDefaultProgressEngine())
     { }
 
