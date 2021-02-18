@@ -71,10 +71,13 @@ class Group
     contains_global_rank
       (GlobalRank const &) const;
 
-    // returns a Rank between [0, size-1] that corresponds to
-    // the global GlobalRank of the current process
+    // returns a `Rank` between [0, size-1] that corresponds to
+    // the `GlobalRank` of the current process
     Rank
     rank() const;
+
+    GlobalRank
+    global_rank() const;
 
     GlobalRank
     toGlobalRank

@@ -106,6 +106,13 @@ Group
   return _group_rank;
 }
 
+GlobalRank
+Group
+  ::global_rank() const
+{
+  return _group[_group_rank.get()];
+}
+
 bool
 Group
   ::contains_rank(Rank const& rank) const

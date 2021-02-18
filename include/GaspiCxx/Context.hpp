@@ -75,6 +75,10 @@ class Context
     rank
       () const;
 
+    group::GlobalRank
+    global_rank
+      () const;
+
     /// Returns the size of this communicator
     std::size_t
     size
