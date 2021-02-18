@@ -74,11 +74,11 @@ class Group
 
     GlobalRank
     toGlobalRank
-      ( Rank const & );
+      ( Rank const & ) const;
 
     Rank
     toGroupRank
-      ( GlobalRank const & );
+      ( GlobalRank const & ) const;
 };
 
 } /* namespace group */
