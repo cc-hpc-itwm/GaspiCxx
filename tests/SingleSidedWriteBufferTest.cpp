@@ -39,7 +39,7 @@ class SingleSidedWriteBufferTest : public ::testing::Test
 
   std::size_t _segmentSize;
   gaspi::Runtime& context;
-  gaspi::group::Group const& group;
+  gaspi::group::Group const group;
 
 
   SingleSidedWriteBufferTest()
