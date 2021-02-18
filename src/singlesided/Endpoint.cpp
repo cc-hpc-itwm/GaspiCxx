@@ -175,10 +175,15 @@ Endpoint
 Endpoint::ConnectHandle
 Endpoint
   ::connectToRemotePartner
-   ( Context & context
+   ( group::Group const& group
    , group::Rank const& rank
    , Tag const& tag )
 {
+  if (!group.contains_rank(rank))
+  {
+    throw std::logic_error
+      (CODE_ORIGIN + "`group` does not contain `rank`");
+  }
 
   if( static_cast<passive::Passive::Tag>(tag)
       >= std::numeric_limits<passive::Passive::Tag>::max() / 3 ) {
@@ -215,7 +220,8 @@ Endpoint
     }
   }
 
-  _segment.remoteRegistration( context.group().toGlobalRank( rank ) );
+  auto const global_rank = group.toGlobalRank(rank);
+  _segment.remoteRegistration( global_rank );
 
   std::unique_ptr<Buffer> pSendBuffer
     ( new Buffer( _segment
@@ -224,7 +230,7 @@ Endpoint
   serialization::serialize (pSendBuffer->address(), localBufferDesc() );
 
   getRuntime().passive().iSendTagMessg
-      ( context.group().toGlobalRank( rank )
+      ( global_rank
       , sendTag
       , *pSendBuffer );
 
@@ -234,7 +240,7 @@ Endpoint
                 , serialization::size( otherBufferDesc() ) ) );
 
   getRuntime().passive().iRecvTagMessg
-    ( context.group().toGlobalRank( rank )
+    ( global_rank
     , recvTag
     , *pRecvBuffer);
 

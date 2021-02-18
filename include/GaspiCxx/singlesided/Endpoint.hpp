@@ -25,6 +25,8 @@
 #include <cstdlib>
 #include <memory>
 
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/singlesided/Buffer.hpp>
 
 // forward declarations
@@ -119,7 +121,7 @@ class Endpoint : public Buffer {
     // WriteTargetBuffer having the same size
     ConnectHandle
     connectToRemotePartner
-      ( Context & context
+      ( group::Group const& group
       , group::Rank const& rank
       , Tag const& tag );
 
