@@ -213,19 +213,8 @@ namespace gaspi
       source_buffers.push_back(
           std::make_unique<SourceBuffer>(size_bytes));
       source_handles.push_back(
-<<<<<<< HEAD
-          source_buffers.front()->connectToRemoteTarget(
-              context, other_rank, tag));
-=======
-<<<<<<< HEAD
-          source_buffers.back()->connectToRemoteTarget(
-              context, other_rank, tag));
-      source_memory = source_buffers.back()->address();
-=======
           source_buffers.front()->connectToRemoteTarget(
               group, other_rank, tag));
->>>>>>> 172ebb6... collectives: change from `Context` to `Group` in write buffers
->>>>>>> 8c3b55b... collectives: change from `Context` to `Group` in write buffers
     }
 
     template<typename T>

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <GaspiCxx/Runtime.hpp>
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/Allocator.hpp>
@@ -74,14 +73,13 @@ class Field1D {
       ( int nInner1D
       , int nBound1D
       , gaspi::segment::Segment & segment
-      , gaspi::Context & context )
-    : _nInner1D
-        (UniformPartition<int>(0,nInner1D,context.size())
-           .size(context.rank().get()))
+      , gaspi::group::Group const& group )
+    : _group(group)
+    , _nInner1D
+        (UniformPartition<int>(0,nInner1D,_group.size())
+           .size(_group.rank().get()))
     , _nBound1D
         (nBound1D)
-    , _context
-        (context)
     , _pField1D
         ( std::allocator_traits<decltype(segment.allocator())>
             ::rebind_alloc<T>(segment.allocator())
@@ -104,39 +102,39 @@ class Field1D {
         , _nBound1D * sizeof(T) )
     {
       gaspi::group::Rank
-        rightNeighbour( ( context.rank()
-                        + context.size()
-                        + 1 ) % context.size() );
+        rightNeighbour( ( _group.rank()
+                        + _group.size()
+                        + 1 ) % _group.size() );
 
       gaspi::group::Rank
-        leftNeighbour ( ( context.rank()
-                        + context.size()
-                        - 1 ) % context.size() );
+        leftNeighbour ( ( _group.rank()
+                        + _group.size()
+                        - 1 ) % _group.size() );
 
       int leftHaloTag(1);
       int rightHaloTag(2);
 
       gaspi::singlesided::Endpoint::ConnectHandle leftHaloHandle
           ( _leftHalo.connectToRemoteSource
-              ( context
+              ( _group
               , leftNeighbour
               , leftHaloTag ) );
 
       gaspi::singlesided::Endpoint::ConnectHandle leftBoundaryHandle
           ( _leftBoundary.connectToRemoteTarget
-              ( context
+              ( _group
               , leftNeighbour
               , rightHaloTag ) );
 
       gaspi::singlesided::Endpoint::ConnectHandle rightBoundaryHandle
         ( _rightBoundary.connectToRemoteTarget
-          ( context
+          ( _group
           , rightNeighbour
           , leftHaloTag ) );
 
       gaspi::singlesided::Endpoint::ConnectHandle rightHaloHandle
           ( _rightHalo.connectToRemoteSource
-              ( context
+              ( _group
               , rightNeighbour
               , rightHaloTag ) );
 
@@ -185,7 +183,7 @@ class Field1D {
         , 1 * _nBound1D
         , 2 * _nBound1D );
 
-      _leftBoundary.initTransfer(_context);
+      _leftBoundary.initTransfer();
     }
 
     void
@@ -198,7 +196,7 @@ class Field1D {
         , _nInner1D
         , _nInner1D + _nBound1D);
 
-      _rightBoundary.initTransfer(_context);
+      _rightBoundary.initTransfer();
     }
 
     void
@@ -230,10 +228,9 @@ class Field1D {
       }
     }
 
+    gaspi::group::Group        _group;
     int                        _nInner1D;
     int                        _nBound1D;
-
-    gaspi::Context &           _context;
 
     gaspi::ScopedAllocation<T> _pField1D;
 
@@ -250,8 +247,9 @@ main
   ( int /*argc*/
   , char *[] /*argv*/) try {
 
-  auto& context = gaspi::getRuntime();
+  gaspi::initGaspiCxx();
 
+  gaspi::group::Group const group_all;
   gaspi::segment::Segment segment(1024*1024);
 
   std::unique_ptr<Field1D<float> > pFields[2]
@@ -259,12 +257,12 @@ main
           ( parameter::nInner1D
           , parameter::nBound1D
           , segment
-          , context ) )
+          , group_all ) )
       , std::unique_ptr<Field1D<float> >( new Field1D<float>
           ( parameter::nInner1D
           , parameter::nBound1D
           , segment
-          , context ) ) };
+          , group_all ) ) };
 
   for(int it(0)
      ;    it<parameter::nt
@@ -280,7 +278,7 @@ main
     unew.updateLeftBoundary ( kappahat, uold );
     unew.updateRightBoundary( kappahat, uold );
     unew.updateInner( kappahat, uold);
-    if(context.rank() == gaspi::group::Rank(2)) {
+    if(group_all.rank() == gaspi::group::Rank(2)) {
       float const nu (5.);
       float const T(1./nu);
       float const pi (std::atan(1.)*4.);
@@ -292,13 +290,13 @@ main
     unew.waitForHalos();
   }
 
-  for(auto i(0UL);i<context.size();++i) {
-    if(context.rank() == gaspi::group::Rank(i)) {
+  for(auto i(0UL);i<group_all.size();++i) {
+    if(group_all.rank() == gaspi::group::Rank(i)) {
       for(int ix(0);ix<250;++ix) {
         std::cout << (*pFields[0])[4+ix] << std::endl;
       }
     }
-    context.barrier();
+    gaspi::getRuntime().barrier();
   }
 
   return EXIT_SUCCESS;
