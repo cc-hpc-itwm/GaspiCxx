@@ -39,11 +39,13 @@ class SingleSidedWriteBufferTest : public ::testing::Test
 
   std::size_t _segmentSize;
   gaspi::Runtime& context;
+  gaspi::group::Group const& group;
 
 
   SingleSidedWriteBufferTest()
   : _segmentSize(1024*1024)
   , context(getRuntime())
+  , group(context.group())
   {
 
   }
@@ -78,19 +80,19 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
   if( context.rank() == group::Rank(0) ) {
 
     source.connectToRemoteTarget
-        ( context
+        ( group
         , rightNeighbour
         , tag ).waitForCompletion();
 
 
     target.connectToRemoteSource
-        ( context
+        ( group
         , leftNeighbour
         , tag ).waitForCompletion();
 
     isource = 1;
 
-    source.initTransfer( context );
+    source.initTransfer();
     target.waitForCompletion();
 
     EXPECT_EQ(itarget,context.size());
@@ -99,12 +101,12 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
   else {
 
     target.connectToRemoteSource
-            ( context
+            ( group
             , leftNeighbour
             , tag ).waitForCompletion();
 
     source.connectToRemoteTarget
-            ( context
+            ( group
             , rightNeighbour
             , tag ).waitForCompletion();
 
@@ -114,7 +116,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
     isource = itarget + 1;
 
-    source.initTransfer( context );
+    source.initTransfer();
 
   }
 
@@ -138,15 +140,15 @@ TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 
   Endpoint::ConnectHandle tHandle
     ( target.connectToRemoteSource
-      ( context
+      ( group
       , rank
       , tag ) );
 
   Endpoint::ConnectHandle sHandle
     ( source.connectToRemoteTarget
-       ( context
+       ( group
        , rank
-      , tag ) );
+       , tag ) );
 
   tHandle.waitForCompletion();
   sHandle.waitForCompletion();
@@ -176,15 +178,15 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 
   Endpoint::ConnectHandle tHandle
     ( target.connectToRemoteSource
-      ( context
+      ( group
       , leftNeighbour
       , tag ) );
 
   Endpoint::ConnectHandle sHandle
     ( source.connectToRemoteTarget
-       ( context
+       ( group
        , rightNeighbour
-      , tag ) );
+       , tag ) );
 
   tHandle.waitForCompletion();
   sHandle.waitForCompletion();
@@ -193,7 +195,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 
     isource = 1;
 
-    source.initTransfer( context );
+    source.initTransfer();
     target.waitForCompletion();
 
     EXPECT_EQ(itarget,context.size());
@@ -207,7 +209,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 
     isource = itarget + 1;
 
-    source.initTransfer( context );
+    source.initTransfer();
 
   }
 

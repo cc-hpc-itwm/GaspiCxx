@@ -21,7 +21,6 @@
 
 #include <cassert>
 
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
@@ -124,12 +123,12 @@ SourceBuffer
 Endpoint::ConnectHandle
 SourceBuffer
   ::connectToRemoteTarget
-   ( Context & context
+   ( group::Group const& group
    , group::Rank const& rank
    , Tag const& tag )
 {
   return Endpoint::connectToRemotePartner
-      ( context
+      ( group
       , rank
       , tag );
 }
@@ -137,11 +136,11 @@ SourceBuffer
 void
 SourceBuffer
   ::initTransfer
-   ( Context & context )
+   ( )
 {
   assert(Endpoint::isConnected());
 
-  context.write
+  getRuntime().write
      ( Endpoint::localBufferDesc()
      , Endpoint::otherBufferDesc() );
 }
@@ -149,13 +148,12 @@ SourceBuffer
 void
 SourceBuffer
   ::initTransferPart
-   ( Context & context
-   , std::size_t size
+   ( std::size_t size
    , std::size_t offset )
 {
   assert(Endpoint::isConnected());
 
-  context.writePart
+  getRuntime().writePart
      ( Endpoint::localBufferDesc()
      , Endpoint::otherBufferDesc()
      , size

@@ -21,7 +21,6 @@
 
 #include <cassert>
 
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
@@ -119,12 +118,12 @@ TargetBuffer
 Endpoint::ConnectHandle
 TargetBuffer
   ::connectToRemoteSource
-   ( Context & context
+   ( group::Group const& group
    , group::Rank const& rank
    , Tag const& tag )
 {
   return Endpoint::connectToRemotePartner
-      ( context
+      ( group
       , rank
       , tag );
 }
@@ -152,11 +151,11 @@ TargetBuffer
 void
 TargetBuffer
   ::ackTransfer
-   (Context & context)
+   ( )
 {
   assert(Endpoint::isConnected());
 
-  context.notify(Endpoint::otherBufferDesc());
+  getRuntime().notify(Endpoint::otherBufferDesc());
 }
 
 } // namespace write

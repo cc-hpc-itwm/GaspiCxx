@@ -86,18 +86,17 @@ class SourceBuffer : public Endpoint {
     // WriteTargetBuffer having the same size
     Endpoint::ConnectHandle
     connectToRemoteTarget
-      ( Context & context
-      , group::Rank const& rank
-      , Tag const& tag );
+      ( group::Group const&
+      , group::Rank const&
+      , Tag const& );
 
     void
     initTransfer
-      ( Context & context );
+      ( );
 
     void
     initTransferPart
-      ( Context & context
-      , std::size_t size
+      ( std::size_t size
       , std::size_t offset = 0 );
 
     bool

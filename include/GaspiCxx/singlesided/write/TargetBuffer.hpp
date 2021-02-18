@@ -22,16 +22,9 @@
 #ifndef TARGETBUFFER_HPP_
 #define TARGETBUFFER_HPP_
 
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
-
-// forward declarations
-namespace gaspi {
-
-class Context;
-
-namespace group { class Rank; }
-
-}
 
 namespace gaspi {
 namespace singlesided {
@@ -83,9 +76,9 @@ class TargetBuffer : public Endpoint {
     // WriteTargetBuffer having the same size
     Endpoint::ConnectHandle
     connectToRemoteSource
-      ( Context & context
-      , group::Rank const& rank
-      , Tag const& tag );
+      ( group::Group const&
+      , group::Rank const&
+      , Tag const& );
 
     bool
     waitForCompletion
@@ -97,7 +90,7 @@ class TargetBuffer : public Endpoint {
 
     void
     ackTransfer
-      (Context & context);
+      ();
 };
 
 } // namespace write
