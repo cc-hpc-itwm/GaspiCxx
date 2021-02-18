@@ -108,7 +108,14 @@ Group
 
 bool
 Group
-  ::contains_rank(GlobalRank const& global_rank) const
+  ::contains_rank(Rank const& rank) const
+{
+  return rank < group::Rank(_group.size());
+}
+
+bool
+Group
+  ::contains_global_rank(GlobalRank const& global_rank) const
 {
   auto const iter = std::find(_group.begin(), _group.end(), global_rank);
   return iter != _group.end();

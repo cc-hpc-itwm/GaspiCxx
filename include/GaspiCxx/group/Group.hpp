@@ -65,6 +65,10 @@ class Group
 
     bool
     contains_rank
+      (Rank const &) const;
+
+    bool
+    contains_global_rank
       (GlobalRank const &) const;
 
     // returns a Rank between [0, size-1] that corresponds to
