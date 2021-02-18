@@ -117,7 +117,7 @@ Group
 GlobalRank
 Group
   ::toGlobalRank
- ( Rank  const & group_rank )
+ ( Rank  const & group_rank ) const
 {
   if(group_rank.get() >= size())
   {
@@ -139,7 +139,7 @@ Group
 Rank
 Group
   ::toGroupRank
- ( GlobalRank const & global_rank )
+ ( GlobalRank const & global_rank ) const
 {
   auto const iter = std::find(group().begin(), group().end(),
                               global_rank);
