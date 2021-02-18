@@ -32,6 +32,7 @@ namespace gaspi
                           gaspi::group::Rank const& root);
 
       private:
+        gaspi::group::Group group;
         gaspi::group::Rank rank;
         gaspi::group::Rank root;
         std::size_t number_ranks;
@@ -66,6 +67,7 @@ namespace gaspi
                       std::size_t number_elements,
                       gaspi::group::Rank const& root)
     : BroadcastCommon(group, number_elements, root),
+      group(group),
       rank(group.rank()),
       root(root),
       number_ranks(group.size()),
@@ -126,7 +128,7 @@ namespace gaspi
       {
         for (auto& source_buffer : source_buffers)
         {
-          source_buffer->initTransfer(context);
+          source_buffer->initTransfer();
         }
       }
     }
@@ -146,7 +148,7 @@ namespace gaspi
       else
       {
         target_buffer->waitForCompletion();
-        target_buffer->ackTransfer(context);
+        target_buffer->ackTransfer();
       }
       return true;
     }
@@ -211,8 +213,19 @@ namespace gaspi
       source_buffers.push_back(
           std::make_unique<SourceBuffer>(size_bytes));
       source_handles.push_back(
+<<<<<<< HEAD
           source_buffers.front()->connectToRemoteTarget(
               context, other_rank, tag));
+=======
+<<<<<<< HEAD
+          source_buffers.back()->connectToRemoteTarget(
+              context, other_rank, tag));
+      source_memory = source_buffers.back()->address();
+=======
+          source_buffers.front()->connectToRemoteTarget(
+              group, other_rank, tag));
+>>>>>>> 172ebb6... collectives: change from `Context` to `Group` in write buffers
+>>>>>>> 8c3b55b... collectives: change from `Context` to `Group` in write buffers
     }
 
     template<typename T>
@@ -226,7 +239,7 @@ namespace gaspi
         source_buffers.push_back(
             std::make_unique<SourceBuffer>(*source_buffers.front()));
         source_handles.push_back(
-            source_buffers.back()->connectToRemoteTarget(context, rank, tag));
+            source_buffers.back()->connectToRemoteTarget(group, rank, tag));
       }
     }
 
@@ -237,7 +250,7 @@ namespace gaspi
       TargetBuffer::Tag const tag = rank.get();
       target_buffer = std::make_unique<TargetBuffer>(size_bytes);
       target_handle = std::make_unique<ConnectHandle>(
-        target_buffer->connectToRemoteSource(context, root, tag));
+        target_buffer->connectToRemoteSource(group, root, tag));
     }
   }
 }

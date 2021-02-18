@@ -98,9 +98,9 @@ namespace gaspi
           SourceBuffer::Tag source_tag = i;
           TargetBuffer::Tag target_tag = i;
           source_handles.push_back(
-            source_buffers[i]->connectToRemoteTarget(context, left_neighbor, source_tag));
+            source_buffers[i]->connectToRemoteTarget(group, left_neighbor, source_tag));
           target_handles.push_back(
-            target_buffers[i]->connectToRemoteSource(context, right_neighbor, target_tag));
+            target_buffers[i]->connectToRemoteSource(group, right_neighbor, target_tag));
         }
       }
       else
@@ -129,7 +129,7 @@ namespace gaspi
       {
         algorithm_reset_state();
         send_buffer_index = (send_buffer_index + 1) % number_ranks;
-        source_buffers[send_buffer_index]->initTransfer(context);
+        source_buffers[send_buffer_index]->initTransfer();
       }
     }
 
@@ -168,7 +168,7 @@ namespace gaspi
       else
       {
         send_buffer_index = (send_buffer_index + 1) % number_ranks;
-        source_buffers[send_buffer_index]->initTransfer(context);
+        source_buffers[send_buffer_index]->initTransfer();
       }
       return algorithm_is_finished();
     }

@@ -14,8 +14,7 @@ namespace gaspi {
     namespace blocking {
 
       Barrier::Barrier(gaspi::group::Group const& group)
-      : context(group),
-        number_steps(std::ceil(std::log2(group.size())))
+      : number_steps(std::ceil(std::log2(group.size())))
       {
         auto const rank = group.rank();
         auto const number_ranks = group.size();
@@ -41,9 +40,9 @@ namespace gaspi {
           TargetBuffer::Tag target_buffer_tag = rank.get();
 
           source_handles.push_back(
-            source_buffers[i]->connectToRemoteTarget(context, target, source_buffer_tag));
+            source_buffers[i]->connectToRemoteTarget(group, target, source_buffer_tag));
           target_handles.push_back(
-            target_buffers[i]->connectToRemoteSource(context, source, target_buffer_tag));
+            target_buffers[i]->connectToRemoteSource(group, source, target_buffer_tag));
         }
 
         // wait for connections
@@ -61,9 +60,9 @@ namespace gaspi {
       {
         for (auto i = 0UL; i < number_steps; ++i)
         {
-          source_buffers[i]->initTransfer(context);
+          source_buffers[i]->initTransfer();
           target_buffers[i]->waitForCompletion();
-          target_buffers[i]->ackTransfer(context);
+          target_buffers[i]->ackTransfer();
           source_buffers[i]->waitForTransferAck();
         }
       }
