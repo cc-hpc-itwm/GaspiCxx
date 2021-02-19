@@ -3,7 +3,6 @@ find_package(GTest REQUIRED)
 
 add_executable ( GaspiCxxTests 
       run_tests.cpp
-      GlobalTestConfiguration.cpp
       AllgatherTest.cpp
       AllreduceNonBlockingTest.cpp
       AllreduceNonBlockingLowLevelTest.cpp

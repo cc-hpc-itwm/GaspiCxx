@@ -2,10 +2,8 @@
 
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/Runtime.hpp>
-#include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
 
-extern GlobalTestConfiguration *globalTestConf;
 namespace gaspi
 {
   namespace

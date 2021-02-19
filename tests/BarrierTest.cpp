@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/Barrier.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
@@ -10,8 +9,6 @@
 #include <numeric>
 #include <stdexcept>
 #include <vector>
-
-extern GlobalTestConfiguration *globalTestConf;
 
 namespace gaspi {
   namespace collectives {

@@ -19,8 +19,8 @@
 
 #include <gtest/gtest.h>
 
-#include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
 #include <GaspiCxx/segment/NotificationManager.hpp>
@@ -28,8 +28,6 @@
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
-
-extern GlobalTestConfiguration *globalTestConf;
 
 namespace gaspi {
 namespace singlesided {
