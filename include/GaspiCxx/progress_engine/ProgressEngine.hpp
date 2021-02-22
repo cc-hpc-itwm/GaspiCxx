@@ -15,19 +15,13 @@ namespace gaspi
       public:
         using CollectiveHandle = std::size_t;
 
-        ProgressEngine();
         virtual ~ProgressEngine() = default;
 
-        CollectiveHandle register_collective(std::shared_ptr<collectives::CollectiveLowLevel>);
-        void deregister_collective(CollectiveHandle const&);
+        virtual CollectiveHandle register_collective(
+                std::shared_ptr<collectives::CollectiveLowLevel>) = 0;
+        virtual void deregister_collective(CollectiveHandle const&) = 0;
 
       protected:
-        std::mutex operators_mutex;
-        CollectiveHandle current_handle; 
-        std::unordered_map<CollectiveHandle, 
-                          std::shared_ptr<gaspi::collectives::CollectiveLowLevel>>
-                                          operators;
-
         virtual void generate_progress() = 0;
     };
   }
