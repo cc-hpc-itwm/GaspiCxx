@@ -8,13 +8,15 @@ add_executable ( GaspiCxxTests
       AllreduceNonBlockingTest.cpp
       AllreduceNonBlockingLowLevelTest.cpp
       AlltoallTest.cpp
+      RoundRobinDedicatedThreadTest.cpp
       BarrierTest.cpp
       PassiveTest.cpp
       SegmentMemoryManagerTest.cpp 
       SingleSidedWriteBufferTest.cpp )
 
 target_include_directories (GaspiCxxTests PRIVATE 
-	${CMAKE_CURRENT_SOURCE_DIR} )	
+	${CMAKE_CURRENT_SOURCE_DIR}
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)	
 
 target_link_libraries( GaspiCxxTests LINK_PUBLIC  
   	GTest::GTest 

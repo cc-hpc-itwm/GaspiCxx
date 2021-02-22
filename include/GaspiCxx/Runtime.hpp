@@ -22,6 +22,8 @@
 #include <cstring>
 #include <memory>
 #include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/progress_engine/ProgressEngine.hpp>
+#include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
 #include <GaspiCxx/collectives/Barrier.hpp>
 
 extern "C" {
@@ -65,6 +67,7 @@ namespace passive { class Passive; }
     gaspi_size_t _segmentSize;
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
+    std::unique_ptr<progress_engine::ProgressEngine> _pengine;
     std::unique_ptr<gaspi::collectives::blocking::Barrier> _pglobal_barrier;
 
     //! A runtime is a singleton.
@@ -101,6 +104,16 @@ namespace passive { class Passive; }
     passive::Passive &
     passive() {
       return *_ppassive;
+    }
+
+    progress_engine::ProgressEngine &
+    getDefaultProgressEngine() {
+      if (!_pengine)
+      {
+        _pengine = std::make_unique<progress_engine::RoundRobinDedicatedThread>();
+      }
+
+      return *_pengine;
     }
 
     void

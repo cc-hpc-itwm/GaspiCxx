@@ -28,7 +28,8 @@ add_library ( GaspiCxx
               collectives/Barrier.cpp
               collectives/non_blocking/collectives_lowlevel/AllreduceCommon.cpp
               collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.cpp
-	      )
+              progress_engine/RoundRobinDedicatedThread.cpp
+            )
 
 # Define headers for this library. PUBLIC headers are used for
 # compiling the library, and will be added to consumers' build
