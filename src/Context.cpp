@@ -267,24 +267,4 @@ Context
   _pQueue->flush();
 }
 
-/// Collective barrier call for all processes in `this` communicator.
-void
-Context
-  ::barrier
-    () const
-{
-  // FIXME: replace with group-level, custom barrier
-  if(size() > 1) {
-    gaspi_rank_t nProc;
-    GASPI_CHECK( gaspi_proc_num(&nProc) );
-    if (size() != nProc)
-    {
-      throw std::runtime_error(
-        "[Contxt::barrier] cannot execute barrier on a subgroup ranks.");
-    }
-    GASPI_CHECK
-      (gaspi_barrier(GASPI_GROUP_ALL, GASPI_BLOCK));
-  }
-}
-
 } /* namespace gaspi */

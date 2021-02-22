@@ -426,7 +426,7 @@ Passive::passive_thread_func_(void * arg)
     int                   msg_tag;
     int                   msg_size;
     int                   msg_rank;
-    std::unique_ptr<char> msg_ptr;
+    std::unique_ptr<char[]> msg_ptr;
 
     msg_ptr = pPassiveCommMan->recvPassive( msg_tag
                                           , msg_size
@@ -632,7 +632,7 @@ Passive
   return true;
 }
 
-std::unique_ptr<char>
+std::unique_ptr<char[]>
 Passive
   ::recvPassive
    ( int & msg_tag
@@ -660,7 +660,7 @@ Passive
   msg_tag = *pMsgTag;
   size = *pMsgSize;
 
-  std::unique_ptr<char> pMsg( new char[size] );
+  std::unique_ptr<char[]> pMsg( new char[size] );
 
 
   memcpy( reinterpret_cast<void *>(pMsg.get())
