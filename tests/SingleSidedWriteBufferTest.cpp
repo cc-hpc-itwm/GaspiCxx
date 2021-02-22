@@ -40,10 +40,12 @@ class SingleSidedWriteBufferTest : public ::testing::Test
   protected:
 
   std::size_t _segmentSize;
+  gaspi::Runtime& context;
 
 
   SingleSidedWriteBufferTest()
   : _segmentSize(1024*1024)
+  , context(getRuntime())
   {
 
   }
@@ -55,8 +57,6 @@ class SingleSidedWriteBufferTest : public ::testing::Test
 
 TEST_F(SingleSidedWriteBufferTest, Connect)
 {
-  Context context;
-
   if(context.size() == 1) return;
 
   group::Rank rightNeighbour( ( context.rank()
@@ -126,8 +126,6 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
 TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 {
-  Context context;
-
   group::Rank rank(context.rank());
 
   int tag(1);
@@ -158,8 +156,6 @@ TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 
 TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 {
-  Context context;
-
   if(context.size() == 1) return;
 
   group::Rank rightNeighbour( ( context.rank()
