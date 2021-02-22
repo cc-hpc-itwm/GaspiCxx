@@ -9,6 +9,7 @@ namespace gaspi
   {
     enum class BroadcastAlgorithm
     {
+      BASIC_LINEAR,
       SEND_TO_ALL,
     };
 
