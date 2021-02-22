@@ -24,7 +24,6 @@
 #include <GaspiCxx/type_defs.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
-#include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
 #include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
@@ -57,7 +56,7 @@ Runtime
 , _psegment(std::make_unique<segment::Segment>(_segmentSize))
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
-, _pengine(std::make_unique<progress_engine::RoundRobinDedicatedThread>())
+, _pengine()
 { }
 
 void

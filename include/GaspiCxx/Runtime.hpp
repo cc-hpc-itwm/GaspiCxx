@@ -23,6 +23,7 @@
 #include <memory>
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
+#include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
 
 extern "C" {
 #include <GASPI.h>
@@ -105,6 +106,11 @@ namespace passive { class Passive; }
 
     progress_engine::ProgressEngine &
     getDefaultProgressEngine() {
+      if (!_pengine)
+      {
+        _pengine = std::make_unique<progress_engine::RoundRobinDedicatedThread>();
+      }
+
       return *_pengine;
     }
 
