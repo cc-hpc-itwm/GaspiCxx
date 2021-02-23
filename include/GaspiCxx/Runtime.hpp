@@ -23,10 +23,9 @@
 #include <memory>
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/collectives/Barrier.hpp>
-#include <GaspiCxx/segment/SegmentPool.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
-#include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
-#include <GaspiCxx/collectives/Barrier.hpp>
+#include <GaspiCxx/RuntimeConfiguration.hpp>
+#include <GaspiCxx/segment/SegmentPool.hpp>
 
 extern "C" {
 #include <GASPI.h>
@@ -88,6 +87,11 @@ namespace passive { class Passive; }
 
     using Rank = gaspi_rank_t;
 
+    //! Global library configuration
+    inline static RuntimeConfiguration configuration{
+                        SegmentPoolType::SingleSegment,
+                        ProgressEngineType::RoundRobinDedicatedThread};
+
     //! Construct a GASPI interface from a group and a segment.
     //! \note GASPI and the given segment must be initialized on
     //!       all ranks of the given group!
@@ -111,6 +115,15 @@ namespace passive { class Passive; }
 
     segment::Segment &
     getFreeSegment(std::size_t size) {
+      if (!_psegment_pool)
+      {
+        _psegment_pool = Runtime::configuration.get_segment_pool();
+      }
+      if (!_psegment_pool)
+      {
+        throw std::runtime_error(
+              "[Runtime::getFreeSegment] Segment Pool undefined.");
+      }
       return _psegment_pool->getSegment(size);
     }
 
@@ -118,9 +131,13 @@ namespace passive { class Passive; }
     getDefaultProgressEngine() {
       if (!_pengine)
       {
-        _pengine = std::make_unique<progress_engine::RoundRobinDedicatedThread>();
+        _pengine = Runtime::configuration.get_progress_engine();
       }
-
+      if (!_pengine)
+      {
+        throw std::runtime_error(
+              "[Runtime::getDefaultProgressEngine] Progress engine undefined.");
+      }
       return *_pengine;
     }
 
@@ -136,6 +153,9 @@ namespace passive { class Passive; }
 
   void
   initGaspiCxx();
+
+  void
+  initGaspiCxx(RuntimeConfiguration const&);
 
 } // namespace gaspi
 

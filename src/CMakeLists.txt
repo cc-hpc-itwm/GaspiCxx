@@ -6,6 +6,7 @@ project(libGaspiCxx LANGUAGES CXX)
 add_library ( GaspiCxx
               Context.cpp
               Runtime.cpp
+              RuntimeConfiguration.cpp
               collectives/Allgather.cpp
               collectives/Alltoall.cpp
               group/Group.cpp

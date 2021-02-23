@@ -21,13 +21,13 @@
 
 #include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/RuntimeConfiguration.hpp>
 #include <GaspiCxx/type_defs.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
 #include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
-#include <GaspiCxx/segment/SingleSegmentPool.hpp>
 #include <GaspiCxx/utility/Filesystem.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 
@@ -57,10 +57,11 @@ Runtime
 , _psegment(std::make_unique<segment::Segment>(_segmentSize))
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
-, _psegment_pool(std::make_unique<segment::SingleSegmentPool>(100*1024*1024)) // FIXME: Use a dynamic SegmentPool implementation
-, _pengine(std::make_unique<progress_engine::RoundRobinDedicatedThread>())
+, _psegment_pool()
+, _pengine()
 , _pglobal_barrier()
 { }
+
 
 void
 Runtime
@@ -128,6 +129,16 @@ initGaspiCxx()
 {
   // Initialize GPI, create management segment
   // and setup passive communication
+  Runtime::getRuntime();
+}
+
+void
+initGaspiCxx(RuntimeConfiguration const& config)
+{
+  // Set customized configuration,
+  // initialize GPI, create management segment
+  // and setup passive communication
+  Runtime::configuration = config;
   Runtime::getRuntime();
 }
 
