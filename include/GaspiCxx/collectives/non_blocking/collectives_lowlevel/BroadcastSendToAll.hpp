@@ -1,9 +1,7 @@
 #pragma once
 
-#include <GaspiCxx/LocalBuffer.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastCommon.hpp>
 
@@ -32,9 +30,7 @@ namespace gaspi
                           gaspi::group::Rank const& root);
 
       private:
-        gaspi::group::Group group;
         gaspi::group::Rank rank;
-        gaspi::group::Rank root;
         std::size_t number_ranks;
         std::size_t buffer_size_bytes;
 
@@ -67,9 +63,7 @@ namespace gaspi
                       std::size_t number_elements,
                       gaspi::group::Rank const& root)
     : BroadcastCommon(group, number_elements, root),
-      group(group),
       rank(group.rank()),
-      root(root),
       number_ranks(group.size()),
       buffer_size_bytes(sizeof(T) * number_elements),
       source_buffers(),
