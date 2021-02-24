@@ -7,7 +7,7 @@ namespace gaspi
     AllreduceCommon::AllreduceCommon(gaspi::group::Group const& group,
                                      std::size_t number_elements,
                                      ReductionOp reduction_op)
-    : context(group),
+    : group(group),
       number_elements(number_elements),
       reduction_op(reduction_op)
     { }

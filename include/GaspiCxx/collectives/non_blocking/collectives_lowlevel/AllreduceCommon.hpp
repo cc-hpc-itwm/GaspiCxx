@@ -1,7 +1,6 @@
 #pragma once
 
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
 namespace gaspi
@@ -27,7 +26,7 @@ namespace gaspi
                         ReductionOp reduction_op);
 
       protected:
-        gaspi::Context context;
+        gaspi::group::Group group;
         std::size_t number_elements;
         ReductionOp reduction_op;
     };

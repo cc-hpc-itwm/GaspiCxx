@@ -162,8 +162,8 @@ namespace gaspi
       // acknowledge data transfer in the last step
       if (algorithm_is_finished())
       {
-        //target_buffers[receive_buffer_index]->ackTransfer(context);
-        //source_buffers[send_buffer_index]->waitForTransferAck();
+        target_buffers[receive_buffer_index]->ackTransfer();
+        source_buffers[send_buffer_index]->waitForTransferAck();
       }
       else
       {
