@@ -62,6 +62,55 @@ Runtime
 , _pglobal_barrier()
 { }
 
+segment::Segment &
+Runtime
+  ::segment
+    ()
+{
+  return *_psegment;
+}
+
+passive::Passive &
+Runtime
+  ::passive
+    ()
+{
+  return *_ppassive;
+}
+
+segment::Segment &
+Runtime
+  ::getFreeSegment
+    (std::size_t size)
+{
+  if (!_psegment_pool)
+  {
+    _psegment_pool = Runtime::configuration.get_segment_pool();
+  }
+  if (!_psegment_pool)
+  {
+    throw std::runtime_error(
+          "[Runtime::getFreeSegment] Segment Pool undefined.");
+  }
+  return _psegment_pool->getSegment(size);
+}
+
+progress_engine::ProgressEngine &
+Runtime
+  ::getDefaultProgressEngine
+    ()
+{
+  if (!_pengine)
+  {
+    _pengine = Runtime::configuration.get_progress_engine();
+  }
+  if (!_pengine)
+  {
+    throw std::runtime_error(
+          "[Runtime::getDefaultProgressEngine] Progress engine undefined.");
+  }
+  return *_pengine;
+}
 
 void
 Runtime
@@ -112,9 +161,9 @@ Runtime
 {
   if (!_pglobal_barrier)
   {
-    _pglobal_barrier = std::make_unique<gaspi::collectives::blocking::Barrier>(this->group());
+    _pglobal_barrier = std::make_unique<gaspi::collectives::blocking::Barrier>(
+                                                            this->group());
   }
-
   _pglobal_barrier->execute();
 }
 

@@ -104,42 +104,16 @@ namespace passive { class Passive; }
 
     //! Return the segment
     segment::Segment &
-    segment()  {
-      return *_psegment;
-    }
+    segment();
 
     passive::Passive &
-    passive() {
-      return *_ppassive;
-    }
+    passive();
 
     segment::Segment &
-    getFreeSegment(std::size_t size) {
-      if (!_psegment_pool)
-      {
-        _psegment_pool = Runtime::configuration.get_segment_pool();
-      }
-      if (!_psegment_pool)
-      {
-        throw std::runtime_error(
-              "[Runtime::getFreeSegment] Segment Pool undefined.");
-      }
-      return _psegment_pool->getSegment(size);
-    }
+    getFreeSegment(std::size_t size);
 
     progress_engine::ProgressEngine &
-    getDefaultProgressEngine() {
-      if (!_pengine)
-      {
-        _pengine = Runtime::configuration.get_progress_engine();
-      }
-      if (!_pengine)
-      {
-        throw std::runtime_error(
-              "[Runtime::getDefaultProgressEngine] Progress engine undefined.");
-      }
-      return *_pengine;
-    }
+    getDefaultProgressEngine();
 
     void
     synchCurrentWorkingDirectory();
