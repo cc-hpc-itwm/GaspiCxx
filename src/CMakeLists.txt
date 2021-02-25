@@ -5,6 +5,7 @@ project(libGaspiCxx LANGUAGES CXX)
 # The extension is already found. Any number of sources could be listed here.
 add_library ( GaspiCxx
               CommunicationContext.cpp
+              SingleQueueContext.cpp
               Runtime.cpp
               RuntimeConfiguration.cpp
               collectives/Allgather.cpp
