@@ -21,7 +21,8 @@
 
 #include <cstring>
 #include <memory>
-#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/CommunicationContext.hpp>
+#include <GaspiCxx/SingleQueueContext.hpp>
 #include <GaspiCxx/collectives/Barrier.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 #include <GaspiCxx/RuntimeConfiguration.hpp>
@@ -61,15 +62,17 @@ namespace passive { class Passive; }
   //!          Therefore, interfaces do not provide a copy constructor
   //!          or an assignment operator.
   class Runtime : public RuntimeBase
-                , public Context
+                , public SingleQueueContext
   {
   private:
 
-    gaspi_size_t _segmentSize;
+    group::Group _group_all;
+    std::size_t _segmentSize;
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
     std::unique_ptr<segment::SegmentPool> _psegment_pool;
     std::unique_ptr<progress_engine::ProgressEngine> _pengine;
+    std::unique_ptr<CommunicationContext> _pcomm_context;
     std::unique_ptr<gaspi::collectives::blocking::Barrier> _pglobal_barrier;
 
     //! A runtime is a singleton.
@@ -115,11 +118,20 @@ namespace passive { class Passive; }
     progress_engine::ProgressEngine &
     getDefaultProgressEngine();
 
+    CommunicationContext &
+    getDefaultCommunicationContext();
+
     void
     synchCurrentWorkingDirectory();
 
     void
     barrier();
+
+    group::GlobalRank
+    global_rank();
+
+    std::size_t
+    size();
   };
 
   Runtime &

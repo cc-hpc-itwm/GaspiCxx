@@ -16,7 +16,7 @@ SingleQueueContext
     ( singlesided::BufferDescription sourceBufferDescription
     , singlesided::BufferDescription targetBufferDescription
     , std::size_t size
-    , std::size_t offset ) const
+    , std::size_t offset )
 {
   if( (offset + size) > sourceBufferDescription.size() ) {
     std::stringstream ss;
@@ -92,7 +92,7 @@ SingleQueueContext
 void
 SingleQueueContext
   ::notify
-    ( singlesided::BufferDescription targetBufferDescription ) const
+    ( singlesided::BufferDescription targetBufferDescription )
 {
   gaspi_return_t ret(GASPI_ERROR);
 
@@ -124,7 +124,7 @@ SingleQueueContext
 void
 SingleQueueContext
   ::flush
-   () const
+   ()
 {
   _pQueue->flush();
 }

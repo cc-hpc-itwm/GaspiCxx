@@ -18,8 +18,6 @@
  * Runtime.cpp
  *
  */
-
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/RuntimeConfiguration.hpp>
 #include <GaspiCxx/type_defs.hpp>
@@ -52,13 +50,15 @@ Runtime
   ::Runtime
    ()
 : RuntimeBase()
-, Context()
+, SingleQueueContext()
+, _group_all()
 , _segmentSize(1024*1024)
 , _psegment(std::make_unique<segment::Segment>(_segmentSize))
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
 , _psegment_pool()
 , _pengine()
+, _pcomm_context()
 , _pglobal_barrier()
 { }
 
@@ -112,12 +112,24 @@ Runtime
   return *_pengine;
 }
 
+CommunicationContext &
+Runtime
+  ::getDefaultCommunicationContext
+    ()
+{
+  if (!_pcomm_context)
+  {
+    _pcomm_context = std::make_unique<SingleQueueContext>();
+  }
+  return *_pcomm_context;
+}
+
 void
 Runtime
   ::synchCurrentWorkingDirectory
     ()
 {
-  if(group().toGlobalRank(rank()) == group::GlobalRank(0)) {
+  if(global_rank() == group::GlobalRank(0)) {
 
     std::string const dir(getCurrentWorkingDirectory());
 
@@ -161,10 +173,23 @@ Runtime
 {
   if (!_pglobal_barrier)
   {
-    _pglobal_barrier = std::make_unique<gaspi::collectives::blocking::Barrier>(
-                                                            this->group());
+    _pglobal_barrier = std::make_unique<gaspi::collectives::blocking::Barrier>(_group_all);
   }
   _pglobal_barrier->execute();
+}
+
+group::GlobalRank
+Runtime
+  ::global_rank()
+{
+  return _group_all.global_rank();
+}
+
+std::size_t
+Runtime
+  ::size()
+{
+  return _group_all.size();
 }
 
 Runtime &

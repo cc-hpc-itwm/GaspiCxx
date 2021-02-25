@@ -25,15 +25,15 @@ class SingleQueueContext : public CommunicationContext
       ( singlesided::BufferDescription sourceBufferDescription
       , singlesided::BufferDescription targetBufferDescription
       , std::size_t size
-      , std::size_t offset ) const override;
+      , std::size_t offset ) override;
 
     void
     notify
-      ( singlesided::BufferDescription targetBufferDescription ) const override;
+      ( singlesided::BufferDescription targetBufferDescription ) override;
 
     void
     flush
-      () const override;
+      () override;
 };
 
 } /* namespace gaspi */
