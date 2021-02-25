@@ -73,8 +73,10 @@ class Field1D {
       ( int nInner1D
       , int nBound1D
       , gaspi::segment::Segment & segment
+      , gaspi::CommunicationContext& comm_context
       , gaspi::group::Group const& group )
-    : _group(group)
+    : _comm_context(comm_context)
+    , _group(group)
     , _nInner1D
         (UniformPartition<int>(0,nInner1D,_group.size())
            .size(_group.rank().get()))
@@ -183,7 +185,7 @@ class Field1D {
         , 1 * _nBound1D
         , 2 * _nBound1D );
 
-      _leftBoundary.initTransfer();
+      _leftBoundary.initTransfer(_comm_context);
     }
 
     void
@@ -196,7 +198,7 @@ class Field1D {
         , _nInner1D
         , _nInner1D + _nBound1D);
 
-      _rightBoundary.initTransfer();
+      _rightBoundary.initTransfer(_comm_context);
     }
 
     void
@@ -228,6 +230,7 @@ class Field1D {
       }
     }
 
+    gaspi::CommunicationContext&            _comm_context;
     gaspi::group::Group        _group;
     int                        _nInner1D;
     int                        _nBound1D;
@@ -249,6 +252,7 @@ main
 
   gaspi::initGaspiCxx();
 
+  auto& comm_context = gaspi::getRuntime();
   gaspi::group::Group const group_all;
   gaspi::segment::Segment segment(1024*1024);
 
@@ -257,11 +261,13 @@ main
           ( parameter::nInner1D
           , parameter::nBound1D
           , segment
+          , comm_context
           , group_all ) )
       , std::unique_ptr<Field1D<float> >( new Field1D<float>
           ( parameter::nInner1D
           , parameter::nBound1D
           , segment
+          , comm_context
           , group_all ) ) };
 
   for(int it(0)

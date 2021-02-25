@@ -27,6 +27,7 @@ main
   double aggregate_init_time = 0.0;
   double aggregate_wait_time = 0.0;
 
+  auto& comm_context = gaspi::getRuntime();
   gaspi::group::Group const group_all;
 
   gaspi::segment::Segment segment1(1024*1024);
@@ -147,8 +148,8 @@ main
 
     if(it%2==0) {
       high_resolution_clock::time_point t1 = high_resolution_clock::now();
-      lb1.initTransfer();
-      rb1.initTransfer();
+      lb1.initTransfer(comm_context);
+      rb1.initTransfer(comm_context);
       high_resolution_clock::time_point t2 = high_resolution_clock::now();
       duration<double> duration1 = duration_cast<duration<double>>(t2 - t1);
       aggregate_init_time += duration1.count();
@@ -162,8 +163,8 @@ main
     }
     else {
       high_resolution_clock::time_point t1 = high_resolution_clock::now();
-      lb2.initTransfer();
-      rb2.initTransfer();
+      lb2.initTransfer(comm_context);
+      rb2.initTransfer(comm_context);
       high_resolution_clock::time_point t2 = high_resolution_clock::now();
       duration<double> duration1 = duration_cast<duration<double>>(t2 - t1);
       aggregate_init_time += duration1.count();
@@ -182,7 +183,7 @@ main
   std::cout << "Aggregate GaspiCxx wait time = " << aggregate_wait_time * 1000 << " ms" << std::endl;
   aggregate_wait_time = 0.;
 
-  gaspi::getRuntime().flush();
+  comm_context.flush();
   gaspi::getRuntime().barrier();
 
 
@@ -394,7 +395,7 @@ main
     }
   }
 
-  gaspi::getRuntime().flush();
+  comm_context.flush();
   gaspi::getRuntime().barrier();
 
   std::cout << "Aggregate plain init time = " << aggregate_init_time * 1000 << " ms" << std::endl;
