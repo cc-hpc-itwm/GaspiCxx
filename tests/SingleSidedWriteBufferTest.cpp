@@ -19,7 +19,6 @@
 
 #include <gtest/gtest.h>
 
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
@@ -45,7 +44,7 @@ class SingleSidedWriteBufferTest : public ::testing::Test
   SingleSidedWriteBufferTest()
   : _segmentSize(1024*1024)
   , context(getRuntime())
-  , group(context.group())
+  , group()
   {
 
   }
@@ -57,15 +56,15 @@ class SingleSidedWriteBufferTest : public ::testing::Test
 
 TEST_F(SingleSidedWriteBufferTest, Connect)
 {
-  if(context.size() == 1) return;
+  if(group.size() == 1) return;
 
-  group::Rank rightNeighbour( ( context.rank()
-                              + context.size()
-                              + 1 ) % context.size() );
+  group::Rank rightNeighbour( ( group.rank()
+                              + group.size()
+                              + 1 ) % group.size() );
 
-  group::Rank leftNeighbour ( ( context.rank()
-                              + context.size()
-                              - 1 ) % context.size() );
+  group::Rank leftNeighbour ( ( group.rank()
+                              + group.size()
+                              - 1 ) % group.size() );
 
   int tag(1);
 
@@ -77,7 +76,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
   int & isource ( *reinterpret_cast<int*>(source.address()) ); isource = -1;
   int & itarget ( *reinterpret_cast<int*>(target.address()) ); itarget = -1;
 
-  if( context.rank() == group::Rank(0) ) {
+  if( group.rank() == group::Rank(0) ) {
 
     source.connectToRemoteTarget
         ( group
@@ -95,7 +94,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
     source.initTransfer(context);
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.size());
+    EXPECT_EQ(itarget,group.size());
 
   }
   else {
@@ -112,7 +111,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.rank().get());
+    EXPECT_EQ(itarget,group.rank().get());
 
     isource = itarget + 1;
 
@@ -126,7 +125,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
 TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 {
-  group::Rank rank(context.rank());
+  group::Rank rank(group.rank());
 
   int tag(1);
 
@@ -156,15 +155,15 @@ TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 
 TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 {
-  if(context.size() == 1) return;
+  if(group.size() == 1) return;
 
-  group::Rank rightNeighbour( ( context.rank()
-                              + context.size()
-                              + 1 ) % context.size() );
+  group::Rank rightNeighbour( ( group.rank()
+                              + group.size()
+                              + 1 ) % group.size() );
 
-  group::Rank leftNeighbour ( ( context.rank()
-                              + context.size()
-                              - 1 ) % context.size() );
+  group::Rank leftNeighbour ( ( group.rank()
+                              + group.size()
+                              - 1 ) % group.size() );
 
   int tag(1);
 
@@ -191,21 +190,21 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
   tHandle.waitForCompletion();
   sHandle.waitForCompletion();
 
-  if( context.rank() == group::Rank(0) ) {
+  if( group.rank() == group::Rank(0) ) {
 
     isource = 1;
 
     source.initTransfer(context);
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.size());
+    EXPECT_EQ(itarget,group.size());
 
   }
   else {
 
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.rank().get());
+    EXPECT_EQ(itarget,group.rank().get());
 
     isource = itarget + 1;
 
