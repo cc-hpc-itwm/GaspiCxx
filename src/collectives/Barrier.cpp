@@ -1,4 +1,5 @@
 #include <GaspiCxx/collectives/Barrier.hpp>
+#include <GaspiCxx/Runtime.hpp>
 
 #include <cmath>
 
@@ -14,7 +15,8 @@ namespace gaspi {
     namespace blocking {
 
       Barrier::Barrier(gaspi::group::Group const& group)
-      : number_steps(std::ceil(std::log2(group.size())))
+      : comm_context(getRuntime().getDefaultCommunicationContext()),
+        number_steps(std::ceil(std::log2(group.size())))
       {
         auto const rank = group.rank();
         auto const number_ranks = group.size();
@@ -60,9 +62,9 @@ namespace gaspi {
       {
         for (auto i = 0UL; i < number_steps; ++i)
         {
-          source_buffers[i]->initTransfer();
+          source_buffers[i]->initTransfer(comm_context);
           target_buffers[i]->waitForCompletion();
-          target_buffers[i]->ackTransfer();
+          target_buffers[i]->ackTransfer(comm_context);
           source_buffers[i]->waitForTransferAck();
         }
       }

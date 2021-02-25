@@ -3,7 +3,6 @@
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/Barrier.hpp>
 #include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/Context.hpp>
 
 #include <numeric>
 #include <stdexcept>

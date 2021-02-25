@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GaspiCxx/collectives/Collective.hpp>
-#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
@@ -25,6 +25,7 @@ class Barrier : public Collective
     void execute();
 
   private:
+    gaspi::CommunicationContext& comm_context;
     std::vector<std::unique_ptr<SourceBuffer>> source_buffers;
     std::vector<std::unique_ptr<TargetBuffer>> target_buffers;
     std::size_t number_steps;
