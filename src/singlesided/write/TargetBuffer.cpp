@@ -24,7 +24,6 @@
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
-#include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
@@ -151,11 +150,11 @@ TargetBuffer
 void
 TargetBuffer
   ::ackTransfer
-   ( )
+   ( CommunicationContext& comm_context )
 {
   assert(Endpoint::isConnected());
 
-  getRuntime().notify(Endpoint::otherBufferDesc());
+  comm_context.notify(Endpoint::otherBufferDesc());
 }
 
 } // namespace write

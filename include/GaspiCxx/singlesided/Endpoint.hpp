@@ -33,8 +33,6 @@
 
 namespace gaspi {
 
-class Context;
-
 namespace singlesided {
 
 class BufferDescription;

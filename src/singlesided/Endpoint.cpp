@@ -19,7 +19,6 @@
  *
  */
 
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>

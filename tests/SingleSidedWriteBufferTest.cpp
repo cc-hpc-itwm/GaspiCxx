@@ -92,7 +92,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
     isource = 1;
 
-    source.initTransfer();
+    source.initTransfer(context);
     target.waitForCompletion();
 
     EXPECT_EQ(itarget,context.size());
@@ -116,7 +116,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
     isource = itarget + 1;
 
-    source.initTransfer();
+    source.initTransfer(context);
 
   }
 
@@ -195,7 +195,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 
     isource = 1;
 
-    source.initTransfer();
+    source.initTransfer(context);
     target.waitForCompletion();
 
     EXPECT_EQ(itarget,context.size());
@@ -209,7 +209,7 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 
     isource = itarget + 1;
 
-    source.initTransfer();
+    source.initTransfer(context);
 
   }
 

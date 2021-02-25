@@ -22,12 +22,11 @@
 #ifndef SOURCEBUFFER_HPP_
 #define SOURCEBUFFER_HPP_
 
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
 
 // forward declarations
 namespace gaspi {
-
-class Context;
 
 namespace group { class Rank; }
 
@@ -92,20 +91,21 @@ class SourceBuffer : public Endpoint {
 
     void
     initTransfer
-      ( );
+      ( CommunicationContext& );
 
     void
     initTransferPart
-      ( std::size_t size
+      ( CommunicationContext& 
+      , std::size_t size
       , std::size_t offset = 0 );
 
     bool
     checkForTransferAck
-      ( );
+      ();
 
     bool
     waitForTransferAck
-      ( );
+      ();
 
 };
 

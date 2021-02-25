@@ -22,8 +22,7 @@
 #ifndef TARGETBUFFER_HPP_
 #define TARGETBUFFER_HPP_
 
-#include <GaspiCxx/group/Group.hpp>
-#include <GaspiCxx/group/Rank.hpp>
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
 
 namespace gaspi {
@@ -90,7 +89,7 @@ class TargetBuffer : public Endpoint {
 
     void
     ackTransfer
-      ();
+      ( CommunicationContext& );
 };
 
 } // namespace write

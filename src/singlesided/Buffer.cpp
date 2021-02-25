@@ -175,7 +175,7 @@ Buffer
    () const
 {
   BufferDescription desc
-    ( getRuntime().group().toGlobalRank( getRuntime().rank() )
+    ( getRuntime().global_rank()
     , _segment.id()
     , _segment.pointerToOffset
         (_pointer)
