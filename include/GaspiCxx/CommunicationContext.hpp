@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
  *
- * Context.hpp
+ * CommunicationContext.hpp
  *
  */
 
@@ -23,86 +23,37 @@
 #define COMMUNICATOR_HPP_
 
 #include <memory>
-#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/type_defs.hpp>
+#include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/singlesided/Queue.hpp>
 
-// fowrward declarations
 namespace gaspi {
 
-namespace group {
-class Rank;
-}
-
-namespace singlesided {
-class BufferDescription;
-}
-}
-
-
-namespace gaspi {
-
-
-class Context
+class CommunicationContext
 {
   private:
 
-    group::Group                        _group;
-    std::unique_ptr<singlesided::Queue> _pQueue;
-
     //! A communicator cannot be copied.
-    Context
-      (const Context&) = delete;
+    CommunicationContext
+      (const CommunicationContext&) = delete;
 
-    Context&
+    CommunicationContext&
     operator=
-      (const Context&) = delete;
+      (const CommunicationContext&) = delete;
 
   public:
 
     // default context, all ranks
-    Context
+    CommunicationContext
       ();
 
-    Context
-      (group::Group const & group);
-
     virtual
-    ~Context() = default;
-
-    /// Returns the rank of this process in the communicator
-    group::Rank
-    rank
-      () const;
-
-    group::GlobalRank
-    global_rank
-      () const;
-
-    /// Returns the size of this communicator
-    std::size_t
-    size
-      () const;
-
-    group::Group
-    group
-      () const;
+    ~CommunicationContext() = default;
 
     void
     write
       ( singlesided::BufferDescription sourceBufferDescription
-      , singlesided::BufferDescription targetBufferDescription ) const;
-
-    void
-    writePart
-      ( singlesided::BufferDescription sourceBufferDescription
-      , singlesided::BufferDescription targetBufferDescription
-      , std::size_t size
-      , std::size_t offset ) const;
-
-    void
-    notify
-      ( singlesided::BufferDescription targetBufferDescription ) const;
+      , singlesided::BufferDescription targetBufferDescription );
 
     bool
     checkForBufferNotification
@@ -112,9 +63,20 @@ class Context
     waitForBufferNotification
       ( singlesided::BufferDescription targetBufferDescription ) const;
 
-    void
+    virtual void
+    writePart
+      ( singlesided::BufferDescription sourceBufferDescription
+      , singlesided::BufferDescription targetBufferDescription
+      , std::size_t size
+      , std::size_t offset ) = 0;
+
+    virtual void
+    notify
+      ( singlesided::BufferDescription targetBufferDescription ) = 0;
+
+    virtual void
     flush
-      () const;
+      () = 0;
 };
 
 } /* namespace gaspi */

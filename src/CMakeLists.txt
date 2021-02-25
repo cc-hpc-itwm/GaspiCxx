@@ -4,7 +4,7 @@ project(libGaspiCxx LANGUAGES CXX)
 #Create a library called "Hello" which includes the source file "hello.icxx".
 # The extension is already found. Any number of sources could be listed here.
 add_library ( GaspiCxx
-              Context.cpp
+              CommunicationContext.cpp
               Runtime.cpp
               RuntimeConfiguration.cpp
               collectives/Allgather.cpp

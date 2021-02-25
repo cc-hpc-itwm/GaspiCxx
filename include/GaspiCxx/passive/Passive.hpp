@@ -22,7 +22,7 @@
 #ifndef PASSIVE_H
 #define PASSIVE_H
 
-#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <memory>
 #include <GaspiCxx/segment/Segment.hpp>
 #include <GaspiCxx/singlesided/Buffer.hpp>
@@ -72,7 +72,7 @@ class Passive
 
     Passive
       ( segment::Segment &
-      , Context & );
+      , CommunicationContext & );
 
     ~Passive
       ();
@@ -135,7 +135,7 @@ class Passive
     iSendRecvComm
       ( singlesided::BufferDescription const & srcTargetBufferDesc
       , singlesided::BufferDescription const & rcvTargetBufferDesc
-      , Context const & context );
+      , CommunicationContext & context );
 
     void
         handleTaggedSrcBufferDesc
@@ -150,7 +150,7 @@ class Passive
          , singlesided::BufferDescription const & rcvTargetBufferDesc );
 
     segment::Segment & _segment;
-    Context &          _context;
+    CommunicationContext &          _context;
 
     std::size_t _passiveBufSize;
     void *      _passiveBufPointer;

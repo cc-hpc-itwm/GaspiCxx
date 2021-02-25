@@ -87,7 +87,7 @@ TEST_F(PassiveTest, SendMessg)
 {
    Passive & passive(getRuntime().passive());
 
-   if( getRuntime().rank() == group::Rank(0) ) {
+   if( getRuntime().global_rank() == group::GlobalRank(0) ) {
 
      int nRecv( getRuntime().size() - 1 );
 
@@ -109,7 +109,7 @@ TEST_F(PassiveTest, SendMessg)
 
    } else {
 
-     int data( getRuntime().rank().get() );
+     int data( getRuntime().global_rank() );
 
      passive.sendMessg( reinterpret_cast<char*>(&data)
                       , sizeof(int)
@@ -135,7 +135,7 @@ TEST_F(PassiveTest, iSendRecvTest)
 
    using Buffer = singlesided::write::TargetBuffer;
 
-   if( getRuntime().rank() == group::Rank(0) ) {
+   if( getRuntime().global_rank() == group::GlobalRank(0) ) {
 
      int nRecv( getRuntime().size() - 1 );
 
@@ -168,11 +168,11 @@ TEST_F(PassiveTest, iSendRecvTest)
 
      int & data( *reinterpret_cast<int*>(srcBuffer.address()));
 
-     data = getRuntime().rank().get();
+     data = getRuntime().global_rank();
 
      passive.iSendTagMessg
        ( 0
-       , getRuntime().rank().get()
+       , getRuntime().global_rank()
        , srcBuffer );
 
      srcBuffer.waitForCompletion();

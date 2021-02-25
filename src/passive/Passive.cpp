@@ -37,7 +37,7 @@ namespace passive {
 Passive
   ::Passive
    ( segment::Segment & segment
-   , Context & context )
+   , CommunicationContext & context )
 : _segment(segment)
 , _context(context)
 , _passiveBufSize(std::min(static_cast<std::size_t>(1024),segment.size()/2))
@@ -351,7 +351,7 @@ Passive
   ::iSendRecvComm
     ( singlesided::BufferDescription const & srcTargetBufferDesc
     , singlesided::BufferDescription const & rcvTargetBufferDesc
-    , Context const & context )
+    , CommunicationContext & context )
 {
   context.write
     ( srcTargetBufferDesc
@@ -534,7 +534,7 @@ Passive::passive_thread_func_(void * arg)
               , serialization::size(descr) );
 
             {
-              Context & _context(pPassiveCommMan->_context);
+              CommunicationContext & _context(pPassiveCommMan->_context);
 
               serialization::serialize( g_temp_buffer.address(), descr);
 
