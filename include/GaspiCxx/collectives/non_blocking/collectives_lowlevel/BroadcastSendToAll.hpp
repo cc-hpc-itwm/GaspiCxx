@@ -27,7 +27,8 @@ namespace gaspi
 
         BroadcastLowLevel(gaspi::group::Group const& group,
                           std::size_t number_elements,
-                          gaspi::group::Rank const& root);
+                          gaspi::group::Rank const& root,
+                          gaspi::CommunicationContext& comm_context);
 
       private:
         gaspi::group::Rank rank;
@@ -61,8 +62,9 @@ namespace gaspi
     BroadcastLowLevel<T, BroadcastAlgorithm::SEND_TO_ALL>::BroadcastLowLevel(
                       gaspi::group::Group const& group,
                       std::size_t number_elements,
-                      gaspi::group::Rank const& root)
-    : BroadcastCommon(group, number_elements, root),
+                      gaspi::group::Rank const& root,
+                      gaspi::CommunicationContext& comm_context)
+    : BroadcastCommon(group, number_elements, root, comm_context),
       rank(group.rank()),
       number_ranks(group.size()),
       buffer_size_bytes(sizeof(T) * number_elements),
@@ -122,7 +124,7 @@ namespace gaspi
       {
         for (auto& source_buffer : source_buffers)
         {
-          source_buffer->initTransfer();
+          source_buffer->initTransfer(comm_context);
         }
       }
     }
@@ -142,7 +144,7 @@ namespace gaspi
       else
       {
         target_buffer->waitForCompletion();
-        target_buffer->ackTransfer();
+        target_buffer->ackTransfer(comm_context);
       }
       return true;
     }

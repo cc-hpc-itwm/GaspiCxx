@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
@@ -17,12 +18,14 @@ namespace gaspi
       public:
         BroadcastCommon(gaspi::group::Group const& group,
                         std::size_t number_elements,
-                        gaspi::group::Rank const& root);
+                        gaspi::group::Rank const& root,
+                        gaspi::CommunicationContext& comm_context);
 
       protected:
         gaspi::group::Group group;
         std::size_t number_elements;
         gaspi::group::Rank root;
+        gaspi::CommunicationContext& comm_context;
     };
 
     template<typename T, BroadcastAlgorithm Algorithm>
