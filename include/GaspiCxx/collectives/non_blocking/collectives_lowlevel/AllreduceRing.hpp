@@ -26,7 +26,8 @@ namespace gaspi
 
         AllreduceLowLevel(gaspi::group::Group const& group,
                           std::size_t number_elements,
-                          ReductionOp reduction_op);
+                          ReductionOp reduction_op,
+                          gaspi::CommunicationContext& comm_context);
 
       private:
         enum class RingStage
@@ -67,8 +68,9 @@ namespace gaspi
     AllreduceLowLevel<T, AllreduceAlgorithm::RING>::AllreduceLowLevel(
                       gaspi::group::Group const& group,
                       std::size_t number_elements,
-                      ReductionOp reduction_op)
-    : AllreduceCommon(group, number_elements, reduction_op),
+                      ReductionOp reduction_op,
+                      gaspi::CommunicationContext& comm_context)
+    : AllreduceCommon(group, number_elements, reduction_op, comm_context),
       rank(group.rank()),
       number_ranks(group.size()),
       source_buffers(), target_buffers(),
@@ -129,7 +131,7 @@ namespace gaspi
       {
         algorithm_reset_state();
         send_buffer_index = (send_buffer_index + 1) % number_ranks;
-        source_buffers[send_buffer_index]->initTransfer();
+        source_buffers[send_buffer_index]->initTransfer(comm_context);
       }
     }
 
@@ -162,13 +164,13 @@ namespace gaspi
       // acknowledge data transfer in the last step
       if (algorithm_is_finished())
       {
-        target_buffers[receive_buffer_index]->ackTransfer();
+        target_buffers[receive_buffer_index]->ackTransfer(comm_context);
         source_buffers[send_buffer_index]->waitForTransferAck();
       }
       else
       {
         send_buffer_index = (send_buffer_index + 1) % number_ranks;
-        source_buffers[send_buffer_index]->initTransfer();
+        source_buffers[send_buffer_index]->initTransfer(comm_context);
       }
       return algorithm_is_finished();
     }

@@ -20,6 +20,7 @@ namespace gaspi
         Allreduce(gaspi::group::Group const& group,
                   std::size_t number_elements,
                   ReductionOp reduction_op,
+                  gaspi::CommunicationContext& comm_context,
                   progress_engine::ProgressEngine& progress_engine);
         Allreduce(gaspi::group::Group const& group,
                   std::size_t number_elements,
@@ -43,11 +44,12 @@ namespace gaspi
       gaspi::group::Group const& group,
       std::size_t number_elements,
       ReductionOp reduction_op,
+      gaspi::CommunicationContext& comm_context,
       progress_engine::ProgressEngine& progress_engine)
     : progress_engine(progress_engine),
       handle(),
       allreduce_impl(std::make_shared<AllreduceLowLevel<T, Algorithm>>(
-                     group, number_elements, reduction_op))
+                     group, number_elements, reduction_op, comm_context))
     {
       allreduce_impl->waitForSetup();
       handle = progress_engine.register_collective(allreduce_impl);
@@ -59,6 +61,7 @@ namespace gaspi
       std::size_t number_elements,
       ReductionOp reduction_op)
     : Allreduce(group, number_elements, reduction_op,
+                gaspi::getRuntime().getDefaultCommunicationContext(),
                 gaspi::getRuntime().getDefaultProgressEngine())
     { }
 
