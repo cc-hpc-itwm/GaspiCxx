@@ -112,11 +112,11 @@ T
 allreduce
   ( T const & input
   , Allreduce::Type const & type
-  , Context & context ) {
+  , group::Group const & group ) {
 
   T result(input);
 
-  if(context.size() > 1) {
+  if(group.size() > 1) {
     GASPI_CHECK(
       gaspi_allreduce
         ( const_cast<T * const>(&input)
@@ -124,7 +124,7 @@ allreduce
         , 1
         , detail::getGaspiOperationT(type)
         , detail::getGaspiDatatypeT<T>()
-        , context.group().group()
+        , group.group()
         , GASPI_BLOCK) );
   }
 
@@ -136,7 +136,7 @@ std::complex<float>
 allreduce<std::complex<float> >
   ( std::complex<float> const & input
   , Allreduce::Type const & type
-  , Context & context ) {
+  , group::Group const & group ) {
 
   if( (type == Allreduce::MIN) ||
       (type == Allreduce::MAX) ) {
@@ -146,7 +146,7 @@ allreduce<std::complex<float> >
 
   std::complex<float> result(input);
 
-  if(context.size() > 1) {
+  if(group.size() > 1) {
     GASPI_CHECK(
       gaspi_allreduce
         ( const_cast<float * const>
@@ -156,7 +156,7 @@ allreduce<std::complex<float> >
         , 2
         , detail::getGaspiOperationT(type)
         , detail::getGaspiDatatypeT<float>()
-        , context.group().group()
+        , group.group()
         , GASPI_BLOCK) );
   }
 
@@ -168,7 +168,7 @@ std::complex<double>
 allreduce<std::complex<double> >
   ( std::complex<double> const & input
   , Allreduce::Type const & type
-  , Context & context ) {
+  , group::Group const& group ) {
 
   if( (type == Allreduce::MIN) ||
       (type == Allreduce::MAX) ) {
@@ -178,7 +178,7 @@ allreduce<std::complex<double> >
 
   std::complex<double> result(input);
 
-  if(context.size() > 1) {
+  if(group.size() > 1) {
     GASPI_CHECK(
       gaspi_allreduce
         ( const_cast<double * const>
@@ -188,7 +188,7 @@ allreduce<std::complex<double> >
         , 2
         , detail::getGaspiOperationT(type)
         , detail::getGaspiDatatypeT<double>()
-        , context.group().group()
+        , group.group()
         , GASPI_BLOCK) );
   }
 
@@ -198,17 +198,17 @@ allreduce<std::complex<double> >
 /// explicit template instantiation
 
 template int allreduce<int>
-  (int const&, Allreduce::Type const &, Context &);
+  (int const&, Allreduce::Type const &, group::Group const& );
 template unsigned int allreduce<unsigned int>
-  (unsigned int const&, Allreduce::Type const &, Context &);
+  (unsigned int const&, Allreduce::Type const &, group::Group const& );
 template float allreduce<float>
-  (float const&, Allreduce::Type const &, Context &);
+  (float const&, Allreduce::Type const &, group::Group const& );
 template double allreduce<double>
-  (double const&, Allreduce::Type const &, Context &);
+  (double const&, Allreduce::Type const &, group::Group const& );
 template long allreduce<long>
-  (long const&, Allreduce::Type const &, Context &);
+  (long const&, Allreduce::Type const &, group::Group const& );
 template unsigned long allreduce<unsigned long>
-  (unsigned long const&, Allreduce::Type const &, Context &);
+  (unsigned long const&, Allreduce::Type const &, group::Group const& );
 
 }
 }

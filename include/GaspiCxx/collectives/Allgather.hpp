@@ -22,7 +22,8 @@
 #ifndef COLLECTIVES_ALLGATHER_HPP_
 #define COLLECTIVES_ALLGATHER_HPP_
 
-#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/CommunicationContext.hpp>
+#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 
 namespace gaspi {
@@ -37,7 +38,8 @@ allgather
   , void * const gTarget
   , segment::Segment & targetSegment
   , std::size_t const & size
-  , Context & context );
+  , group::Group const& group
+  , CommunicationContext & context );
 
 void
 allgatherv
@@ -46,7 +48,8 @@ allgatherv
   , void * const gTarget
   , segment::Segment & targetSegment
   , std::size_t const * const sizes
-  , Context & context );
+  , group::Group const& group
+  , CommunicationContext & context );
 
 }
 }

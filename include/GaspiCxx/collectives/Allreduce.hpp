@@ -22,7 +22,7 @@
 #ifndef COLLECTIVES_ALLREDUCE_HPP_
 #define COLLECTIVES_ALLREDUCE_HPP_
 
-#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/group/Group.hpp>
 
 namespace gaspi {
 namespace collectives {
@@ -40,7 +40,7 @@ T
 allreduce
   ( T const &
   , Allreduce::Type const &
-  , Context & context );
+  , group::Group const& group );
 
 }
 }

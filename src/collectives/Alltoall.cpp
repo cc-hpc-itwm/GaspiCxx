@@ -20,7 +20,6 @@
  */
 
 #include <GaspiCxx/collectives/Alltoall.hpp>
-#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/Runtime.hpp>
@@ -42,38 +41,39 @@ alltoall
   , void * const gTarget
   , segment::Segment & targetSegment
   , std::size_t const & size
-  , Context & context )
+  , group::Group const & group
+  , CommunicationContext & context )
 {
   // generate sourceBuffer description for every
 
   std::vector<singlesided::BufferDescription>
-        localSourceDescriptions(context.size());
+        localSourceDescriptions(group.size());
   std::vector<singlesided::BufferDescription>
-        localTargetDescriptions(context.size());
+        localTargetDescriptions(group.size());
   std::vector<singlesided::BufferDescription>
-        remoteSourceDescriptions(context.size());
+        remoteSourceDescriptions(group.size());
   std::vector<singlesided::BufferDescription>
-        remoteTargetDescriptions(context.size());
+        remoteTargetDescriptions(group.size());
 
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionSendBuffers( context.size() );
+      descriptionSendBuffers( group.size() );
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionRecvBuffers( context.size() );
+      descriptionRecvBuffers( group.size() );
 
   for( auto i(0UL)
-     ;      i<context.size()
+     ;      i<group.size()
      ;    ++i ) {
 
     group::Rank iGroup(i);
 
-    auto const iGlobalRank(context.group().toGlobalRank( iGroup ) );
+    auto const iGlobalRank(group.toGlobalRank( iGroup ) );
 
     sourceSegment.remoteRegistration( iGlobalRank );
     targetSegment.remoteRegistration( iGlobalRank );
 
     {
       localSourceDescriptions[i].rank()
-          = context.group().toGlobalRank( context.rank() );
+          = group.toGlobalRank( group.rank() );
       localSourceDescriptions[i].segmentId()
           = sourceSegment.id();
       localSourceDescriptions[i].offset()
@@ -87,7 +87,7 @@ alltoall
 
     {
       localTargetDescriptions[i].rank()
-          = context.group().toGlobalRank( context.rank() );
+          = group.toGlobalRank( group.rank() );
       localTargetDescriptions[i].segmentId()
           = targetSegment.id();
       localTargetDescriptions[i].offset()
@@ -119,7 +119,7 @@ alltoall
 
     passive.iSendTagMessg
       ( iGlobalRank
-      , context.rank().get()
+      , group.rank().get()
       , *descriptionSendBuffers[i] );
 
     passive.iRecvTagMessg
@@ -129,7 +129,7 @@ alltoall
   }
 
   for(auto i(0UL)
-     ;     i<context.size()
+     ;     i<group.size()
      ;   ++i) {
 
     descriptionRecvBuffers[i]->waitForNotification();
@@ -147,7 +147,7 @@ alltoall
 
   // release notifications of target segment;
   for(auto i(0UL)
-     ;     i<context.size()
+     ;     i<group.size()
      ;   ++i) {
 
     context.waitForBufferNotification(localTargetDescriptions[i]);
@@ -159,7 +159,7 @@ alltoall
   }
 
   for(auto i(0UL)
-     ;     i<context.size()
+     ;     i<group.size()
      ;   ++i) {
 
     context.waitForBufferNotification(localSourceDescriptions[i]);
@@ -184,41 +184,42 @@ alltoallv
   , void * const gTarget
   , segment::Segment & targetSegment
   , std::size_t const * const targetSizes
-  , Context & context )
+  , group::Group const & group
+  , CommunicationContext & context )
 {
   // generate sourceBuffer description for every
 
   std::vector<singlesided::BufferDescription>
-        localSourceDescriptions(context.size());
+        localSourceDescriptions(group.size());
   std::vector<singlesided::BufferDescription>
-        localTargetDescriptions(context.size());
+        localTargetDescriptions(group.size());
   std::vector<singlesided::BufferDescription>
-        remoteSourceDescriptions(context.size());
+        remoteSourceDescriptions(group.size());
   std::vector<singlesided::BufferDescription>
-        remoteTargetDescriptions(context.size());
+        remoteTargetDescriptions(group.size());
 
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionSendBuffers( context.size() );
+      descriptionSendBuffers( group.size() );
   std::vector<std::unique_ptr<singlesided::Buffer> >
-      descriptionRecvBuffers( context.size() );
+      descriptionRecvBuffers( group.size() );
 
   std::size_t sourceOffset(0);
   std::size_t targetOffset(0);
 
   for( auto i(0UL)
-     ;      i<context.size()
+     ;      i<group.size()
      ;    ++i ) {
 
     group::Rank iGroup(i);
 
-    auto const iGlobalRank(context.group().toGlobalRank( iGroup ) );
+    auto const iGlobalRank(group.toGlobalRank( iGroup ) );
 
     sourceSegment.remoteRegistration( iGlobalRank );
     targetSegment.remoteRegistration( iGlobalRank );
 
     {
       localSourceDescriptions[i].rank()
-          = context.group().toGlobalRank( context.rank() );
+          = group.toGlobalRank( group.rank() );
       localSourceDescriptions[i].segmentId()
           = sourceSegment.id();
       localSourceDescriptions[i].offset()
@@ -234,7 +235,7 @@ alltoallv
 
     {
       localTargetDescriptions[i].rank()
-          = context.group().toGlobalRank( context.rank() );
+          = group.toGlobalRank( group.rank() );
       localTargetDescriptions[i].segmentId()
           = targetSegment.id();
       localTargetDescriptions[i].offset()
@@ -268,7 +269,7 @@ alltoallv
 
     passive.iSendTagMessg
       ( iGlobalRank
-      , context.rank().get()
+      , group.rank().get()
       , *descriptionSendBuffers[i] );
 
     passive.iRecvTagMessg
@@ -278,7 +279,7 @@ alltoallv
   }
 
   for(auto i(0UL)
-     ;     i<context.size()
+     ;     i<group.size()
      ;   ++i) {
 
     descriptionRecvBuffers[i]->waitForNotification();
@@ -296,7 +297,7 @@ alltoallv
 
   // release notifications of target segment;
   for(auto i(0UL)
-     ;     i<context.size()
+     ;     i<group.size()
      ;   ++i) {
 
     context.waitForBufferNotification(localTargetDescriptions[i]);
@@ -308,7 +309,7 @@ alltoallv
   }
 
   for(auto i(0UL)
-     ;     i<context.size()
+     ;     i<group.size()
      ;   ++i) {
 
     context.waitForBufferNotification(localSourceDescriptions[i]);

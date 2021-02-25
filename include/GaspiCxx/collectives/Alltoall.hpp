@@ -22,7 +22,8 @@
 #ifndef COLLECTIVES_ALLTOALL_HPP_
 #define COLLECTIVES_ALLTOALL_HPP_
 
-#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/segment/Segment.hpp>
 
 namespace gaspi {
@@ -37,7 +38,8 @@ alltoall
   , void * const gTarget
   , segment::Segment & targetSegment
   , std::size_t const & size
-  , Context & context );
+  , group::Group const& group
+  , CommunicationContext & context );
 
 void
 alltoallv
@@ -47,7 +49,8 @@ alltoallv
   , void * const gTarget
   , segment::Segment & targetSegment
   , std::size_t const * const targetSizes
-  , Context & context );
+  , group::Group const& group
+  , CommunicationContext & context );
 
 }
 }
