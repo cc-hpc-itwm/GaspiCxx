@@ -1,6 +1,7 @@
 set(SOURCE_FILES
     CommunicationContext.cpp
     SingleQueueContext.cpp
+    RoundRobinQueuesContext.cpp
     Runtime.cpp
     RuntimeConfiguration.cpp
     collectives/Allgather.cpp
