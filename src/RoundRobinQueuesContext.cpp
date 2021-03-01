@@ -38,7 +38,8 @@ namespace gaspi
   RoundRobinQueuesContext::RoundRobinQueuesContext(std::size_t num_queues)
   : num_queues(get_number_queues_allowed(num_queues)),
     gaspi_queues(num_queues),
-    current_queue(gaspi_queues.begin())
+    current_queue_index(0),
+    previous_queue_was_full(false)
   {
     if (num_queues <= 0)
     {
@@ -97,7 +98,7 @@ namespace gaspi
                                     GASPI_BLOCK);
 
       if (ret == GASPI_SUCCESS) { break; }
-      if (ret == GASPI_QUEUE_FULL) { reset_queue(); }
+      if (ret == GASPI_QUEUE_FULL) { select_available_queue(); }
       else { GASPI_CHECK(ret); }
     }
   }
@@ -119,23 +120,27 @@ namespace gaspi
                               GASPI_BLOCK);
 
       if (ret == GASPI_SUCCESS) { break; }
-      if (ret == GASPI_QUEUE_FULL) { reset_queue(); }
+      if (ret == GASPI_QUEUE_FULL) { select_available_queue(); }
       else { GASPI_CHECK(ret); }
     }
   }
 
-  singlesided::Queue& RoundRobinQueuesContext::get_queue() const
+  singlesided::Queue& RoundRobinQueuesContext::get_queue()
   {
-    return *current_queue;
+    return gaspi_queues.at(current_queue_index);
   }
   
-  void RoundRobinQueuesContext::reset_queue()
+  void RoundRobinQueuesContext::select_available_queue()
   {
-    current_queue++;
-    if(current_queue == gaspi_queues.end())
+    if(previous_queue_was_full)
     {
-      flush();
-      current_queue = gaspi_queues.begin();
+      wait_and_flush_queue(gaspi_queues.at(current_queue_index));
+      previous_queue_was_full = false;
+    }
+    else
+    {
+      current_queue_index = (current_queue_index + 1) % gaspi_queues.size();
+      previous_queue_was_full = true;
     }
   }
 

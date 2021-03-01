@@ -38,16 +38,17 @@ class RoundRobinQueuesContext : public CommunicationContext
   
     std::size_t const num_queues;
     std::vector<singlesided::Queue> gaspi_queues;
-    std::vector<gaspi::singlesided::Queue>::iterator current_queue;
+    std::size_t current_queue_index;
+    bool previous_queue_was_full;
 
     singlesided::Queue&
     get_queue
-      () const;
+      ();
     
     void
     wait_and_flush_queue
       (singlesided::Queue&);
     
-    void reset_queue();
+    void select_available_queue();
 };
 }
