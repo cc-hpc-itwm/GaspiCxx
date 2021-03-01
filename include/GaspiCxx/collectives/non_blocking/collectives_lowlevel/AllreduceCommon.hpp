@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
@@ -24,14 +23,12 @@ namespace gaspi
       public:
         AllreduceCommon(gaspi::group::Group const& group,
                         std::size_t number_elements,
-                        ReductionOp reduction_op,
-                        gaspi::CommunicationContext& comm_context);
+                        ReductionOp reduction_op);
 
       protected:
         gaspi::group::Group group;
         std::size_t number_elements;
         ReductionOp reduction_op;
-        gaspi::CommunicationContext& comm_context;
     };
 
     template<typename T, AllreduceAlgorithm Algorithm>
