@@ -27,10 +27,6 @@
 #include <memory>
 #include <vector>
 
-extern "C" {
-#include <GASPI.h>
-}
-
 namespace gaspi {
 namespace group {
 

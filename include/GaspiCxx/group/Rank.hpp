@@ -25,9 +25,6 @@
 #include <memory>
 #include <set>
 
-extern "C" {
-#include <GASPI.h>
-}
 
 namespace gaspi {
 namespace group {
