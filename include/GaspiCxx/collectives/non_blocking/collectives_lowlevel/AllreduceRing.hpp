@@ -6,6 +6,7 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceCommon.hpp>
 
+#include <algorithm>
 #include <memory>
 #include <stdexcept>
 #include <vector>
