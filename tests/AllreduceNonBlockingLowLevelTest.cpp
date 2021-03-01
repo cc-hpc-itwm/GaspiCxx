@@ -15,8 +15,7 @@ namespace gaspi {
     {
       protected:
         AllreduceNonBlockingLowLevelTest()
-        : group_all(),
-          comm_context(getRuntime())
+        : group_all()
         {
           getRuntime().barrier();
         }
@@ -27,7 +26,6 @@ namespace gaspi {
         }
 
         gaspi::group::Group const group_all;
-        gaspi::CommunicationContext& comm_context;
     };
 
     TEST_F(AllreduceNonBlockingLowLevelTest, start_empty_allreduce)
@@ -35,7 +33,7 @@ namespace gaspi {
       using ElemType = int;
       auto const num_elements = 0UL;
       AllreduceLowLevel<ElemType, AllreduceAlgorithm::RING> allreduce(
-        group_all, num_elements, ReductionOp::SUM, comm_context);
+        group_all, num_elements, ReductionOp::SUM);
 
       std::vector<ElemType> inputs {};
 
@@ -51,7 +49,7 @@ namespace gaspi {
       using ElemType = int;
       auto const num_elements = 1UL;
       AllreduceLowLevel<ElemType, AllreduceAlgorithm::RING> allreduce(
-        group_all, num_elements, ReductionOp::SUM, comm_context);
+        group_all, num_elements, ReductionOp::SUM);
 
       ElemType const elem = 5;
       std::vector<ElemType> inputs {elem};
@@ -74,7 +72,7 @@ namespace gaspi {
       using ElemType = float;
       auto const num_elements = 9UL;
       AllreduceLowLevel<ElemType, AllreduceAlgorithm::RING> allreduce(
-        group_all, num_elements, ReductionOp::SUM, comm_context);
+        group_all, num_elements, ReductionOp::SUM);
 
       std::vector<ElemType> inputs(num_elements);
       std::vector<ElemType> expected(num_elements);
