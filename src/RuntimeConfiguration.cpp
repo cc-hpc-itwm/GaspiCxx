@@ -6,6 +6,10 @@
 #include <GaspiCxx/segment/SegmentPool.hpp>
 #include <GaspiCxx/segment/SingleSegmentPool.hpp>
 
+#include <GaspiCxx/CommunicationContext.hpp>
+#include <GaspiCxx/SingleQueueContext.hpp>
+#include <GaspiCxx/RoundRobinQueuesContext.hpp>
+
 namespace gaspi
 {
   namespace
@@ -45,13 +49,39 @@ namespace gaspi
           }
         }
     };
+
+    class CommunicationContextFactory
+    {
+      public:
+        static std::unique_ptr<CommunicationContext>
+              createCommunicationContext(CommunicationContextType
+                                         communication_context_type)
+        {
+          switch (communication_context_type)
+          {
+            case CommunicationContextType::SingleQueue:
+            {
+              return std::make_unique<SingleQueueContext>();
+            }
+            case CommunicationContextType::RoundRobinQueues:
+            {
+              std::size_t num_queues = 4;
+              return std::make_unique<RoundRobinQueuesContext>(num_queues);
+            }
+            default:
+            { return nullptr; }
+          }
+        }
+    };
   }
   
   RuntimeConfiguration::RuntimeConfiguration(
         SegmentPoolType segment_pool_type,
-        ProgressEngineType progress_engine_type)
+        ProgressEngineType progress_engine_type,
+        CommunicationContextType communication_context_type)
   : segment_pool_type(segment_pool_type),
-    progress_engine_type(progress_engine_type)
+    progress_engine_type(progress_engine_type),
+    communication_context_type(communication_context_type)
   { }
 
   std::unique_ptr<segment::SegmentPool>
@@ -64,5 +94,12 @@ namespace gaspi
   RuntimeConfiguration::get_progress_engine() const
   {
     return ProgressEngineFactory::createProgressEngine(progress_engine_type);
+  }
+
+  std::unique_ptr<CommunicationContext>
+  RuntimeConfiguration::get_communication_context() const
+  {
+    return CommunicationContextFactory::createCommunicationContext(
+                                        communication_context_type);
   }
 }
