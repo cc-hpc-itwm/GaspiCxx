@@ -24,6 +24,7 @@
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
+#include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
@@ -135,6 +136,14 @@ SourceBuffer
 void
 SourceBuffer
   ::initTransfer
+   ()
+{
+  initTransfer(getRuntime().getDefaultCommunicationContext());
+}
+
+void
+SourceBuffer
+  ::initTransfer
    ( CommunicationContext& comm_context )
 {
   assert(Endpoint::isConnected());
@@ -142,6 +151,17 @@ SourceBuffer
   comm_context.write
      ( Endpoint::localBufferDesc()
      , Endpoint::otherBufferDesc() );
+}
+
+void
+SourceBuffer
+  ::initTransferPart
+   ( std::size_t size
+   , std::size_t offset )
+{
+  initTransferPart(getRuntime().getDefaultCommunicationContext()
+                  , size
+                  , offset );
 }
 
 void

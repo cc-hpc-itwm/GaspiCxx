@@ -89,6 +89,10 @@ class TargetBuffer : public Endpoint {
 
     void
     ackTransfer
+      ();
+
+    void
+    ackTransfer
       ( CommunicationContext& );
 };
 

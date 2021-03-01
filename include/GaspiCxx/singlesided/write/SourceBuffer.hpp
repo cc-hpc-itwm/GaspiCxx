@@ -91,7 +91,16 @@ class SourceBuffer : public Endpoint {
 
     void
     initTransfer
+      ();
+
+    void
+    initTransfer
       ( CommunicationContext& );
+
+    void
+    initTransferPart
+      ( std::size_t size
+      , std::size_t offset = 0 );
 
     void
     initTransferPart
