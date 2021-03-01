@@ -86,7 +86,8 @@ namespace passive { class Passive; }
     //! Global library configuration
     inline static RuntimeConfiguration configuration{
                         SegmentPoolType::SingleSegment,
-                        ProgressEngineType::RoundRobinDedicatedThread};
+                        ProgressEngineType::RoundRobinDedicatedThread,
+                        CommunicationContextType::RoundRobinQueues};
 
     //! Construct a GASPI interface from a group and a segment.
     //! \note GASPI and the given segment must be initialized on
