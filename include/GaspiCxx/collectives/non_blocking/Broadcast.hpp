@@ -21,7 +21,6 @@ namespace gaspi
         Broadcast(gaspi::group::Group const& group,
                   std::size_t number_elements,
                   gaspi::group::Rank const& root_rank,
-                  gaspi::CommunicationContext& comm_context,
                   gaspi::progress_engine::ProgressEngine& progress_engine);
         Broadcast(gaspi::group::Group const& group,
                   std::size_t number_elements,
@@ -49,12 +48,11 @@ namespace gaspi
       gaspi::group::Group const& group,
       std::size_t number_elements,
       gaspi::group::Rank const& root_rank,
-      gaspi::CommunicationContext& comm_context,
       gaspi::progress_engine::ProgressEngine& progress_engine)
     : progress_engine(progress_engine),
       handle(),
       broadcast_impl(std::make_shared<BroadcastLowLevel<T, Algorithm>>(
-        group, number_elements, root_rank, comm_context)),
+        group, number_elements, root_rank)),
       root_rank(root_rank),
       rank(group.rank())
     {
@@ -68,7 +66,6 @@ namespace gaspi
       std::size_t number_elements,
       gaspi::group::Rank const& root_rank)
     : Broadcast(group, number_elements, root_rank,
-                gaspi::getRuntime().getDefaultCommunicationContext(),
                 gaspi::getRuntime().getDefaultProgressEngine())
     { }
 
