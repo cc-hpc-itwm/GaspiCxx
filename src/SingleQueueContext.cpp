@@ -34,13 +34,11 @@ SingleQueueContext
       (ss.str());
   }
 
-  if( (offset + size) > targetBufferDescription.size() ) {
+  if( size > targetBufferDescription.size() ) {
     std::stringstream ss;
 
     ss << CODE_ORIGIN
-       << "Offset ("
-       << offset
-       << " byte) + size ("
+       << "size ("
        << size
        << " byte) > size of target buffer ("
        << targetBufferDescription.size()
