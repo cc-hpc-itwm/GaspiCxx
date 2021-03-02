@@ -6,7 +6,7 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastCommon.hpp>
 
 #include <algorithm>
-#include <memory>
+#include <cstring>
 #include <numeric>
 #include <stdexcept>
 #include <vector>
