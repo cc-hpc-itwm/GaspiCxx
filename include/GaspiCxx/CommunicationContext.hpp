@@ -23,7 +23,6 @@
 #define COMMUNICATOR_HPP_
 
 #include <memory>
-#include <GaspiCxx/type_defs.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/singlesided/Queue.hpp>
 

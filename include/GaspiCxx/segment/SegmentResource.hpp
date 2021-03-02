@@ -25,7 +25,6 @@
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/segment/SegmentManager.hpp>
 #include <GaspiCxx/segment/Types.hpp>
-#include <GaspiCxx/type_defs.hpp>
 
 namespace gaspi {
 namespace segment {

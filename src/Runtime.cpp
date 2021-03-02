@@ -20,7 +20,6 @@
  */
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/RuntimeConfiguration.hpp>
-#include <GaspiCxx/type_defs.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
