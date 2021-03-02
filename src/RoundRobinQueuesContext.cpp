@@ -38,8 +38,7 @@ namespace gaspi
   RoundRobinQueuesContext::RoundRobinQueuesContext(std::size_t num_queues)
   : num_queues(get_number_queues_allowed(num_queues)),
     gaspi_queues(num_queues),
-    current_queue_index(0),
-    previous_queue_was_full(false)
+    queue_full_counter(0)
   {
     if (num_queues <= 0)
     {
@@ -127,30 +126,20 @@ namespace gaspi
 
   singlesided::Queue& RoundRobinQueuesContext::get_queue()
   {
-    return gaspi_queues.at(current_queue_index);
+    return gaspi_queues.at(queue_full_counter % gaspi_queues.size());
   }
   
   void RoundRobinQueuesContext::select_available_queue()
   {
-    if(previous_queue_was_full)
-    {
-      wait_and_flush_queue(gaspi_queues.at(current_queue_index));
-      previous_queue_was_full = false;
-    }
-    else
-    {
-      current_queue_index = (current_queue_index + 1) % gaspi_queues.size();
-      previous_queue_was_full = true;
-    }
+    // use a counter variable instead of an index in the queues array
+    // to be able to use an atomic variable
+    // this might result in skipping over queues in a multi-threaded environment
+    queue_full_counter++;
+    get_queue().flush();
   }
 
   void RoundRobinQueuesContext::flush()
   {
-    for(auto& q : gaspi_queues) wait_and_flush_queue(q);
-  }
-
-  void RoundRobinQueuesContext::wait_and_flush_queue(singlesided::Queue& queue)
-  {
-    GASPI_CHECK(gaspi_wait(queue.get(), GASPI_BLOCK));
+    for(auto& q : gaspi_queues) q.flush();
   }
 }
