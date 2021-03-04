@@ -71,12 +71,12 @@ namespace gaspi
       notify(targetBufferDescription);
       return;
     }
-    if (offset + size > sourceBufferDescription.size())
+    if ((offset + size) > sourceBufferDescription.size())
     {
       throw std::runtime_error(
       "[RoundRobinQueuesContext:writePart] Write size larger than provided source buffer");
     }
-    if (offset + size > targetBufferDescription.size())
+    if (size > targetBufferDescription.size())
     {
       throw std::runtime_error(
       "[RoundRobinQueuesContext:writePart] Write size larger than provided target buffer");
