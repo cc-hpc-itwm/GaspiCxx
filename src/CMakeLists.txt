@@ -36,6 +36,7 @@ target_include_directories(GaspiCxx
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(GaspiCxx
+                      Threads::Threads
                       optimized GPI2::GPI2
                       debug GPI2::GPI2dbg)
 

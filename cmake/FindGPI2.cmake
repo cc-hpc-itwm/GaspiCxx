@@ -110,14 +110,20 @@ if(GPI2_FOUND AND NOT TARGET GPI2::GPI2)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     add_library(GPI2::GPI2 SHARED IMPORTED GLOBAL)
-    target_link_libraries(GPI2::GPI2 INTERFACE Threads::Threads)
-    target_include_directories(GPI2::GPI2 INTERFACE ${GPI2_INCLUDE_DIRS})
-    set_property(TARGET GPI2::GPI2 PROPERTY IMPORTED_LOCATION ${GPI2_LIBRARIES})
+    target_link_libraries(GPI2::GPI2
+                          INTERFACE Threads::Threads)
+    target_include_directories(GPI2::GPI2
+                               INTERFACE ${GPI2_INCLUDE_DIRS})
+    set_property(TARGET GPI2::GPI2
+                 PROPERTY IMPORTED_LOCATION ${GPI2_LIBRARIES})
 
     add_library(GPI2::GPI2dbg SHARED IMPORTED GLOBAL)
-    target_link_libraries(GPI2::GPI2dbg INTERFACE Threads::Threads)
-    target_include_directories(GPI2::GPI2dbg INTERFACE ${GPI2_INCLUDE_DIRS})
-    set_property(TARGET GPI2::GPI2dbg  PROPERTY IMPORTED_LOCATION ${GPI2_DBG_LIBRARIES})
+    target_link_libraries(GPI2::GPI2dbg
+                          INTERFACE Threads::Threads)
+    target_include_directories(GPI2::GPI2dbg
+                               INTERFACE ${GPI2_INCLUDE_DIRS})
+    set_property(TARGET GPI2::GPI2dbg
+                 PROPERTY IMPORTED_LOCATION ${GPI2_DBG_LIBRARIES})
 
     find_package(IBverbs)
 
