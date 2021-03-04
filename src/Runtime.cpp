@@ -61,6 +61,12 @@ Runtime
 , _pglobal_barrier()
 { }
 
+Runtime
+  ::~Runtime()
+{
+  _pglobal_barrier->execute();
+}
+
 segment::Segment &
 Runtime
   ::segment

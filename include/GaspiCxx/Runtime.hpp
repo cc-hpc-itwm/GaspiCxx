@@ -95,8 +95,7 @@ namespace passive { class Passive; }
     Runtime &
     getRuntime();
 
-    ~Runtime
-      () = default;
+    ~Runtime();
 
     //! Return the segment
     segment::Segment &
