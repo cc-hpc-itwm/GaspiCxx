@@ -23,3 +23,22 @@ add_custom_target (run_tests
 	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/run_tests.sh GaspiCxxTests
 	DEPENDS GaspiCxxTests)
 
+include (test_helpers)
+set(localranks_list 1 3 4)
+set(test_list Allreduce
+              Allgather
+              Alltoall
+              Barrier
+              Broadcast
+              RoundRobinDedicatedThread
+              Passive
+              SegmentMemoryManager
+              SingleSidedWriteBuffer
+              )
+
+gaspicxx_generate_gpi_tests(TEST_LIST "${test_list}"
+                            LOCALRANKS_LIST "${localranks_list}"
+                            TEST_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/GaspiCxxTests"
+                            TIMEOUT 100)
+
+gaspicxx_generate_cleanup_test(LOCALRANKS 4)
