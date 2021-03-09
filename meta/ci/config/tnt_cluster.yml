@@ -1,0 +1,92 @@
+.tnt_cluster_common:
+  tags:
+    - tnt_cluster
+  extends:
+    - .common_after_script
+  variables:
+    CMAKE_MODULE: cmake/3.15.4-gcc-8.4.0-zvbii
+    GTEST_MODULE: googletest/1.10.0-gcc-8.4.0-rfkia
+    GPI2_MODULE_ETH: gpi-2/1.4.0-gcc-8.4.0-eth-vswoi 
+    GPI2_MODULE_IB:  gpi-2/1.4.0-gcc-8.4.0-infiniband-vngux 
+
+  before_script:
+    - source /opt/software/miniconda3-4.8.3/etc/profile.d/conda.sh
+    - export MODULEPATH=/opt/modules/linux-ubuntu20.04-broadwell:${MODULEPATH}
+    - module load ${COMPILER_MODULE}
+    - module load ${CMAKE_MODULE} 
+    - module load ${GTEST_MODULE}
+    - module load ${GASPI_GPI2_MODULE}
+    - export LD_LIBRARY_PATH=${GASPI_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
+.tnt_cluster_build:
+  extends:
+    - .tnt_cluster_common
+    - .common_build_job
+  stage: build
+
+.tnt_cluster_run_tests:
+  extends: 
+    - .tnt_cluster_common
+  stage: unit_tests
+  script:
+    - cd ${GASPI_BUILD_DIR}
+    - ctest --output-on-failure -LE "disabled|integration"
+
+.tnt_cluster_integration_tests:
+  extends: 
+    - .tnt_cluster_common
+  stage: integration_tests
+  script:
+    - cd ${GASPI_BUILD_DIR}
+    - ctest --output-on-failure -LE "disabled" -L integration
+
+.gcc8.4.0_job:
+  variables:
+    COMPILER_MODULE: gcc/8.4.0-gcc-9.3.0-itvm7
+
+.cpu_job:
+  variables:
+    GASPI_TEST_MACHINEFILE: ${CI_PROJECT_DIR}/meta/ci/tnt_cluster/machinefile_2rankspernode
+
+.cpu_job_1rankpernode:
+  variables:
+    GASPI_TEST_MACHINEFILE: ${CI_PROJECT_DIR}/meta/ci/tnt_cluster/machinefile_1rankspernode
+
+####### Build jobs ############
+ib-gcc8.4.0-Release-build:
+  extends:
+    - .release_job
+    - .ib_job
+    - .gcc8.4.0_job
+    - .tnt_cluster_build
+
+# Ethernet builds [test the C++ libraries]
+eth-gcc8.4.0-Release-build:
+  extends:
+    - .release_job
+    - .eth_job
+    - .gcc8.4.0_job
+    - .tnt_cluster_build
+
+# Debug builds
+ib-gcc8.4.0-Debug-build:
+  extends:
+    - .debug_job
+    - .ib_job
+    - .gcc8.4.0_job
+    - .tnt_cluster_build
+
+####### Unit tests ############
+ib-gcc8.4.0-Release-unit:
+  extends:
+    - .ib_job
+    - .tnt_cluster_run_tests
+  needs:
+    - job: ib-gcc8.4.0-Release-build
+
+eth-gcc8.4.0-Release-unit:
+  extends:
+    - .eth_job
+    - .tnt_cluster_run_tests
+  needs:
+    - job: eth-gcc8.4.0-Release-build
