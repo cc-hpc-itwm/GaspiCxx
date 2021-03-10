@@ -28,11 +28,6 @@
 #include <GaspiCxx/RuntimeConfiguration.hpp>
 #include <GaspiCxx/segment/SegmentPool.hpp>
 
-extern "C" {
-#include <GASPI.h>
-}
-
-
 #ifndef GASPIRUNTIME_HPP
 #define GASPIRUNTIME_HPP
 
@@ -87,8 +82,6 @@ namespace passive { class Passive; }
 
 
   public:
-
-    using Rank = gaspi_rank_t;
 
     //! Global library configuration
     inline static RuntimeConfiguration configuration{
