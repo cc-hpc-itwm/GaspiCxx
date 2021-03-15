@@ -4,6 +4,7 @@
 #include <GaspiCxx/singlesided/Queue.hpp>
 
 #include <atomic>
+#include <mutex>
 #include <random>
 #include <vector>
 
@@ -40,12 +41,11 @@ class RoundRobinQueuesContext : public CommunicationContext
   
     std::size_t const num_queues;
     std::vector<singlesided::Queue> gaspi_queues;
-    std::atomic<std::size_t> queue_full_counter;
-
-    singlesided::Queue&
-    get_queue
-      ();
+    std::mutex queue_index_mutex;
+    std::atomic<std::size_t> queue_index;
     
-    void select_available_queue();
+    std::size_t
+	select_available_queue
+		(std::size_t const & full_queue_index);
 };
 }

@@ -38,7 +38,7 @@ namespace gaspi
   RoundRobinQueuesContext::RoundRobinQueuesContext(std::size_t num_queues)
   : num_queues(get_number_queues_allowed(num_queues)),
     gaspi_queues(num_queues),
-    queue_full_counter(0)
+    queue_index(0)
   {
     if (num_queues <= 0)
     {
@@ -83,6 +83,9 @@ namespace gaspi
     }
     
     gaspi_notification_t const notification_value = 1;
+
+    std::size_t current_queue_index (queue_index);
+
     while (true)
     {
       auto ret = gaspi_write_notify(sourceBufferDescription.segmentId(),
@@ -93,11 +96,13 @@ namespace gaspi
                                     size,
                                     targetBufferDescription.notificationId(),
                                     notification_value,
-                                    get_queue().get(),
+									gaspi_queues.at(current_queue_index).get(),
                                     GASPI_BLOCK);
 
       if (ret == GASPI_SUCCESS) { break; }
-      if (ret == GASPI_QUEUE_FULL) { select_available_queue(); }
+      if (ret == GASPI_QUEUE_FULL) {
+    	  current_queue_index = select_available_queue(current_queue_index);
+      }
       else { GASPI_CHECK(ret); }
     }
   }
@@ -108,34 +113,45 @@ namespace gaspi
     ::notify
       ( singlesided::BufferDescription targetBufferDescription )
   {
-    gaspi_notification_t const notification_value = 1;      
+    gaspi_notification_t const notification_value = 1;
+
+    std::size_t current_queue_index (queue_index);
+
     while (true)
     {
       auto ret = gaspi_notify(targetBufferDescription.segmentId(),
                               targetBufferDescription.rank(),
                               targetBufferDescription.notificationId(),
                               notification_value,
-                              get_queue().get(),
+							  gaspi_queues.at(current_queue_index).get(),
                               GASPI_BLOCK);
 
       if (ret == GASPI_SUCCESS) { break; }
-      if (ret == GASPI_QUEUE_FULL) { select_available_queue(); }
+      if (ret == GASPI_QUEUE_FULL) {
+    	  current_queue_index = select_available_queue(current_queue_index);
+      }
       else { GASPI_CHECK(ret); }
     }
   }
 
-  singlesided::Queue& RoundRobinQueuesContext::get_queue()
+  std::size_t
+  RoundRobinQueuesContext
+  	  ::select_available_queue
+  	  	  (std::size_t const & full_queue_index)
   {
-    return gaspi_queues.at(queue_full_counter % gaspi_queues.size());
-  }
-  
-  void RoundRobinQueuesContext::select_available_queue()
-  {
-    // use a counter variable instead of an index in the queues array
-    // to be able to use an atomic variable
-    // this might result in skipping over queues in a multi-threaded environment
-    queue_full_counter++;
-    get_queue().flush();
+	std::lock_guard<std::mutex> lck (queue_index_mutex);
+
+	std::size_t current_queue_index (queue_index);
+
+	if(current_queue_index == full_queue_index) {
+	  current_queue_index++;
+      current_queue_index = current_queue_index % gaspi_queues.size();
+      gaspi_queues.at(current_queue_index).flush();
+      queue_index = current_queue_index;
+	}
+
+	return current_queue_index;
+
   }
 
   void RoundRobinQueuesContext::flush()
