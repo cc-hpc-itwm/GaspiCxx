@@ -4,10 +4,10 @@ stages:
 
 variables:
   GIT_STRATEGY: fetch
-  TNT_CI_DIR: ${CI_PROJECT_DIR}/meta/ci
-  TNT_INSTALL_DIR: ${CI_PROJECT_DIR}/install
-  TNT_BUILD_DIR: ${CI_PROJECT_DIR}/build
-  TNT_LD_LIBRARY_PATH: ${CI_PROJECT_DIR}/build
+  GASPI_CI_DIR: ${CI_PROJECT_DIR}/meta/ci
+  GASPI_INSTALL_DIR: ${CI_PROJECT_DIR}/install
+  GASPI_BUILD_DIR: ${CI_PROJECT_DIR}/build
+  GASPI_LD_LIBRARY_PATH: ${CI_PROJECT_DIR}/build
   RUNNER_HOME: /home/gitlab-runner
 
 include: 
