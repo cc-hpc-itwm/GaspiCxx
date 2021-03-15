@@ -57,7 +57,7 @@ Runtime
                                               , *this ) )
 , _psegment_pool()
 , _pengine()
-, _pcomm_context()
+, _pcomm_context(Runtime::configuration.get_communication_context())
 , _pglobal_barrier()
 { }
 
@@ -122,15 +122,6 @@ Runtime
   ::getDefaultCommunicationContext
     ()
 {
-  if (!_pcomm_context)
-  {
-    _pcomm_context = Runtime::configuration.get_communication_context();
-  }
-  if (!_pcomm_context)
-  {
-    throw std::runtime_error(
-    "[Runtime::getDefaultCommunicationContext] Communication context undefined.");
-  }
   return *_pcomm_context;
 }
 
