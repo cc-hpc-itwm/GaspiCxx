@@ -5,6 +5,7 @@
 
 #include <GaspiCxx/segment/SegmentPool.hpp>
 #include <GaspiCxx/segment/SingleSegmentPool.hpp>
+#include <GaspiCxx/segment/DynamicSegmentPool.hpp>
 
 #include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/SingleQueueContext.hpp>
@@ -25,6 +26,10 @@ namespace gaspi
             case SegmentPoolType::SingleSegment:
             {
               return std::make_unique<segment::SingleSegmentPool>(100*1024*1024);
+            }
+            case SegmentPoolType::DynamicSegment:
+            {
+              return std::make_unique<segment::DynamicSegmentPool>(100*1024*1024);
             }
             default:
             { return nullptr; }

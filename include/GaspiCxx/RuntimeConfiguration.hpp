@@ -9,7 +9,8 @@ namespace gaspi {
 enum class SegmentPoolType
 {
   None,
-  SingleSegment // FIXME: Add a dynamic SegmentPool implementation
+  SingleSegment,
+  DynamicSegment
 };
 
 enum class ProgressEngineType
