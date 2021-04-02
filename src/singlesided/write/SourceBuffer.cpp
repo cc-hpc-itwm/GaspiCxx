@@ -104,15 +104,10 @@ SourceBuffer
 
 SourceBuffer
   ::SourceBuffer
-   ( SourceBuffer const& other )
-: Endpoint
-  ( other._pointer
-  , other._segment
-  , other._size
-  , Endpoint::Type::SOURCE )
+   ( Endpoint const& other )
+: Endpoint(other)
 {
-  // Take shared ownership of existing memory allocation
-  _allocMemory = other._allocMemory;
+  _type = Endpoint::Type::SOURCE;
 }
 
 SourceBuffer
