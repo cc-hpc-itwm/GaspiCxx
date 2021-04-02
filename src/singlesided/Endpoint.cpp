@@ -74,12 +74,12 @@ Endpoint
 : Buffer
   ( segment
   , size )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
 
 Endpoint
@@ -99,12 +99,12 @@ Endpoint
   ( pointer
   , segment
   , size )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
 
 Endpoint
@@ -118,12 +118,12 @@ Endpoint
   ( segment
   , size
   , notification )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
 
 Endpoint
@@ -148,12 +148,12 @@ Endpoint
   , segment
   , size
   , notification )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
 
 Endpoint

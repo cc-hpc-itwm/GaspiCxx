@@ -129,6 +129,8 @@ class Endpoint : public Buffer {
 
   protected:
 
+    Type _type;
+
     BufferDescription &
     localBufferDesc();
 
@@ -146,7 +148,6 @@ class Endpoint : public Buffer {
     std::unique_ptr<BufferDescription>   _pLocalBufferDesc;
     std::unique_ptr<BufferDescription>   _pOtherBufferDesc;
     bool                                 _isConnected;
-    Type                                 _type;
 
 };
 
