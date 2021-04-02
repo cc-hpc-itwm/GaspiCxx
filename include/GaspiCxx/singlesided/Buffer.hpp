@@ -23,6 +23,7 @@
 #define BUFFER_HPP_
 
 #include <cstdlib>
+#include <memory>
 
 #include <GaspiCxx/segment/Types.hpp>
 
