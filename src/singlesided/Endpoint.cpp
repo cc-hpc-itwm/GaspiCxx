@@ -157,6 +157,19 @@ Endpoint
 {}
 
 Endpoint
+  ::Endpoint
+   ( Endpoint const& other )
+: Endpoint
+  ( other._pointer
+  , other._segment
+  , other._size
+  , other._type )
+{
+  // Take shared ownership of existing memory allocation
+  _allocMemory = other._allocMemory;
+}
+
+Endpoint
   ::~Endpoint
    ()
 {

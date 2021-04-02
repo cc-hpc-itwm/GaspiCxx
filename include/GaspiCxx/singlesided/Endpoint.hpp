@@ -108,6 +108,12 @@ class Endpoint : public Buffer {
           ::Notification notification
       , Type type = GENERIC);
 
+    // Copy constructor creates a new `Endpoint`
+    // from an existing one that will point
+    // to the same (segment) memory,
+    // but creates new notifications
+    Endpoint(Endpoint const&);
+
     ~Endpoint();
 
     void
