@@ -3,6 +3,7 @@
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/non_blocking/Broadcast.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastSendToAll.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastBasicLinear.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
 #include <numeric>
@@ -34,7 +35,7 @@ namespace gaspi {
       using ElemType = int;
       auto const num_elements = 0UL;
       auto const root = gaspi::group::Rank(group_all.size()-1);
-      Broadcast<ElemType, BroadcastAlgorithm::SEND_TO_ALL> broadcast(
+      Broadcast<ElemType, BroadcastAlgorithm::BASIC_LINEAR> broadcast(
         group_all, num_elements, root);
 
       std::vector<ElemType> const inputs {};
@@ -56,7 +57,7 @@ namespace gaspi {
       using ElemType = int;
       auto const num_elements = 1UL;
       auto const root = gaspi::group::Rank(group_all.size()-1);
-      Broadcast<ElemType, BroadcastAlgorithm::SEND_TO_ALL> broadcast(
+      Broadcast<ElemType, BroadcastAlgorithm::BASIC_LINEAR> broadcast(
         group_all, num_elements, root);
 
       ElemType const elem = 5;
@@ -82,7 +83,7 @@ namespace gaspi {
       using ElemType = float;
       auto const num_elements = 9UL;
       auto const root = gaspi::group::Rank(group_all.size()-1);
-      Broadcast<ElemType, BroadcastAlgorithm::SEND_TO_ALL> broadcast(
+      Broadcast<ElemType, BroadcastAlgorithm::BASIC_LINEAR> broadcast(
         group_all, num_elements, root);
 
       std::vector<ElemType> inputs(num_elements);

@@ -24,7 +24,7 @@ add_custom_target (run_tests
 	DEPENDS GaspiCxxTests)
 
 include (test_helpers)
-set(localranks_list 1 3 4)
+set(localranks_list 1 2 3 4)
 set(test_list Allreduce
               Allgather
               Alltoall
