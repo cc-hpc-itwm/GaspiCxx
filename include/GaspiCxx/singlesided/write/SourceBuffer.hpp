@@ -72,10 +72,7 @@ class SourceBuffer : public Endpoint {
       , segment
           ::Notification notification );
 
-    // Copy constructor creates a new `SourceBuffer`,
-    // which points to the same (segment) memory,
-    // but creates new notifications
-    SourceBuffer(SourceBuffer const&);
+    SourceBuffer(Endpoint const&);
 
     ~SourceBuffer
       ();

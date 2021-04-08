@@ -65,10 +65,7 @@ class TargetBuffer : public Endpoint {
       , segment
           ::Notification notification );
 
-    // Copy constructor creates a new `TargetBuffer`,
-    // which points to the same (segment) memory,
-    // but creates new notifications
-    TargetBuffer(TargetBuffer const&);
+    TargetBuffer(Endpoint const&);
 
     // bilateral function
     // needs to be invoked by the correspondent
