@@ -32,24 +32,27 @@ namespace segment {
 class Segment : public SegmentResource
               , public SegmentManager
 {
-  public:
+public:
 
-    Segment
-      () = delete;
+  Segment
+    () = delete;
 
-    Segment
-      ( std::size_t );
+  Segment
+    ( std::size_t );
 
-    Segment
-      ( SegmentID
-      , std::size_t );
+  Segment
+    ( SegmentID
+    , std::size_t );
 
-    SegmentID
-    id
-      () const
-    {
-      return SegmentResource::id();
-    }
+  Segment
+    ( Segment const& ) = delete;
+
+  Segment
+    ( Segment&& ) = default;
+
+  SegmentID
+  id
+    () const;
 
 private:
 

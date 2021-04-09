@@ -35,7 +35,9 @@ Segment
     ( std::size_t segmentSize )
 : SegmentResource( segmentSize )
 , SegmentManager( SegmentResource::id() )
-{ }
+{
+
+}
 
 Segment
   ::Segment
@@ -45,6 +47,14 @@ Segment
 , SegmentManager( SegmentResource::id() )
 {
 
+}
+
+SegmentID
+Segment
+  ::id
+    () const
+{
+  return SegmentResource::id();
 }
 
 #undef GASPI_CHECK
