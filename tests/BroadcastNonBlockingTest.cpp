@@ -6,6 +6,9 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastBasicLinear.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
+#include "parametrized_test_utilities.hpp"
+#include "collectives_utilities.hpp"
+
 #include <numeric>
 #include <stdexcept>
 #include <vector>
@@ -13,96 +16,85 @@
 namespace gaspi {
   namespace collectives {
 
-    class BroadcastNonBlockingTest : public ::testing::Test
+    std::vector<BroadcastAlgorithm> const broadcastAlgorithms{BroadcastAlgorithm::BASIC_LINEAR,
+                                                              BroadcastAlgorithm::SEND_TO_ALL};
+
+    template<typename T>
+    class BroadcastFactory
     {
-      protected:
-        BroadcastNonBlockingTest()
-        : group_all()
+      public:
+        static auto factory(BroadcastAlgorithm alg,
+                              gaspi::group::Group const& group, std::size_t number_elements,
+                              gaspi::group::Rank const& root_rank)
         {
-          getRuntime().barrier();
+          std::unordered_map<BroadcastAlgorithm,
+                            std::unique_ptr<RootedSendCollective>> mapping;
+          mapping.emplace(BroadcastAlgorithm::SEND_TO_ALL,
+                          std::make_unique<Broadcast<T, BroadcastAlgorithm::SEND_TO_ALL>>(
+                                                        group, number_elements, root_rank));
+          mapping.emplace(BroadcastAlgorithm::BASIC_LINEAR,
+                          std::make_unique<Broadcast<T, BroadcastAlgorithm::BASIC_LINEAR>>(
+                                                        group, number_elements, root_rank));
+          return std::move(mapping[alg]);
         }
-
-        ~BroadcastNonBlockingTest()
-        {
-          getRuntime().barrier();
-        }
-
-        gaspi::group::Group const group_all;
     };
 
-    TEST_F(BroadcastNonBlockingTest, empty_broadcast)
+    using TestCase = std::tuple<BroadcastAlgorithm, DataSize, ElementType>;
+    class BroadcastTest : public CollectivesFixture,
+                          public testing::WithParamInterface<TestCase>
     {
-      using ElemType = int;
-      auto const num_elements = 0UL;
-      auto const root = gaspi::group::Rank(group_all.size()-1);
-      Broadcast<ElemType, BroadcastAlgorithm::BASIC_LINEAR> broadcast(
-        group_all, num_elements, root);
+      protected:
+        BroadcastTest()
+        : algorithm(std::get<0>(GetParam())),
+          num_elements(std::get<1>(GetParam())),
+          elem_type_string(std::get<2>(GetParam())),
+          root(0)
+        {}
 
-      std::vector<ElemType> const inputs {};
-      std::vector<ElemType> outputs {};
+        auto make_bcast()
+        {
+          auto factory = select_factory_by_type<BroadcastFactory>(elem_type_string);          
+          return factory(algorithm, group_all, num_elements, root);
+        }
+
+        auto make_data()
+        {
+          auto factory = select_factory_by_type<DataFactory>(elem_type_string);
+          return factory(num_elements);
+        }
+
+        BroadcastAlgorithm algorithm;
+        DataSize num_elements;
+        ElementType elem_type_string;
+        gaspi::group::Rank root;
+    };
+
+    TEST_P(BroadcastTest, one_bcast)
+    {
+      auto broadcast = make_bcast();
+      auto inputs = make_data();
+      auto outputs = make_data();
+
+     //auto const expected = inputs;
 
       if (group_all.rank() == root)
       {
-        ASSERT_NO_THROW(broadcast.start(inputs));
+        broadcast->start(inputs->get());
       }
       else
       {
-        ASSERT_NO_THROW(broadcast.start());
+        broadcast->start();
       }
-      ASSERT_NO_THROW(broadcast.waitForCompletion(outputs));
+      broadcast->waitForCompletion(outputs->get());
+
+//      ASSERT_EQ(outputs, expected);
     }
 
-    TEST_F(BroadcastNonBlockingTest, single_element_allreduce)
-    {
-      using ElemType = int;
-      auto const num_elements = 1UL;
-      auto const root = gaspi::group::Rank(group_all.size()-1);
-      Broadcast<ElemType, BroadcastAlgorithm::BASIC_LINEAR> broadcast(
-        group_all, num_elements, root);
-
-      ElemType const elem = 5;
-      std::vector<ElemType> const inputs {elem};
-      std::vector<ElemType> const expected = inputs;
-      std::vector<ElemType> outputs(num_elements);
-
-      if (group_all.rank() == root)
-      {
-        broadcast.start(inputs);
-      }
-      else
-      {
-        broadcast.start();
-      }
-      broadcast.waitForCompletion(outputs);
-
-      ASSERT_EQ(outputs, expected);
-    }
-
-    TEST_F(BroadcastNonBlockingTest, multi_elem_allreduce)
-    {
-      using ElemType = float;
-      auto const num_elements = 9UL;
-      auto const root = gaspi::group::Rank(group_all.size()-1);
-      Broadcast<ElemType, BroadcastAlgorithm::BASIC_LINEAR> broadcast(
-        group_all, num_elements, root);
-
-      std::vector<ElemType> inputs(num_elements);
-      std::iota(inputs.begin(), inputs.end(), 42);
-      std::vector<ElemType> const expected = inputs;
-      std::vector<ElemType> outputs(num_elements);
-
-      if (group_all.rank() == root)
-      {
-        broadcast.start(inputs);
-      }
-      else
-      {
-        broadcast.start();
-      }
-      broadcast.waitForCompletion(outputs);
-
-
-      ASSERT_EQ(outputs, expected);
-    }
+    std::vector<ElementType> const elementTypes{"int", "float"};
+    std::vector<DataSize> const dataSizes{0, 1, 5};
+    INSTANTIATE_TEST_SUITE_P(Coll, BroadcastTest,
+                             testing::Combine(testing::ValuesIn(broadcastAlgorithms),
+                                              testing::ValuesIn(dataSizes),
+                                              testing::ValuesIn(elementTypes)));
   }
 }
