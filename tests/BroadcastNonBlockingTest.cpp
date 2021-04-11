@@ -24,17 +24,15 @@ namespace gaspi {
     {
       public:
         static auto factory(BroadcastAlgorithm alg,
-                              gaspi::group::Group const& group, std::size_t number_elements,
-                              gaspi::group::Rank const& root_rank)
+                            gaspi::group::Group const& group, std::size_t num_elements,
+                            gaspi::group::Rank const& root)
         {
           std::unordered_map<BroadcastAlgorithm,
                             std::unique_ptr<RootedSendCollective>> mapping;
-          mapping.emplace(BroadcastAlgorithm::SEND_TO_ALL,
-                          std::make_unique<Broadcast<T, BroadcastAlgorithm::SEND_TO_ALL>>(
-                                                        group, number_elements, root_rank));
-          mapping.emplace(BroadcastAlgorithm::BASIC_LINEAR,
-                          std::make_unique<Broadcast<T, BroadcastAlgorithm::BASIC_LINEAR>>(
-                                                        group, number_elements, root_rank));
+          mapping.insert(generate_map_element<T, BroadcastAlgorithm, Broadcast, BroadcastAlgorithm::SEND_TO_ALL>(
+                                                  group, num_elements, root));
+          mapping.insert(generate_map_element<T, BroadcastAlgorithm, Broadcast, BroadcastAlgorithm::BASIC_LINEAR>(
+                                                  group, num_elements, root));
           return std::move(mapping[alg]);
         }
     };
