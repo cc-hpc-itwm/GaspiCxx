@@ -10,12 +10,14 @@
 #include "collectives_utilities.hpp"
 
 #include <numeric>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
 namespace gaspi {
   namespace collectives {
 
+    std::mt19937 generator(42);
     std::vector<BroadcastAlgorithm> const broadcastAlgorithms{BroadcastAlgorithm::BASIC_LINEAR,
                                                               BroadcastAlgorithm::SEND_TO_ALL};
 
@@ -29,10 +31,12 @@ namespace gaspi {
         {
           std::unordered_map<BroadcastAlgorithm,
                             std::unique_ptr<RootedSendCollective>> mapping;
-          mapping.insert(generate_map_element<T, BroadcastAlgorithm, Broadcast, BroadcastAlgorithm::SEND_TO_ALL>(
-                                                  group, num_elements, root));
-          mapping.insert(generate_map_element<T, BroadcastAlgorithm, Broadcast, BroadcastAlgorithm::BASIC_LINEAR>(
-                                                  group, num_elements, root));
+          mapping.insert(generate_map_element<BroadcastAlgorithm, Broadcast,
+                                              T, BroadcastAlgorithm::SEND_TO_ALL>(
+                                                        group, num_elements, root));
+          mapping.insert(generate_map_element<BroadcastAlgorithm, Broadcast,
+                                              T, BroadcastAlgorithm::BASIC_LINEAR>(
+                                                        group, num_elements, root));
           return std::move(mapping[alg]);
         }
     };
@@ -46,7 +50,7 @@ namespace gaspi {
         : algorithm(std::get<0>(GetParam())),
           num_elements(std::get<1>(GetParam())),
           elem_type_string(std::get<2>(GetParam())),
-          root(0)
+          root(get_root())
         {}
 
         auto make_bcast()
@@ -61,6 +65,13 @@ namespace gaspi {
           return factory(num_elements);
         }
 
+        gaspi::group::Rank get_root()
+        {
+          std::uniform_int_distribution<> distribution(0, gaspi::getRuntime().size() - 1);
+
+          return gaspi::group::Rank(distribution(generator));
+        }
+
         BroadcastAlgorithm algorithm;
         DataSize num_elements;
         ElementType elem_type_string;
@@ -72,24 +83,27 @@ namespace gaspi {
       auto broadcast = make_bcast();
       auto inputs = make_data();
       auto outputs = make_data();
+      auto expected = make_data();
 
-     //auto const expected = inputs;
+      inputs->fill(42.22);
+      expected->fill(42.22);
 
+      outputs->fill(0);
       if (group_all.rank() == root)
       {
-        broadcast->start(inputs->get());
+        broadcast->start(inputs->get_data());
       }
       else
       {
         broadcast->start();
       }
-      broadcast->waitForCompletion(outputs->get());
+      broadcast->waitForCompletion(outputs->get_data());
 
-//      ASSERT_EQ(outputs, expected);
+      ASSERT_EQ(*outputs, *expected);
     }
 
-    std::vector<ElementType> const elementTypes{"int", "float"};
-    std::vector<DataSize> const dataSizes{0, 1, 5};
+    std::vector<ElementType> const elementTypes{"int", "float", "double"};
+    std::vector<DataSize> const dataSizes{0, 1, 5, 32, 1003};
     INSTANTIATE_TEST_SUITE_P(Coll, BroadcastTest,
                              testing::Combine(testing::ValuesIn(broadcastAlgorithms),
                                               testing::ValuesIn(dataSizes),

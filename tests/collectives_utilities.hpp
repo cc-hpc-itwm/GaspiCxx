@@ -21,9 +21,10 @@ namespace gaspi {
         gaspi::group::Group const group_all;
     };
 
-    template<typename T, typename AlgType,
-             template <typename, AlgType> typename CollectiveOp,
-             AlgType Algorithm, typename... Args>
+    template<typename AlgType, template <typename, AlgType> typename CollectiveOp,
+             typename T,
+             AlgType Algorithm,
+             typename... Args>
     auto generate_map_element(Args&&... args)
     {
       return std::make_pair(Algorithm,
