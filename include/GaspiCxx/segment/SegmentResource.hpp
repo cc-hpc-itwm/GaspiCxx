@@ -40,7 +40,10 @@ class SegmentResource
       ( SegmentID segmentId
       , std::size_t segmentSize );
 
-    ~SegmentResource
+    SegmentResource
+      ( SegmentResource const& ) = delete;
+
+    virtual ~SegmentResource
       ();
 
     SegmentID

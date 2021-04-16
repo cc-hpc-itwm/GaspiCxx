@@ -34,41 +34,6 @@ SegmentID
 SegmentResource
   ::getFreeLocalSegmentId()
 {
-//  {
-//
-//    gaspi_number_t segment_max, segment_num;
-//
-//    GASPI_CHECK
-//      ( gaspi_segment_max (&segment_max) );
-//
-//    GASPI_CHECK
-//      ( gaspi_segment_num (&segment_num) );
-//
-//    if(segment_num > 0 ) {
-//      gaspi_segment_id_t segment_id_list[segment_num];
-//
-//      GASPI_CHECK
-//        ( gaspi_segment_list ( segment_num
-//                             , segment_id_list ) );
-//
-//      std::cout << segment_num << " / " << segment_max
-//                << " segments created: ";
-//
-//      for(int i(0);i<segment_num;++i) {
-//        std::cout << static_cast<unsigned int>(segment_id_list[i]);
-//        if (i < (segment_num - 1)) {
-//          std::cout << ", ";
-//        }
-//      }
-//    }
-//    else {
-//      std::cout << segment_num << " / " << segment_max
-//                << " segments created";
-//    }
-//
-//    std::cout << std::endl;
-//  }
-
   gaspi_segment_id_t avail_seg_id;
 
   GASPI_CHECK
