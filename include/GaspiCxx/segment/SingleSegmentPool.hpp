@@ -12,7 +12,7 @@ namespace gaspi
         SingleSegmentPool();
         SingleSegmentPool(std::size_t);
         SingleSegmentPool(SingleSegmentPool const&) = delete;
-        SingleSegmentPool(SingleSegmentPool&&) = delete;
+        SingleSegmentPool(SingleSegmentPool&&) = default;
         ~SingleSegmentPool() = default;
 
         Segment& getSegment(std::size_t) override;
