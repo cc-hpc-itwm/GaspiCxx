@@ -93,6 +93,16 @@ SegmentManager
 
 }
 
+SegmentManager
+  ::SegmentManager
+    ( SegmentManager&& other_segment_manager)
+: _segmentID(other_segment_manager._segmentID)
+, _memoryManager(std::move(other_segment_manager._memoryManager))
+, _notifyManager(std::move(other_segment_manager._notifyManager))
+{
+
+}
+
 SegmentID
 SegmentManager
   ::id
