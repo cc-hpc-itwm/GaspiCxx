@@ -5,9 +5,6 @@
     - .common_after_script
   variables:
     CMAKE_MODULE: cmake/3.15.4-gcc-8.4.0-zvbii
-    GTEST_MODULE: googletest/1.10.0-gcc-8.4.0-rfkia
-    GPI2_MODULE_ETH: gpi-2/1.4.0-gcc-8.4.0-eth-vswoi 
-    GPI2_MODULE_IB:  gpi-2/1.4.0-gcc-8.4.0-infiniband-vngux 
 
   before_script:
     - source /opt/software/miniconda3-4.8.3/etc/profile.d/conda.sh
@@ -43,6 +40,27 @@
 .gcc8.4.0_job:
   variables:
     COMPILER_MODULE: gcc/8.4.0-gcc-9.3.0-itvm7
+    GTEST_MODULE: googletest/1.10.0-gcc-8.4.0-rfkia
+
+.gcc10.1.0_job:
+  variables:
+    COMPILER_MODULE: gcc/10.1.0-gcc-9.3.0-htfd3
+    GTEST_MODULE: googletest/1.10.0-gcc-8.4.0-rfkia
+
+.clang10.0.0_job:
+  variables:
+    COMPILER_MODULE: llvm/10.0.0-gcc-10.1.0-2wqhb
+    GTEST_MODULE: googletest/1.10.0-clang-10.0.0-u4f2e
+
+.gpi1.5.0_job:
+  variables:
+    GPI2_MODULE_ETH: gpi-2/1.5.0-gcc-10.1.0-eth-glvfd
+    GPI2_MODULE_IB:  gpi-2/1.5.0-gcc-10.1.0-infiniband-4nlwj
+
+.gpi1.4.0_job:
+  variables:
+    GPI2_MODULE_ETH: gpi-2/1.4.0-gcc-8.4.0-eth-vswoi
+    GPI2_MODULE_IB:  gpi-2/1.4.0-gcc-8.4.0-infiniband-vngux
 
 .cpu_job:
   variables:
@@ -53,30 +71,71 @@
     GASPI_TEST_MACHINEFILE: ${CI_PROJECT_DIR}/meta/ci/tnt_cluster/machinefile_1rankspernode
 
 ####### Build jobs ############
+ib-clang10.0.0-Release-build:
+  extends:
+    - .release_job
+    - .ib_job
+    - .gpi1.5.0_job
+    - .clang10.0.0_job
+    - .tnt_cluster_build
+
+ib-gcc10.1.0-Release-build:
+  extends:
+    - .release_job
+    - .ib_job
+    - .gpi1.5.0_job
+    - .gcc10.1.0_job
+    - .tnt_cluster_build
+
 ib-gcc8.4.0-Release-build:
   extends:
     - .release_job
     - .ib_job
+    - .gpi1.4.0_job
     - .gcc8.4.0_job
     - .tnt_cluster_build
 
 # Ethernet builds [test the C++ libraries]
+eth-gcc10.1.0-Release-build:
+  extends:
+    - .release_job
+    - .eth_job
+    - .gpi1.5.0_job
+    - .gcc8.4.0_job
+    - .tnt_cluster_build
+
 eth-gcc8.4.0-Release-build:
   extends:
     - .release_job
     - .eth_job
+    - .gpi1.4.0_job
     - .gcc8.4.0_job
     - .tnt_cluster_build
 
 # Debug builds
-ib-gcc8.4.0-Debug-build:
+ib-gcc10.1.0-Debug-build:
   extends:
     - .debug_job
     - .ib_job
-    - .gcc8.4.0_job
+    - .gpi1.5.0_job
+    - .gcc10.1.0_job
     - .tnt_cluster_build
 
 ####### Unit tests ############
+ib-clang10.0.0-Release-unit:
+  extends:
+    - .ib_job
+    - .tnt_cluster_run_tests
+  needs:
+    - job: ib-clang10.0.0-Release-build
+
+ib-gcc10.1.0-Release-unit:
+  extends:
+    - .ib_job
+    - .tnt_cluster_run_tests
+  needs:
+    - job: ib-gcc10.1.0-Release-build
+
 ib-gcc8.4.0-Release-unit:
   extends:
     - .ib_job
@@ -84,9 +143,26 @@ ib-gcc8.4.0-Release-unit:
   needs:
     - job: ib-gcc8.4.0-Release-build
 
+eth-gcc10.1.0-Release-unit:
+  extends:
+    - .eth_job
+    - .tnt_cluster_run_tests
+  needs:
+    - job: eth-gcc10.1.0-Release-build
+
 eth-gcc8.4.0-Release-unit:
   extends:
     - .eth_job
     - .tnt_cluster_run_tests
   needs:
     - job: eth-gcc8.4.0-Release-build
+
+# Debug tests
+ib-gcc10.1.0-Debug-unit:
+  extends:
+    - .debug_job
+    - .ib_job
+    - .tnt_cluster_run_tests
+  needs:
+    - job: ib-gcc10.1.0-Debug-build
+
