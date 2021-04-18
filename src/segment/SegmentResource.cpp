@@ -54,7 +54,8 @@ SegmentResource
   ::SegmentResource
     ( SegmentID segmentId
     , std::size_t segmentSize)
-: _segmentId( segmentId )
+: _segmentId( segmentId ),
+  _contains_valid_segment( true )
 {
   GASPI_CHECK
       ( gaspi_segment_alloc( _segmentId
@@ -69,10 +70,22 @@ SegmentResource
 }
 
 SegmentResource
+  ::SegmentResource
+    ( SegmentResource&& other_segment_resource)
+: _segmentId( std::move(other_segment_resource._segmentId) ),
+  _contains_valid_segment( std::move(other_segment_resource._contains_valid_segment) )
+{
+  other_segment_resource._contains_valid_segment = false;
+}
+
+SegmentResource
   ::~SegmentResource
     ()
 {
-  GASPI_CHECK_NOTHROW(gaspi_segment_delete(_segmentId));
+  if (_contains_valid_segment)
+  {
+    GASPI_CHECK_NOTHROW(gaspi_segment_delete(_segmentId));
+  }
 }
 
 SegmentID
@@ -88,10 +101,13 @@ SegmentResource
   ::remoteRegistration
    ( group::GlobalRank const& rank )
 {
-  GASPI_CHECK
-      ( gaspi_segment_register ( _segmentId
-                               , rank
-                               , GASPI_BLOCK) );
+  if (_contains_valid_segment)
+  {
+    GASPI_CHECK
+        ( gaspi_segment_register ( _segmentId
+                                , rank
+                                , GASPI_BLOCK) );
+  }
 }
 
 #undef GASPI_CHECK

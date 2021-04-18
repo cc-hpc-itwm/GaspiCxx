@@ -43,6 +43,9 @@ class SegmentResource
     SegmentResource
       ( SegmentResource const& ) = delete;
 
+    SegmentResource
+      ( SegmentResource&& );
+
     virtual ~SegmentResource
       ();
 
@@ -58,9 +61,8 @@ class SegmentResource
     getFreeLocalSegmentId();
 
 private:
-
     SegmentID _segmentId;
-
+    bool _contains_valid_segment;
 };
 
 }
