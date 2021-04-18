@@ -52,8 +52,11 @@ class SegmentManager
     SegmentManager
       ( SegmentID segmentID );
 
-    ~SegmentManager
-      ();
+    SegmentManager
+      ( SegmentManager const& ) = delete;
+
+    virtual ~SegmentManager
+      () = default;
 
     SegmentID
     id

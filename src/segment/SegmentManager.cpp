@@ -93,13 +93,6 @@ SegmentManager
 
 }
 
-SegmentManager
-  ::~SegmentManager
-    ()
-{
-
-}
-
 SegmentID
 SegmentManager
   ::id
