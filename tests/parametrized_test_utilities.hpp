@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 using DataSize = std::size_t;
@@ -55,14 +56,14 @@ class Data : public BaseData
 
     void fill(double value) override
     {
-      std::fill(data.begin(), data.end(), static_cast<T>(value));
+      std::fill(data.begin(), data.end(), convert_value_to_expected_type(value));
     }
 
     void fill_with_list(std::vector<double> const& values) override
     {
       assert(data.size() == values.size());
       std::transform(values.begin(), values.end(), data.begin(),
-                    [](double value) { return static_cast<T>(value);});
+                    [&](double value) { return convert_value_to_expected_type(value);});
     }
 
   private:
@@ -70,6 +71,23 @@ class Data : public BaseData
     {
       auto* other_data = dynamic_cast<Data const*>(&bd);
       return data == other_data->data;
+    }
+
+    template <typename U>
+    using ReturnTypeIntegral = typename std::enable_if_t<std::is_integral<U>::value, U>;
+    template <typename U>
+    using ReturnTypeFloatingPoint = typename std::enable_if_t<!std::is_integral<U>::value, U>;
+
+    template<typename U = T>
+    ReturnTypeIntegral<U> convert_value_to_expected_type(double value)
+    {
+      return static_cast<T>(std::trunc(value));
+    }
+
+    template<typename U = T>
+    ReturnTypeFloatingPoint<U> convert_value_to_expected_type(double value)
+    {
+      return static_cast<T>(value);
     }
 
     std::vector<T> data;
