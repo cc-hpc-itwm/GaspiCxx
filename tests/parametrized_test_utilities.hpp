@@ -23,7 +23,8 @@ class BaseData
 
     virtual std::size_t get_num_elements() = 0;
     virtual void fill(double value) = 0;
-    virtual void fill_with_list(std::vector<double> const& values) = 0;
+    virtual void fill_from_list(std::vector<double> const& values) = 0;
+    virtual void fill_from_list_and_scale(std::vector<double> const& values, std::size_t scaling_factor) = 0;
 
     bool operator==(BaseData const& bd) const
     {
@@ -59,11 +60,19 @@ class Data : public BaseData
       std::fill(data.begin(), data.end(), convert_value_to_expected_type(value));
     }
 
-    void fill_with_list(std::vector<double> const& values) override
+    void fill_from_list(std::vector<double> const& values) override
     {
       assert(data.size() == values.size());
       std::transform(values.begin(), values.end(), data.begin(),
                     [&](double value) { return convert_value_to_expected_type(value);});
+    }
+
+    void fill_from_list_and_scale(std::vector<double> const& values,
+                                  std::size_t scaling_factor) override
+    {
+      fill_from_list(values);
+      std::transform(data.begin(), data.end(), data.begin(),
+                    [&](T value) { return value * convert_value_to_expected_type(scaling_factor);});
     }
 
   private:
@@ -76,7 +85,10 @@ class Data : public BaseData
     template <typename U>
     using ReturnTypeIntegral = typename std::enable_if_t<std::is_integral<U>::value, U>;
     template <typename U>
-    using ReturnTypeFloatingPoint = typename std::enable_if_t<!std::is_integral<U>::value, U>;
+    using ReturnTypeFloat = typename std::enable_if_t<std::is_same<U, float>::value, U>;
+    template <typename U>
+    using ReturnTypeDouble = typename std::enable_if_t<std::is_same<U, double>::value, U>;
+
 
     template<typename U = T>
     ReturnTypeIntegral<U> convert_value_to_expected_type(double value)
@@ -85,9 +97,14 @@ class Data : public BaseData
     }
 
     template<typename U = T>
-    ReturnTypeFloatingPoint<U> convert_value_to_expected_type(double value)
+    ReturnTypeFloat<U> convert_value_to_expected_type(double value)
     {
       return static_cast<T>(value);
+    }
+    template<typename U = T>
+    ReturnTypeDouble<U> convert_value_to_expected_type(double value)
+    {
+      return value;
     }
 
     std::vector<T> data;
