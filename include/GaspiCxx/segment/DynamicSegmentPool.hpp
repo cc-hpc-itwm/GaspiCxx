@@ -23,6 +23,7 @@ namespace gaspi
       private:
 
         std::size_t	       _sizePerSegment;
+        std::size_t	       _maxSegmentSize;
         std::list<Segment> _segments;
         std::mutex         _mutex;
     };
