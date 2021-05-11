@@ -85,7 +85,7 @@ namespace passive { class Passive; }
 
     //! Global library configuration
     inline static RuntimeConfiguration configuration{
-                        SegmentPoolType::DynamicSegment,
+                        SegmentPoolType::DynamicSegmentPool,
                         ProgressEngineType::RoundRobinDedicatedThread,
                         CommunicationContextType::RoundRobinQueues};
 

@@ -10,7 +10,7 @@ enum class SegmentPoolType
 {
   None,
   SingleSegment,
-  DynamicSegment
+  DynamicSegmentPool
 };
 
 enum class ProgressEngineType

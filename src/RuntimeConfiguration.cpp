@@ -29,7 +29,7 @@ namespace gaspi
             {
               return std::make_unique<segment::SingleSegmentPool>(default_size);
             }
-            case SegmentPoolType::DynamicSegment:
+            case SegmentPoolType::DynamicSegmentPool:
             {
               return std::make_unique<segment::DynamicSegmentPool>(default_size);
             }
