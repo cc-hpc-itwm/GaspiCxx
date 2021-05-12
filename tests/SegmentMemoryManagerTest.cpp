@@ -1,21 +1,23 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2016
- * 
- * This file is part of GaspiCommLayer.
- * 
- * GaspiCommLayer is free software; you can redistribute it
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ *
+ * This file is part of GaspiCxx.
+ *
+ * GaspiCxx is free software; you can redistribute it
  * and/or modify it under the terms of the GNU General Public License
  * version 3 as published by the Free Software Foundation.
- * 
- * GaspiCommLayer is distributed in the hope that it will be useful,
+ *
+ * GaspiCxx is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
- * along with GaspiCommLayer. If not, see <http://www.gnu.org/licenses/>.
+ * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * SegmentMemoryManagerTest.cpp
+ *
  */
-
 
 #include <stdexcept>
 #include <gtest/gtest.h>
