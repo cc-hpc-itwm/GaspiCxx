@@ -133,7 +133,7 @@ TEST_F(PassiveTest, iSendRecvTest)
 {
    Passive & passive(getRuntime().passive());
 
-   using Buffer = singlesided::write::TargetBuffer;
+   using Buffer = singlesided::Buffer;
 
    if( getRuntime().global_rank() == group::GlobalRank(0) ) {
 
@@ -155,7 +155,7 @@ TEST_F(PassiveTest, iSendRecvTest)
         , iRecv + 1
         , rcvBuffer );
 
-       rcvBuffer.waitForCompletion();
+       rcvBuffer.waitForNotification();
 
        EXPECT_EQ(data,iRecv+1);
 
@@ -175,7 +175,7 @@ TEST_F(PassiveTest, iSendRecvTest)
        , getRuntime().global_rank()
        , srcBuffer );
 
-     srcBuffer.waitForCompletion();
+     srcBuffer.waitForNotification();
 
    }
 

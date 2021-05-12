@@ -13,6 +13,7 @@ set(SOURCE_FILES
     segment/SegmentManager.cpp
     segment/SegmentResource.cpp
     segment/SingleSegmentPool.cpp
+    segment/DynamicSegmentPool.cpp
     segment/MemoryManager.cpp
     segment/NotificationManager.cpp
     singlesided/Buffer.cpp
