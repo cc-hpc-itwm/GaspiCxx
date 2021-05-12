@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -22,16 +22,8 @@
 #ifndef TARGETBUFFER_HPP_
 #define TARGETBUFFER_HPP_
 
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
-
-// forward declarations
-namespace gaspi {
-
-class Context;
-
-namespace group { class Rank; }
-
-}
 
 namespace gaspi {
 namespace singlesided {
@@ -43,7 +35,9 @@ class TargetBuffer : public Endpoint {
 
     using Tag = int;
 
-    // Allocates a buffer of
+    TargetBuffer
+      ( std::size_t size );
+
     TargetBuffer
       ( segment::Segment & segment
       , std::size_t size );
@@ -52,6 +46,11 @@ class TargetBuffer : public Endpoint {
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
+
+    TargetBuffer
+      ( std::size_t size
+      , segment
+          ::Notification notification );
 
     TargetBuffer
       ( segment::Segment & segment
@@ -65,15 +64,17 @@ class TargetBuffer : public Endpoint {
       , std::size_t size
       , segment
           ::Notification notification );
+
+    TargetBuffer(Endpoint const&);
 
     // bilateral function
     // needs to be invoked by the correspondent
     // WriteTargetBuffer having the same size
     Endpoint::ConnectHandle
     connectToRemoteSource
-      ( Context & context
-      , group::Rank & rank
-      , Tag & tag );
+      ( group::Group const&
+      , group::Rank const&
+      , Tag const& );
 
     bool
     waitForCompletion
@@ -85,7 +86,11 @@ class TargetBuffer : public Endpoint {
 
     void
     ackTransfer
-      (Context & context);
+      ();
+
+    void
+    ackTransfer
+      ( CommunicationContext& );
 };
 
 } // namespace write

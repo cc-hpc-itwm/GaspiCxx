@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -35,7 +35,9 @@ Segment
     ( std::size_t segmentSize )
 : SegmentResource( segmentSize )
 , SegmentManager( SegmentResource::id() )
-{ }
+{
+
+}
 
 Segment
   ::Segment
@@ -45,6 +47,14 @@ Segment
 , SegmentManager( SegmentResource::id() )
 {
 
+}
+
+SegmentID
+Segment
+  ::id
+    () const
+{
+  return SegmentResource::id();
 }
 
 #undef GASPI_CHECK

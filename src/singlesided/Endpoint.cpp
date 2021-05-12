@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -19,7 +19,6 @@
  *
  */
 
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
@@ -75,13 +74,20 @@ Endpoint
 : Buffer
   ( segment
   , size )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
+
+Endpoint
+  ::Endpoint
+   ( std::size_t size
+   , Type type )
+: Endpoint(gaspi::getRuntime().getFreeSegment(size), size, type)
+{ }
 
 Endpoint
   ::Endpoint
@@ -93,12 +99,12 @@ Endpoint
   ( pointer
   , segment
   , size )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
 
 Endpoint
@@ -112,13 +118,22 @@ Endpoint
   ( segment
   , size
   , notification )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
+
+Endpoint
+  ::Endpoint
+   ( std::size_t size
+   , segment
+       ::Notification notification
+   , Type type )
+: Endpoint(gaspi::getRuntime().getFreeSegment(size), size, notification, type)
+{ }
 
 Endpoint
   ::Endpoint
@@ -133,13 +148,26 @@ Endpoint
   , segment
   , size
   , notification )
+, _type(type)
 , _pLocalBufferDesc
     (std::make_unique<BufferDescription>(Buffer::description()))
 , _pOtherBufferDesc
     (std::make_unique<BufferDescription>())
 , _isConnected(false)
-, _type(type)
 {}
+
+Endpoint
+  ::Endpoint
+   ( Endpoint const& other )
+: Endpoint
+  ( other._pointer
+  , other._segment
+  , other._size
+  , other._type )
+{
+  // Take shared ownership of existing memory allocation
+  _allocMemory = other._allocMemory;
+}
 
 Endpoint
   ::~Endpoint
@@ -159,10 +187,15 @@ Endpoint
 Endpoint::ConnectHandle
 Endpoint
   ::connectToRemotePartner
-   ( Context & context
-   , group::Rank & rank
-   , Tag & tag )
+   ( group::Group const& group
+   , group::Rank const& rank
+   , Tag const& tag )
 {
+  if (!group.contains_rank(rank))
+  {
+    throw std::logic_error
+      (CODE_ORIGIN + "`group` does not contain `rank`");
+  }
 
   if( static_cast<passive::Passive::Tag>(tag)
       >= std::numeric_limits<passive::Passive::Tag>::max() / 3 ) {
@@ -199,9 +232,8 @@ Endpoint
     }
   }
 
-  _segment.remoteRegistration
-      ( group::groupToGlobalRank( context.group()
-                                , rank ) );
+  auto const global_rank = group.toGlobalRank(rank);
+  _segment.remoteRegistration( global_rank );
 
   std::unique_ptr<Buffer> pSendBuffer
     ( new Buffer( _segment
@@ -210,8 +242,7 @@ Endpoint
   serialization::serialize (pSendBuffer->address(), localBufferDesc() );
 
   getRuntime().passive().iSendTagMessg
-      ( group::groupToGlobalRank( context.group()
-                                , rank )
+      ( global_rank
       , sendTag
       , *pSendBuffer );
 
@@ -221,8 +252,7 @@ Endpoint
                 , serialization::size( otherBufferDesc() ) ) );
 
   getRuntime().passive().iRecvTagMessg
-    (group::groupToGlobalRank( context.group()
-                             , rank )
+    ( global_rank
     , recvTag
     , *pRecvBuffer);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -53,7 +53,7 @@ class MemoryAllocation {
     void *
     pointer
       () const {
-      return reinterpret_cast<void * const>(_pointer);
+      return reinterpret_cast<void *>(_pointer);
     }
 
   private:
@@ -96,6 +96,13 @@ class NotifyAllocation {
 
 Buffer
   ::Buffer
+   ( std::size_t size )
+: Buffer(gaspi::getRuntime().getFreeSegment(size)
+  , size)
+{ }
+
+Buffer
+  ::Buffer
    ( segment::Segment & segment
    , std::size_t size )
 : _allocMemory(new MemoryAllocation(segment.allocator(),size))
@@ -118,6 +125,15 @@ Buffer
 , _notification(_allocNotify->notification())
 , _segment(segment)
 {}
+
+Buffer
+  ::Buffer
+   ( std::size_t size
+   , segment
+       ::Notification notification )
+: Buffer(gaspi::getRuntime().getFreeSegment(size)
+  , size, notification)
+{ }
 
 Buffer
   ::Buffer
@@ -159,8 +175,7 @@ Buffer
    () const
 {
   BufferDescription desc
-    ( group::groupToGlobalRank( getRuntime().group()
-                              , getRuntime().rank() )
+    ( getRuntime().global_rank()
     , _segment.id()
     , _segment.pointerToOffset
         (_pointer)

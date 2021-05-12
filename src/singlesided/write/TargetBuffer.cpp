@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -21,7 +21,6 @@
 
 #include <cassert>
 
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
@@ -36,6 +35,14 @@ namespace write {
 
 TargetBuffer
   ::TargetBuffer
+   ( std::size_t size )
+: Endpoint
+  ( size
+  , Endpoint::Type::TARGET )
+{}
+
+TargetBuffer
+  ::TargetBuffer
    ( segment::Segment & segment
    , std::size_t size )
 : Endpoint
@@ -53,6 +60,17 @@ TargetBuffer
   ( pointer
   , segment
   , size
+  , Endpoint::Type::TARGET )
+{}
+
+TargetBuffer
+  ::TargetBuffer
+   ( std::size_t size
+   , segment
+       ::Notification notification )
+: Endpoint
+  ( size
+  , notification
   , Endpoint::Type::TARGET )
 {}
 
@@ -83,16 +101,24 @@ TargetBuffer
   , notification
   , Endpoint::Type::TARGET )
 {}
+
+TargetBuffer
+  ::TargetBuffer
+   ( Endpoint const& other )
+: Endpoint(other)
+{
+  _type = Endpoint::Type::TARGET;
+}
 
 Endpoint::ConnectHandle
 TargetBuffer
   ::connectToRemoteSource
-   ( Context & context
-   , group::Rank & rank
-   , Tag & tag )
+   ( group::Group const& group
+   , group::Rank const& rank
+   , Tag const& tag )
 {
   return Endpoint::connectToRemotePartner
-      ( context
+      ( group
       , rank
       , tag );
 }
@@ -120,11 +146,19 @@ TargetBuffer
 void
 TargetBuffer
   ::ackTransfer
-   (Context & context)
+   ()
+{
+  ackTransfer(getRuntime().getDefaultCommunicationContext());
+}
+
+void
+TargetBuffer
+  ::ackTransfer
+   ( CommunicationContext& comm_context )
 {
   assert(Endpoint::isConnected());
 
-  context.notify(Endpoint::otherBufferDesc());
+  comm_context.notify(Endpoint::otherBufferDesc());
 }
 
 } // namespace write

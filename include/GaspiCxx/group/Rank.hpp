@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -25,9 +25,6 @@
 #include <memory>
 #include <set>
 
-extern "C" {
-#include <GASPI.h>
-}
 
 namespace gaspi {
 namespace group {
@@ -41,6 +38,10 @@ public:
   explicit
   Rank
     ( Type rank );
+
+  Rank
+    ( Rank const&) = default;
+  ~Rank() = default;
 
   Type
   get
@@ -72,6 +73,9 @@ public:
 
   Rank
   operator%(Rank const & other) const;
+
+  Rank
+  operator%(int const & other) const;
 
   bool
   operator==( Rank const & other ) const;

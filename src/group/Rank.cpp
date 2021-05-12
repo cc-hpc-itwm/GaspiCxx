@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -98,6 +98,11 @@ Rank
   return Rank(this->get()%other.get());
 }
 
+Rank
+Rank
+  ::operator%(int const & other) const {
+  return Rank(this->get()%other);
+}
 
 bool
 Rank

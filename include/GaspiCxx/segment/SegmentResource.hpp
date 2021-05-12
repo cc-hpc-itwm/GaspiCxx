@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -22,9 +22,9 @@
 #ifndef SEGMENT_RESOURCE_HPP_
 #define SEGMENT_RESOURCE_HPP_
 
+#include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/segment/SegmentManager.hpp>
 #include <GaspiCxx/segment/Types.hpp>
-#include <GaspiCxx/type_defs.hpp>
 
 namespace gaspi {
 namespace segment {
@@ -40,7 +40,13 @@ class SegmentResource
       ( SegmentID segmentId
       , std::size_t segmentSize );
 
-    ~SegmentResource
+    SegmentResource
+      ( SegmentResource const& ) = delete;
+
+    SegmentResource
+      ( SegmentResource&& );
+
+    virtual ~SegmentResource
       ();
 
     SegmentID
@@ -49,15 +55,14 @@ class SegmentResource
 
     void
     remoteRegistration
-      ( Rank );
+      ( group::GlobalRank const&);
 
     static SegmentID
     getFreeLocalSegmentId();
 
 private:
-
     SegmentID _segmentId;
-
+    bool _contains_valid_segment;
 };
 
 }

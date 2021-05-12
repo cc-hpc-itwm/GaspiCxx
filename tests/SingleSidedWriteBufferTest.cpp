@@ -1,26 +1,27 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2016
- * 
- * This file is part of GaspiCommLayer.
- * 
- * GaspiCommLayer is free software; you can redistribute it
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
+ *
+ * This file is part of GaspiCxx.
+ *
+ * GaspiCxx is free software; you can redistribute it
  * and/or modify it under the terms of the GNU General Public License
  * version 3 as published by the Free Software Foundation.
- * 
- * GaspiCommLayer is distributed in the hope that it will be useful,
+ *
+ * GaspiCxx is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
- * along with GaspiCommLayer. If not, see <http://www.gnu.org/licenses/>.
+ * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * SingleSidedWriteBufferTest.cpp
+ *
  */
-
 
 #include <gtest/gtest.h>
 
-#include <GlobalTestConfiguration.hpp>
-#include <GaspiCxx/Context.hpp>
+#include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
 #include <GaspiCxx/segment/NotificationManager.hpp>
@@ -28,8 +29,6 @@
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 #include <GaspiCxx/utility/Macros.hpp>
-
-extern GlobalTestConfiguration *globalTestConf;
 
 namespace gaspi {
 namespace singlesided {
@@ -40,10 +39,14 @@ class SingleSidedWriteBufferTest : public ::testing::Test
   protected:
 
   std::size_t _segmentSize;
+  gaspi::Runtime& context;
+  gaspi::group::Group const group;
 
 
   SingleSidedWriteBufferTest()
   : _segmentSize(1024*1024)
+  , context(getRuntime())
+  , group()
   {
 
   }
@@ -55,17 +58,15 @@ class SingleSidedWriteBufferTest : public ::testing::Test
 
 TEST_F(SingleSidedWriteBufferTest, Connect)
 {
-  Context context;
+  if(group.size() == 1) return;
 
-  if(context.size().get() == 1) return;
+  group::Rank rightNeighbour( ( group.rank()
+                              + group.size()
+                              + 1 ) % group.size() );
 
-  group::Rank rightNeighbour( ( context.rank()
-                              + context.size()
-                              + 1 ) % context.size() );
-
-  group::Rank leftNeighbour ( ( context.rank()
-                              + context.size()
-                              - 1 ) % context.size() );
+  group::Rank leftNeighbour ( ( group.rank()
+                              + group.size()
+                              - 1 ) % group.size() );
 
   int tag(1);
 
@@ -77,46 +78,46 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
   int & isource ( *reinterpret_cast<int*>(source.address()) ); isource = -1;
   int & itarget ( *reinterpret_cast<int*>(target.address()) ); itarget = -1;
 
-  if( context.rank() == group::Rank(0) ) {
+  if( group.rank() == group::Rank(0) ) {
 
     source.connectToRemoteTarget
-        ( context
+        ( group
         , rightNeighbour
         , tag ).waitForCompletion();
 
 
     target.connectToRemoteSource
-        ( context
+        ( group
         , leftNeighbour
         , tag ).waitForCompletion();
 
     isource = 1;
 
-    source.initTransfer( context );
+    source.initTransfer(context);
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.size().get());
+    EXPECT_EQ(itarget,group.size());
 
   }
   else {
 
     target.connectToRemoteSource
-            ( context
+            ( group
             , leftNeighbour
             , tag ).waitForCompletion();
 
     source.connectToRemoteTarget
-            ( context
+            ( group
             , rightNeighbour
             , tag ).waitForCompletion();
 
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.rank().get());
+    EXPECT_EQ(itarget,group.rank().get());
 
     isource = itarget + 1;
 
-    source.initTransfer( context );
+    source.initTransfer(context);
 
   }
 
@@ -126,9 +127,7 @@ TEST_F(SingleSidedWriteBufferTest, Connect)
 
 TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 {
-  Context context;
-
-  group::Rank rank(context.rank());
+  group::Rank rank(group.rank());
 
   int tag(1);
 
@@ -142,15 +141,15 @@ TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 
   Endpoint::ConnectHandle tHandle
     ( target.connectToRemoteSource
-      ( context
+      ( group
       , rank
       , tag ) );
 
   Endpoint::ConnectHandle sHandle
     ( source.connectToRemoteTarget
-       ( context
+       ( group
        , rank
-      , tag ) );
+       , tag ) );
 
   tHandle.waitForCompletion();
   sHandle.waitForCompletion();
@@ -158,17 +157,15 @@ TEST_F(SingleSidedWriteBufferTest, SelfConnect)
 
 TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 {
-  Context context;
+  if(group.size() == 1) return;
 
-  if(context.size().get() == 1) return;
+  group::Rank rightNeighbour( ( group.rank()
+                              + group.size()
+                              + 1 ) % group.size() );
 
-  group::Rank rightNeighbour( ( context.rank()
-                              + context.size()
-                              + 1 ) % context.size() );
-
-  group::Rank leftNeighbour ( ( context.rank()
-                              + context.size()
-                              - 1 ) % context.size() );
+  group::Rank leftNeighbour ( ( group.rank()
+                              + group.size()
+                              - 1 ) % group.size() );
 
   int tag(1);
 
@@ -182,38 +179,38 @@ TEST_F(SingleSidedWriteBufferTest, ConnectOutOfOrder)
 
   Endpoint::ConnectHandle tHandle
     ( target.connectToRemoteSource
-      ( context
+      ( group
       , leftNeighbour
       , tag ) );
 
   Endpoint::ConnectHandle sHandle
     ( source.connectToRemoteTarget
-       ( context
+       ( group
        , rightNeighbour
-      , tag ) );
+       , tag ) );
 
   tHandle.waitForCompletion();
   sHandle.waitForCompletion();
 
-  if( context.rank() == group::Rank(0) ) {
+  if( group.rank() == group::Rank(0) ) {
 
     isource = 1;
 
-    source.initTransfer( context );
+    source.initTransfer(context);
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.size().get());
+    EXPECT_EQ(itarget,group.size());
 
   }
   else {
 
     target.waitForCompletion();
 
-    EXPECT_EQ(itarget,context.rank().get());
+    EXPECT_EQ(itarget,group.rank().get());
 
     isource = itarget + 1;
 
-    source.initTransfer( context );
+    source.initTransfer(context);
 
   }
 

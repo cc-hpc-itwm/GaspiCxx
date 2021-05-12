@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -41,6 +41,10 @@ public:
 
   void *
   allocate
+    ( std::size_t size );
+
+  bool
+  canAllocate
     ( std::size_t size );
 
   void

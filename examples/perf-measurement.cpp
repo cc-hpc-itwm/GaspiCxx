@@ -3,7 +3,6 @@
 #include <vector>
 
 #include <GaspiCxx/Runtime.hpp>
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
@@ -23,12 +22,13 @@ main
   using namespace std;
   using namespace std::chrono;
 
+  gaspi::initGaspiCxx();
+
   double aggregate_init_time = 0.0;
   double aggregate_wait_time = 0.0;
 
-  gaspi::Runtime runtime;
-
-  gaspi::Context context;
+  auto& comm_context = gaspi::getRuntime();
+  gaspi::group::Group const group_all;
 
   gaspi::segment::Segment segment1(1024*1024);
   gaspi::segment::Segment segment2(1024*1024);
@@ -46,14 +46,14 @@ main
   gaspi::singlesided::write::TargetBuffer rh2(segment2,size);
 
   gaspi::group::Rank rightNeighbour
-    ( ( context.rank().get()
-      + context.size().get()
-      + 1 ) % context.size().get() );
+    ( ( group_all.rank()
+      + group_all.size()
+      + 1 ) % group_all.size() );
 
   gaspi::group::Rank leftNeighbour
-    ( ( context.rank().get()
-      + context.size().get()
-      - 1 ) % context.size().get() );
+    ( ( group_all.rank()
+      + group_all.size()
+      - 1 ) % group_all.size() );
 
   int lb1_tag(1);
   int rb1_tag(2);
@@ -63,7 +63,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     lh1_connect_handle
       ( lh1.connectToRemoteSource
-        ( context
+        ( group_all
         , leftNeighbour
         , rb1_tag
         )
@@ -72,7 +72,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     rh1_connect_handle
       ( rh1.connectToRemoteSource
-        ( context
+        ( group_all
         , rightNeighbour
         , lb1_tag
         )
@@ -81,7 +81,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     lh2_connect_handle
       ( lh2.connectToRemoteSource
-        ( context
+        ( group_all
         , leftNeighbour
         , rb2_tag
         )
@@ -90,7 +90,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     rh2_connect_handle
       ( rh2.connectToRemoteSource
-        ( context
+        ( group_all
         , rightNeighbour
         , lb2_tag
         )
@@ -99,7 +99,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     lb1_connect_handle
       ( lb1.connectToRemoteTarget
-        ( context
+        ( group_all
         , leftNeighbour
         , lb1_tag
         )
@@ -108,7 +108,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     rb1_connect_handle
       ( rb1.connectToRemoteTarget
-        ( context
+        ( group_all
         , rightNeighbour
         , rb1_tag
         )
@@ -117,7 +117,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     lb2_connect_handle
       ( lb2.connectToRemoteTarget
-        ( context
+        ( group_all
         , leftNeighbour
         , lb2_tag
         )
@@ -126,7 +126,7 @@ main
   gaspi::singlesided::Endpoint::ConnectHandle
     rb2_connect_handle
       ( rb2.connectToRemoteTarget
-        ( context
+        ( group_all
           , rightNeighbour
           , rb2_tag
         )
@@ -148,8 +148,8 @@ main
 
     if(it%2==0) {
       high_resolution_clock::time_point t1 = high_resolution_clock::now();
-      lb1.initTransfer(context);
-      rb1.initTransfer(context);
+      lb1.initTransfer(comm_context);
+      rb1.initTransfer(comm_context);
       high_resolution_clock::time_point t2 = high_resolution_clock::now();
       duration<double> duration1 = duration_cast<duration<double>>(t2 - t1);
       aggregate_init_time += duration1.count();
@@ -163,8 +163,8 @@ main
     }
     else {
       high_resolution_clock::time_point t1 = high_resolution_clock::now();
-      lb2.initTransfer(context);
-      rb2.initTransfer(context);
+      lb2.initTransfer(comm_context);
+      rb2.initTransfer(comm_context);
       high_resolution_clock::time_point t2 = high_resolution_clock::now();
       duration<double> duration1 = duration_cast<duration<double>>(t2 - t1);
       aggregate_init_time += duration1.count();
@@ -183,8 +183,8 @@ main
   std::cout << "Aggregate GaspiCxx wait time = " << aggregate_wait_time * 1000 << " ms" << std::endl;
   aggregate_wait_time = 0.;
 
-  context.flush();
-  context.barrier();
+  comm_context.flush();
+  gaspi::getRuntime().barrier();
 
 
   gaspi_segment_id_t        lb1_SegmId(segment1.id());
@@ -226,7 +226,6 @@ main
     if(it%2==0) {
       high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-      //      lb1.initTransfer(context);
       {
         gaspi_return_t ret(GASPI_ERROR);
 
@@ -244,8 +243,6 @@ main
           gaspi_wait(0,GASPI_BLOCK);
         }
       }
-
-//      rb1.initTransfer(context);
 
       {
         gaspi_return_t ret(GASPI_ERROR);
@@ -314,7 +311,6 @@ main
     else {
 
       high_resolution_clock::time_point t1 = high_resolution_clock::now();
-      //      lb2.initTransfer(context);
       {
         gaspi_return_t ret(GASPI_ERROR);
 
@@ -332,8 +328,6 @@ main
           gaspi_wait(0,GASPI_BLOCK);
         }
       }
-
-  //      rb2.initTransfer(context);
 
       {
         gaspi_return_t ret(GASPI_ERROR);
@@ -401,8 +395,8 @@ main
     }
   }
 
-  context.flush();
-  context.barrier();
+  comm_context.flush();
+  gaspi::getRuntime().barrier();
 
   std::cout << "Aggregate plain init time = " << aggregate_init_time * 1000 << " ms" << std::endl;
   std::cout << "Aggregate plain wait time = " << aggregate_wait_time * 1000 << " ms" << std::endl;

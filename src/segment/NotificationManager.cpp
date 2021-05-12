@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -59,17 +59,25 @@ NotificationManager
       it != _blocks.end();
       it++) {
     if(it->free && it->size >= size) {
-      NotificationBlock b;
-      b.g_start = it->g_start;
-      b.size  = size;
-      b.free  = false;
-      _blocks.insert(it, b);
-      it->g_start
-        = it->g_start + size;
-      it->size -= size;
 
-      // Go back to the new memory block.
-      it--;
+      if(it->size > size ) {
+	NotificationBlock b;
+	b.g_start = it->g_start;
+	b.size  = size;
+	b.free  = false;
+	_blocks.insert(it, b);
+	it->g_start
+	  = it->g_start + size;
+	it->size -= size;
+
+	// Go back to the new memory block.
+	it--;
+      }
+      else
+      {
+	it->free = false;
+      }
+
       return it->g_start;
     }
   }

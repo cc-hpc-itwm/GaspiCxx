@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -105,6 +105,25 @@ MemoryManager
 
   // Not enough free memory!
   throw std::bad_alloc();
+}
+
+bool
+MemoryManager
+  ::canAllocate( std::size_t size_requested )
+{
+  if (size_requested == 0) return true;
+
+  LockGuard guard(_mutex);
+
+  for (auto const& block : _blocks)
+  {
+    if (block.free && block.size >= size_requested)
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
  void

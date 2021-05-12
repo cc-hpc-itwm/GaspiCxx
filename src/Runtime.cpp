@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -18,10 +18,8 @@
  * Runtime.cpp
  *
  */
-
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/Runtime.hpp>
-#include <GaspiCxx/type_defs.hpp>
+#include <GaspiCxx/RuntimeConfiguration.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/segment/MemoryManager.hpp>
@@ -47,40 +45,100 @@ RuntimeBase
   GASPI_CHECK_NOTHROW(gaspi_proc_term(GASPI_BLOCK));
 }
 
-static Runtime * pGRuntime = nullptr;
-
 Runtime
   ::Runtime
    ()
 : RuntimeBase()
-, Context()
-, _psegment()
+, SingleQueueContext()
+, _group_all()
+, _segmentSize(1024*1024)
+, _psegment(std::make_unique<segment::Segment>(_segmentSize))
+, _ppassive(std::make_unique<passive::Passive>( *_psegment
+                                              , *this ) )
+, _psegment_pool()
+, _pengine()
+, _pcomm_context(Runtime::configuration.get_communication_context())
+, _pglobal_barrier()
+{ }
+
+Runtime
+  ::~Runtime()
 {
+  _pglobal_barrier->execute();
+}
 
-  if( pGRuntime != nullptr ) {
-    throw std::runtime_error
-      (CODE_ORIGIN + "Only a single Instance allowed at a time");
+segment::Segment &
+Runtime
+  ::segment
+    ()
+{
+  return *_psegment;
+}
+
+passive::Passive &
+Runtime
+  ::passive
+    ()
+{
+  return *_ppassive;
+}
+
+segment::Segment &
+Runtime
+  ::getFreeSegment
+    (std::size_t size)
+{
+  if (!_psegment_pool)
+  {
+    _psegment_pool = Runtime::configuration.get_segment_pool();
   }
-  pGRuntime = this;
+  if (!_psegment_pool)
+  {
+    throw std::runtime_error(
+          "[Runtime::getFreeSegment] Segment Pool undefined.");
+  }
+  return _psegment_pool->getSegment(size);
+}
 
-  gaspi_size_t       segmentSize(1024*1024);
+progress_engine::ProgressEngine &
+Runtime
+  ::getDefaultProgressEngine
+    ()
+{
+  if (!_pengine)
+  {
+    _pengine = Runtime::configuration.get_progress_engine();
+  }
+  if (!_pengine)
+  {
+    throw std::runtime_error(
+          "[Runtime::getDefaultProgressEngine] Progress engine undefined.");
+  }
+  return *_pengine;
+}
 
-  _psegment.reset
-    ( new segment::Segment(segmentSize) );
+CommunicationContext &
+Runtime
+  ::getDefaultCommunicationContext
+    ()
+{
+  return *_pcomm_context;
+}
 
-  _ppassive.reset
-    ( new passive::Passive( *_psegment
-                          , *this ) );
-
-  if(rank() == group::Rank(0)) {
+void
+Runtime
+  ::synchCurrentWorkingDirectory
+    ()
+{
+  if(global_rank() == group::GlobalRank(0)) {
 
     std::string const dir(getCurrentWorkingDirectory());
 
-    for( group::Rank targetRank(1);targetRank < size(); ++targetRank) {
+    for( group::GlobalRank targetRank(1);targetRank < size(); ++targetRank) {
       _ppassive->sendMessg
         ( dir.c_str()
         , dir.size()
-        , targetRank.get() );
+        , targetRank );
     }
   }
   else {
@@ -98,34 +156,65 @@ Runtime
     setCurrentWorkingDirectory(dir);
 
   }
-
 }
 
+Runtime &
 Runtime
-  ::~Runtime
-   ()
+  ::getRuntime
+    ()
 {
-  _ppassive.reset( nullptr );
-
-  _psegment.reset( nullptr );
-
-  pGRuntime = nullptr;
+  static auto instance = new Runtime();
+  return *instance;
 }
 
-bool
-isRuntimeAvailable()
+void
+Runtime
+  ::barrier
+    ()
 {
-  return !(pGRuntime == nullptr);
+  if (!_pglobal_barrier)
+  {
+    _pglobal_barrier = std::make_unique<gaspi::collectives::blocking::Barrier>(_group_all);
+  }
+  _pglobal_barrier->execute();
+}
+
+group::GlobalRank
+Runtime
+  ::global_rank()
+{
+  return _group_all.global_rank();
+}
+
+std::size_t
+Runtime
+  ::size()
+{
+  return _group_all.size();
 }
 
 Runtime &
 getRuntime()
 {
-  if( pGRuntime == nullptr ) {
-    throw std::runtime_error
-      (CODE_ORIGIN + "Runtime has not been initialized yet");
-  }
-  return *pGRuntime;
+  return Runtime::getRuntime();
+}
+
+void
+initGaspiCxx()
+{
+  // Initialize GPI, create management segment
+  // and setup passive communication
+  Runtime::getRuntime();
+}
+
+void
+initGaspiCxx(RuntimeConfiguration const& config)
+{
+  // Set customized configuration,
+  // initialize GPI, create management segment
+  // and setup passive communication
+  Runtime::configuration = config;
+  Runtime::getRuntime();
 }
 
 } // namespace gaspi

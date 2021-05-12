@@ -1,33 +1,32 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2016
- * 
- * This file is part of GaspiCommLayer.
- * 
- * GaspiCommLayer is free software; you can redistribute it
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
+ *
+ * This file is part of GaspiCxx.
+ *
+ * GaspiCxx is free software; you can redistribute it
  * and/or modify it under the terms of the GNU General Public License
  * version 3 as published by the Free Software Foundation.
- * 
- * GaspiCommLayer is distributed in the hope that it will be useful,
+ *
+ * GaspiCxx is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
- * along with GaspiCommLayer. If not, see <http://www.gnu.org/licenses/>.
+ * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * PassiveTest.cpp
+ *
  */
-
 
 #include <gtest/gtest.h>
 
 #include <GaspiCxx/Runtime.hpp>
-#include <GlobalTestConfiguration.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
 #include <GaspiCxx/utility/serialization.hpp>
 #include <GaspiCxx/singlesided/BufferDescription.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
-
-extern GlobalTestConfiguration *globalTestConf;
 
 namespace gaspi {
 namespace passive {
@@ -90,9 +89,9 @@ TEST_F(PassiveTest, SendMessg)
 {
    Passive & passive(getRuntime().passive());
 
-   if( getRuntime().rank() == group::Rank(0) ) {
+   if( getRuntime().global_rank() == group::GlobalRank(0) ) {
 
-     int nRecv( getRuntime().size().get() - 1 );
+     int nRecv( getRuntime().size() - 1 );
 
      for(int iRecv(0)
         ;    iRecv<nRecv
@@ -112,7 +111,7 @@ TEST_F(PassiveTest, SendMessg)
 
    } else {
 
-     int data( getRuntime().rank().get() );
+     int data( getRuntime().global_rank() );
 
      passive.sendMessg( reinterpret_cast<char*>(&data)
                       , sizeof(int)
@@ -136,11 +135,11 @@ TEST_F(PassiveTest, iSendRecvTest)
 {
    Passive & passive(getRuntime().passive());
 
-   using Buffer = singlesided::write::TargetBuffer;
+   using Buffer = singlesided::Buffer;
 
-   if( getRuntime().rank().get() == 0 ) {
+   if( getRuntime().global_rank() == group::GlobalRank(0) ) {
 
-     int nRecv( getRuntime().size().get() - 1 );
+     int nRecv( getRuntime().size() - 1 );
 
      for(int iRecv(0)
         ;    iRecv<nRecv
@@ -158,7 +157,7 @@ TEST_F(PassiveTest, iSendRecvTest)
         , iRecv + 1
         , rcvBuffer );
 
-       rcvBuffer.waitForCompletion();
+       rcvBuffer.waitForNotification();
 
        EXPECT_EQ(data,iRecv+1);
 
@@ -171,14 +170,14 @@ TEST_F(PassiveTest, iSendRecvTest)
 
      int & data( *reinterpret_cast<int*>(srcBuffer.address()));
 
-     data = getRuntime().rank().get();
+     data = getRuntime().global_rank();
 
      passive.iSendTagMessg
        ( 0
-       , getRuntime().rank().get()
+       , getRuntime().global_rank()
        , srcBuffer );
 
-     srcBuffer.waitForCompletion();
+     srcBuffer.waitForNotification();
 
    }
 

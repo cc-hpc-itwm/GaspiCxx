@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -21,7 +21,6 @@
 
 #include <cassert>
 
-#include <GaspiCxx/Context.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/passive/Passive.hpp>
@@ -33,6 +32,14 @@
 namespace gaspi {
 namespace singlesided {
 namespace write {
+
+SourceBuffer
+  ::SourceBuffer
+   ( std::size_t size )
+: Endpoint
+  ( size
+  , Endpoint::Type::SOURCE)
+{}
 
 SourceBuffer
   ::SourceBuffer
@@ -58,6 +65,17 @@ SourceBuffer
 
 SourceBuffer
   ::SourceBuffer
+   ( std::size_t size
+   , segment
+       ::Notification notification )
+: Endpoint
+  ( size
+  , notification
+  , Endpoint::Type::SOURCE )
+{}
+
+SourceBuffer
+  ::SourceBuffer
    ( segment::Segment & segment
    , std::size_t size
    , segment
@@ -85,6 +103,14 @@ SourceBuffer
 {}
 
 SourceBuffer
+  ::SourceBuffer
+   ( Endpoint const& other )
+: Endpoint(other)
+{
+  _type = Endpoint::Type::SOURCE;
+}
+
+SourceBuffer
   ::~SourceBuffer
     ()
 { }
@@ -92,12 +118,12 @@ SourceBuffer
 Endpoint::ConnectHandle
 SourceBuffer
   ::connectToRemoteTarget
-   ( Context & context
-   , group::Rank & rank
-   , Tag & tag )
+   ( group::Group const& group
+   , group::Rank const& rank
+   , Tag const& tag )
 {
   return Endpoint::connectToRemotePartner
-      ( context
+      ( group
       , rank
       , tag );
 }
@@ -105,11 +131,19 @@ SourceBuffer
 void
 SourceBuffer
   ::initTransfer
-   ( Context & context )
+   ()
+{
+  initTransfer(getRuntime().getDefaultCommunicationContext());
+}
+
+void
+SourceBuffer
+  ::initTransfer
+   ( CommunicationContext& comm_context )
 {
   assert(Endpoint::isConnected());
 
-  context.write
+  comm_context.write
      ( Endpoint::localBufferDesc()
      , Endpoint::otherBufferDesc() );
 }
@@ -117,13 +151,24 @@ SourceBuffer
 void
 SourceBuffer
   ::initTransferPart
-   ( Context & context
+   ( std::size_t size
+   , std::size_t offset )
+{
+  initTransferPart(getRuntime().getDefaultCommunicationContext()
+                  , size
+                  , offset );
+}
+
+void
+SourceBuffer
+  ::initTransferPart
+   ( CommunicationContext& comm_context 
    , std::size_t size
    , std::size_t offset )
 {
   assert(Endpoint::isConnected());
 
-  context.writePart
+  comm_context.writePart
      ( Endpoint::localBufferDesc()
      , Endpoint::otherBufferDesc()
      , size

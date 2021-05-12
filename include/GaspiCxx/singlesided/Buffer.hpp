@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -23,6 +23,7 @@
 #define BUFFER_HPP_
 
 #include <cstdlib>
+#include <memory>
 
 #include <GaspiCxx/segment/Types.hpp>
 
@@ -53,6 +54,9 @@ class Buffer {
   public:
 
     Buffer
+      ( std::size_t size );
+
+    Buffer
       ( segment::Segment & segment
       , std::size_t size );
 
@@ -60,6 +64,11 @@ class Buffer {
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
+
+    Buffer
+      ( std::size_t size
+      , segment
+          ::Notification notification );
 
     Buffer
       ( segment::Segment & segment
@@ -101,7 +110,7 @@ class Buffer {
 
   protected:
 
-    std::unique_ptr<MemoryAllocation>  _allocMemory;
+    std::shared_ptr<MemoryAllocation>  _allocMemory;
     std::unique_ptr<NotifyAllocation>  _allocNotify;
 
     void * const        _pointer;

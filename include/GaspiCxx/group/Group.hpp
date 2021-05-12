@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -22,24 +22,23 @@
 #ifndef GROUP_HPP_
 #define GROUP_HPP_
 
-#include <memory>
-#include <set>
+#include <GaspiCxx/group/Rank.hpp>
 
-extern "C" {
-#include <GASPI.h>
-}
+#include <memory>
+#include <vector>
 
 namespace gaspi {
 namespace group {
 
-class Rank;
+using GlobalRank = unsigned short;
 
 class Group
 {
   private:
 
-    //! The group of ranks that constitute the interface
-    std::unique_ptr<gaspi_group_t> _pgroup;
+    //! The group of global ranks
+    std::vector<GlobalRank> const _group;
+    Rank _group_rank;
 
   public:
 
@@ -47,39 +46,43 @@ class Group
       ();
 
     Group
-      (Group &&);
-
-    Group
-      (std::set<gaspi_rank_t> const &);
+      (std::vector<GlobalRank> const &);
 
     virtual
-    ~Group();
+    ~Group() = default;
 
-    gaspi_group_t const &
+    std::vector<GlobalRank> const &
     group
       () const;
 
-    Rank
+    std::size_t
     size
       () const;
 
-//    bool
-//    contains
-//      () const;
+    bool
+    contains_rank
+      (Rank const &) const;
 
+    bool
+    contains_global_rank
+      (GlobalRank const &) const;
+
+    // returns a `Rank` between [0, size-1] that corresponds to
+    // the `GlobalRank` of the current process
     Rank
     rank() const;
+
+    GlobalRank
+    global_rank() const;
+
+    GlobalRank
+    toGlobalRank
+      ( Rank const & ) const;
+
+    Rank
+    toGroupRank
+      ( GlobalRank const & ) const;
 };
-
-gaspi_rank_t
-groupToGlobalRank
-  ( Group const & group
-  , Rank const & rank );
-
-Rank
-globalToGroupRank
-  ( Group const & group
-  , gaspi_rank_t const & rank );
 
 } /* namespace group */
 } /* namespace gaspi */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -25,13 +25,13 @@
 #include <cstdlib>
 #include <memory>
 
+#include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/group/Rank.hpp>
 #include <GaspiCxx/singlesided/Buffer.hpp>
 
 // forward declarations
 
 namespace gaspi {
-
-class Context;
 
 namespace singlesided {
 
@@ -73,6 +73,10 @@ class Endpoint : public Buffer {
     enum Type {SOURCE, TARGET, GENERIC};
 
     Endpoint
+      ( std::size_t size
+      , Type type = GENERIC );
+
+    Endpoint
       ( segment::Segment & segment
       , std::size_t size
       , Type type = GENERIC );
@@ -84,6 +88,12 @@ class Endpoint : public Buffer {
       , Type type = GENERIC);
 
     Endpoint
+      ( std::size_t size
+      , segment
+          ::Notification notification
+      , Type type = GENERIC);
+
+    Endpoint
       ( segment::Segment & segment
       , std::size_t size
       , segment
@@ -97,6 +107,12 @@ class Endpoint : public Buffer {
       , segment
           ::Notification notification
       , Type type = GENERIC);
+
+    // Copy constructor creates a new `Endpoint`
+    // from an existing one that will point
+    // to the same (segment) memory,
+    // but creates new notifications
+    Endpoint(Endpoint const&);
 
     ~Endpoint();
 
@@ -109,15 +125,17 @@ class Endpoint : public Buffer {
     // WriteTargetBuffer having the same size
     ConnectHandle
     connectToRemotePartner
-      ( Context & context
-      , group::Rank & rank
-      , Tag & tag );
+      ( group::Group const& group
+      , group::Rank const& rank
+      , Tag const& tag );
 
     bool
     isConnected
       () const;
 
   protected:
+
+    Type _type;
 
     BufferDescription &
     localBufferDesc();
@@ -136,7 +154,6 @@ class Endpoint : public Buffer {
     std::unique_ptr<BufferDescription>   _pLocalBufferDesc;
     std::unique_ptr<BufferDescription>   _pOtherBufferDesc;
     bool                                 _isConnected;
-    Type                                 _type;
 
 };
 

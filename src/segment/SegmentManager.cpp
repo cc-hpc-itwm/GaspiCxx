@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -94,8 +94,11 @@ SegmentManager
 }
 
 SegmentManager
-  ::~SegmentManager
-    ()
+  ::SegmentManager
+    ( SegmentManager&& other_segment_manager)
+: _segmentID(other_segment_manager._segmentID)
+, _memoryManager(std::move(other_segment_manager._memoryManager))
+, _notifyManager(std::move(other_segment_manager._notifyManager))
 {
 
 }
@@ -131,6 +134,13 @@ SegmentManager
    ()
 {
   return Allocator<char>(_memoryManager.get());
+}
+
+bool
+SegmentManager
+  ::hasFreeMemory( std::size_t size )
+{
+  return _memoryManager->canAllocate(size);
 }
 
 Notification

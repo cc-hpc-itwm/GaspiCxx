@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -23,21 +23,10 @@
 #define SEGMENT_MANAGER_HPP_
 
 #include <memory>
+#include <GaspiCxx/segment/Allocator.hpp>
+#include <GaspiCxx/segment/MemoryManager.hpp>
+#include <GaspiCxx/segment/NotificationManager.hpp>
 #include <GaspiCxx/segment/Types.hpp>
-
-// forward declarations
-
-namespace gaspi {
-namespace segment {
-
-template <typename T>
-class Allocator;
-
-class MemoryManager;
-class NotificationManager;
-
-}
-}
 
 namespace gaspi {
 namespace segment {
@@ -52,8 +41,14 @@ class SegmentManager
     SegmentManager
       ( SegmentID segmentID );
 
-    ~SegmentManager
-      ();
+    SegmentManager
+      ( SegmentManager const& ) = delete;
+
+    SegmentManager
+      ( SegmentManager&& );
+
+    virtual ~SegmentManager
+      () = default;
 
     SegmentID
     id
@@ -70,6 +65,8 @@ class SegmentManager
     Allocator<char>
     allocator
       ();
+
+    bool hasFreeMemory( std::size_t );
 
     Notification
     acquire_notification

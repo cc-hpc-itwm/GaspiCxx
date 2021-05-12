@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -21,12 +21,12 @@
 
 #include <cstring>
 #include <memory>
-#include <GaspiCxx/Context.hpp>
-
-extern "C" {
-#include <GASPI.h>
-}
-
+#include <GaspiCxx/CommunicationContext.hpp>
+#include <GaspiCxx/SingleQueueContext.hpp>
+#include <GaspiCxx/collectives/Barrier.hpp>
+#include <GaspiCxx/progress_engine/ProgressEngine.hpp>
+#include <GaspiCxx/RuntimeConfiguration.hpp>
+#include <GaspiCxx/segment/SegmentPool.hpp>
 
 #ifndef GASPIRUNTIME_HPP
 #define GASPIRUNTIME_HPP
@@ -57,14 +57,23 @@ namespace passive { class Passive; }
   //!          Therefore, interfaces do not provide a copy constructor
   //!          or an assignment operator.
   class Runtime : public RuntimeBase
-                , public Context
+                , public SingleQueueContext
   {
   private:
 
+    group::Group _group_all;
+    std::size_t _segmentSize;
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
+    std::unique_ptr<segment::SegmentPool> _psegment_pool;
+    std::unique_ptr<progress_engine::ProgressEngine> _pengine;
+    std::unique_ptr<CommunicationContext> _pcomm_context;
+    std::unique_ptr<gaspi::collectives::blocking::Barrier> _pglobal_barrier;
 
-    //! A runtime cannot be copied.
+    //! A runtime is a singleton.
+    Runtime
+      ();
+
     Runtime
       (const Runtime&) = delete;
 
@@ -74,34 +83,58 @@ namespace passive { class Passive; }
 
   public:
 
-    using Rank = gaspi_rank_t;
+    //! Global library configuration
+    inline static RuntimeConfiguration configuration{
+                        SegmentPoolType::DynamicSegmentPool,
+                        ProgressEngineType::RoundRobinDedicatedThread,
+                        CommunicationContextType::RoundRobinQueues};
 
     //! Construct a GASPI interface from a group and a segment.
     //! \note GASPI and the given segment must be initialized on
     //!       all ranks of the given group!
-    Runtime
-      ();
-    //! The destructor
-    ~Runtime
-      ();
+    static
+    Runtime &
+    getRuntime();
+
+    ~Runtime();
 
     //! Return the segment
     segment::Segment &
-    segment()  {
-      return *_psegment;
-    }
+    segment();
 
     passive::Passive &
-    passive() {
-      return *_ppassive;
-    }
-  };
+    passive();
 
-  bool
-  isRuntimeAvailable();
+    segment::Segment &
+    getFreeSegment(std::size_t size);
+
+    progress_engine::ProgressEngine &
+    getDefaultProgressEngine();
+
+    CommunicationContext &
+    getDefaultCommunicationContext();
+
+    void
+    synchCurrentWorkingDirectory();
+
+    void
+    barrier();
+
+    group::GlobalRank
+    global_rank();
+
+    std::size_t
+    size();
+  };
 
   Runtime &
   getRuntime();
+
+  void
+  initGaspiCxx();
+
+  void
+  initGaspiCxx(RuntimeConfiguration const&);
 
 } // namespace gaspi
 

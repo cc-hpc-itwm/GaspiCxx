@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019
+ * Copyright (c) Fraunhofer ITWM - <http://www.itwm.fraunhofer.de/>, 2019 - 2021
  *
  * This file is part of GaspiCxx.
  *
@@ -22,12 +22,11 @@
 #ifndef SOURCEBUFFER_HPP_
 #define SOURCEBUFFER_HPP_
 
+#include <GaspiCxx/CommunicationContext.hpp>
 #include <GaspiCxx/singlesided/Endpoint.hpp>
 
 // forward declarations
 namespace gaspi {
-
-class Context;
 
 namespace group { class Rank; }
 
@@ -44,6 +43,9 @@ class SourceBuffer : public Endpoint {
     using Tag = int;
 
     SourceBuffer
+      ( std::size_t size );
+
+    SourceBuffer
       ( segment::Segment & segment
       , std::size_t size );
 
@@ -51,6 +53,11 @@ class SourceBuffer : public Endpoint {
       ( void * const ptr
       , segment::Segment & segment
       , std::size_t size );
+
+    SourceBuffer
+      ( std::size_t size
+      , segment
+          ::Notification notification );
 
     SourceBuffer
       ( segment::Segment & segment
@@ -64,6 +71,8 @@ class SourceBuffer : public Endpoint {
       , std::size_t size
       , segment
           ::Notification notification );
+
+    SourceBuffer(Endpoint const&);
 
     ~SourceBuffer
       ();
@@ -73,27 +82,36 @@ class SourceBuffer : public Endpoint {
     // WriteTargetBuffer having the same size
     Endpoint::ConnectHandle
     connectToRemoteTarget
-      ( Context & context
-      , group::Rank & rank
-      , Tag & tag );
+      ( group::Group const&
+      , group::Rank const&
+      , Tag const& );
 
     void
     initTransfer
-      ( Context & context );
+      ();
+
+    void
+    initTransfer
+      ( CommunicationContext& );
 
     void
     initTransferPart
-      ( Context & context
+      ( std::size_t size
+      , std::size_t offset = 0 );
+
+    void
+    initTransferPart
+      ( CommunicationContext& 
       , std::size_t size
       , std::size_t offset = 0 );
 
     bool
     checkForTransferAck
-      ( );
+      ();
 
     bool
     waitForTransferAck
-      ( );
+      ();
 
 };
 
