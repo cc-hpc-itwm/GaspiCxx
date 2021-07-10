@@ -28,6 +28,7 @@ set(SOURCE_FILES
     utility/serialization.cpp
     collectives/Barrier.cpp
     collectives/non_blocking/collectives_lowlevel/AllreduceCommon.cpp
+    collectives/non_blocking/collectives_lowlevel/AllgathervCommon.cpp
     collectives/non_blocking/collectives_lowlevel/BroadcastCommon.cpp
     collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.cpp
     progress_engine/RoundRobinDedicatedThread.cpp)
