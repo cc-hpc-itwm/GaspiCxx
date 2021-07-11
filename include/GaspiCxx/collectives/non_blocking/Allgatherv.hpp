@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
  *
- * Allreduce.hpp
+ * Allgatherv.hpp
  *
  */
 
@@ -39,10 +39,10 @@ namespace gaspi
     { 
       public:
         Allgatherv(gaspi::group::Group const& group,
-                  std::size_t const* counts,
+                  std::vector<std::size_t> const& counts,
                   progress_engine::ProgressEngine& progress_engine);
         Allgatherv(gaspi::group::Group const& group,
-                  std::size_t const* counts);
+                  std::vector<std::size_t> const& counts);
         ~Allgatherv();
 
         void start(void const* inputs) override;
@@ -60,7 +60,7 @@ namespace gaspi
     template<typename T, AllgathervAlgorithm Algorithm>
     Allgatherv<T, Algorithm>::Allgatherv(
       gaspi::group::Group const& group,
-      std::size_t const* counts,
+      std::vector<std::size_t> const& counts,
       progress_engine::ProgressEngine& progress_engine)
     : progress_engine(progress_engine),
       handle(),
@@ -74,7 +74,7 @@ namespace gaspi
     template<typename T, AllgathervAlgorithm Algorithm>
     Allgatherv<T, Algorithm>::Allgatherv(
       gaspi::group::Group const& group,
-      std::size_t const* counts)
+      std::vector<std::size_t> const& counts)
     : Allgatherv(group, counts,
                  gaspi::getRuntime().getDefaultProgressEngine())
     { }
@@ -85,8 +85,8 @@ namespace gaspi
       progress_engine.deregister_collective(handle);
     }
 
-    template<typename T, AllgatherveAlgorithm Algorithm>
-    void Allgatherve<T, Algorithm>::start(void const* inputs)
+    template<typename T, AllgathervAlgorithm Algorithm>
+    void Allgatherv<T, Algorithm>::start(void const* inputs)
     {
       allgatherv_impl->copyIn(inputs);
       allgatherv_impl->start();

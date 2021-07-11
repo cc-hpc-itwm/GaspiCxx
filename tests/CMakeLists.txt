@@ -3,13 +3,15 @@ add_executable (GaspiCxxTests
                 AllgatherTest.cpp
                 AllreduceNonBlockingTest.cpp
                 AllreduceNonBlockingLowLevelTest.cpp
+                AllgathervNonBlockingLowLevelTest.cpp
                 BroadcastNonBlockingTest.cpp
                 AlltoallTest.cpp
                 BarrierTest.cpp
                 RoundRobinDedicatedThreadTest.cpp
                 PassiveTest.cpp
                 SegmentMemoryManagerTest.cpp
-                SingleSidedWriteBufferTest.cpp)
+                SingleSidedWriteBufferTest.cpp
+)
 
 target_include_directories(GaspiCxxTests
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}

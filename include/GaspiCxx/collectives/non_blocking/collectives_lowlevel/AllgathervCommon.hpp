@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
  *
- * AllreduceRing.hpp
+ * AllgathervCommon.hpp
  *
  */
 #pragma once
@@ -37,16 +37,17 @@ namespace gaspi
     {
       public:
         AllgathervCommon(gaspi::group::Group const& group,
-                         std::size_t const* counts);
+                         std::vector<std::size_t> const& counts);
 
       protected:
         gaspi::group::Group group;
         std::vector<std::size_t> counts;
         std::vector<std::size_t> offsets;
+        std::size_t number_elements;
     };
 
     template<typename T, AllgathervAlgorithm Algorithm>
-    class Allgatherv : public AllgathervCommon
+    class AllgathervLowLevel : public AllgathervCommon
     { };
   }
 }

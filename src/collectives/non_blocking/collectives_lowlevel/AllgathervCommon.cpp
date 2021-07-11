@@ -15,25 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with GaspiCxx. If not, see <http://www.gnu.org/licenses/>.
  *
- * BroadcastCommon.cpp
+ * AllgatherCommon.cpp
  *
  */
 
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllgathervCommon.hpp>
+#include <numeric>
 
 namespace gaspi
 {
   namespace collectives
   {
     AllgathervCommon::AllgathervCommon(gaspi::group::Group const& group,
-                                       std::vector<std::size_t> const& counts);
+                                       std::vector<std::size_t> const& counts)
     : group(group),
       counts(counts),
-      offsets(counts.size())
+      offsets(counts.size(),0),
+      number_elements(std::accumulate(counts.begin(), counts.end(), 0))
     { 
-      std::inclusive_scan(counts.begin(), counts.end(),
-		                      offsets.begin());
+      std::partial_sum(counts.begin(), counts.end() - 1, 
+                       offsets.begin() + 1);
     }
 
   }
