@@ -33,9 +33,10 @@ namespace gaspi
       counts(counts),
       offsets(counts.size(),0),
       number_elements(std::accumulate(counts.begin(), counts.end(), 0))
-    { 
-      std::partial_sum(counts.begin(), counts.end() - 1, 
-                       offsets.begin() + 1);
+    {
+      if(counts.size() > 1) 
+        std::partial_sum(counts.begin(), counts.end() - 1, 
+                         offsets.begin() + 1);
     }
 
   }

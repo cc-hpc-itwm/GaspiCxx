@@ -56,7 +56,8 @@ namespace gaspi
         std::vector<std::unique_ptr<TargetBuffer>> target_buffers;
         std::vector<ConnectHandle> source_handles;
         std::vector<ConnectHandle> target_handles;
-        
+        std::vector<T> data_for_1rank_case;
+
         std::size_t send_buffer_index;
         std::size_t receive_buffer_index;
         std::size_t current_step;
@@ -82,30 +83,37 @@ namespace gaspi
       number_ranks(group.size()),
       source_buffers(), target_buffers(),
       source_handles(), target_handles(),
+      data_for_1rank_case(),
       current_step(0)
     {
-      auto const left_neighbor = (rank - 1 + number_ranks) % number_ranks;
-      auto const right_neighbor = (rank + 1) % number_ranks;
+      if(number_ranks > 1){
+        auto const left_neighbor = (rank - 1 + number_ranks) % number_ranks;
+        auto const right_neighbor = (rank + 1) % number_ranks;
       
-      std::size_t send_index = rank.get();
-      std::size_t receive_index = (number_ranks + send_index - 1) % number_ranks;
+        std::size_t send_index = rank.get();
+        std::size_t receive_index = (number_ranks + send_index - 1) % number_ranks;
 
-      for (auto i = 0UL; i < number_ranks - 1; ++i)
-      {
-        source_buffers.push_back(
-            std::make_unique<SourceBuffer>(counts[send_index]*sizeof(T)));
-        target_buffers.push_back(
-            std::make_unique<TargetBuffer>(counts[receive_index]*sizeof(T)));
+        for (auto i = 0UL; i < number_ranks - 1; ++i)
+        {
+          source_buffers.push_back(
+              std::make_unique<SourceBuffer>(counts[send_index]*sizeof(T)));
+          target_buffers.push_back(
+              std::make_unique<TargetBuffer>(counts[receive_index]*sizeof(T)));
 
-        SourceBuffer::Tag source_tag = i;
-        TargetBuffer::Tag target_tag = i;
-        source_handles.push_back(
-            source_buffers[i]->connectToRemoteTarget(group, right_neighbor, source_tag));
-        target_handles.push_back(
-            target_buffers[i]->connectToRemoteSource(group, left_neighbor, target_tag));
+          SourceBuffer::Tag source_tag = i;
+          TargetBuffer::Tag target_tag = i;
+          source_handles.push_back(
+              source_buffers[i]->connectToRemoteTarget(group, right_neighbor, source_tag));
+          target_handles.push_back(
+              target_buffers[i]->connectToRemoteSource(group, left_neighbor, target_tag));
         
-        send_index = (send_index - 1) % number_ranks;
-        receive_index = (receive_index - 1) % number_ranks;
+          send_index = (send_index + number_ranks - 1) % number_ranks;
+          receive_index = (receive_index + number_ranks - 1) % number_ranks;
+        }
+      }
+      else
+      {
+        data_for_1rank_case.resize(number_elements); 
       }
 
     }
@@ -139,7 +147,12 @@ namespace gaspi
     void AllgathervLowLevel<T, AllgathervAlgorithm::RING>::startImpl()
     {
       algorithm_reset_state();
-      source_buffers[current_step]->initTransfer();
+
+      if(number_ranks > 1)
+      {
+        source_buffers[current_step]->initTransfer();
+      }
+        
     }
 
     template<typename T>
@@ -147,11 +160,18 @@ namespace gaspi
     {
       auto current_begin = static_cast<T const*>(inputs);
       
-      auto& buffer = source_buffers[current_step];
-      auto elements_to_copy = buffer->description().size()/sizeof(T);
-      auto const current_end = current_begin + elements_to_copy;
+      if (number_ranks == 1)
+      {
+        std::copy(current_begin, current_begin + number_elements,
+                  data_for_1rank_case.begin());
+      }
+      else
+      {
+        auto elements_to_copy = source_buffers[current_step]->description().size()/sizeof(T);
+        auto const current_end = current_begin + elements_to_copy;
 
-      std::copy(current_begin, current_end, static_cast<T*>(buffer->address()));
+        std::copy(current_begin, current_end, static_cast<T*>(source_buffers[current_step]->address()));          
+      }
     }
 
     template<typename T>
@@ -171,7 +191,7 @@ namespace gaspi
       if (algorithm_is_finished()) { return true; }
 
       target_buffers[current_step]->waitForCompletion();
-
+      
       current_step++;
 
       if (algorithm_is_finished())
@@ -191,22 +211,30 @@ namespace gaspi
     template<typename T>
     void AllgathervLowLevel<T, AllgathervAlgorithm::RING>::copyOutImpl(void* outputs)
     {
-      std::size_t send_index = rank.get();
-      std::size_t receive_index = (number_ranks + send_index - 1) % number_ranks;
-      
       auto head = static_cast<T*>(outputs);
-      auto current_begin = head + offsets[send_index];
-      auto source_begin = static_cast<T*>(source_buffers[0]->address());
-      auto source_end = source_begin + counts[send_index];
-      std::copy(source_begin, source_end, current_begin);
-
-      for (auto i = 0UL; i < number_ranks - 1; ++i)
+      if(number_ranks == 1)
       {
-        current_begin = head + offsets[receive_index];
-        source_begin = static_cast<T*>(target_buffers[i]->address());
-        source_end = source_begin + counts[receive_index];
+        std::copy(data_for_1rank_case.begin(), data_for_1rank_case.end(),
+                  head);
+      }
+      else
+      {
+        std::size_t send_index = rank.get();
+        std::size_t receive_index = (number_ranks + send_index - 1) % number_ranks;
+      
+        auto current_begin = head + offsets[send_index];
+        auto source_begin = static_cast<T*>(source_buffers[0]->address());
+        auto source_end = source_begin + counts[send_index];
         std::copy(source_begin, source_end, current_begin);
-        receive_index = (receive_index - 1) % number_ranks;
+
+        for (auto i = 0UL; i < number_ranks - 1; ++i)
+        {
+          current_begin = head + offsets[receive_index];
+          source_begin = static_cast<T*>(target_buffers[i]->address());
+          source_end = source_begin + counts[receive_index];
+          std::copy(source_begin, source_end, current_begin);
+          receive_index = (receive_index  + number_ranks - 1) % number_ranks;
+        }
       }
     }
   }
