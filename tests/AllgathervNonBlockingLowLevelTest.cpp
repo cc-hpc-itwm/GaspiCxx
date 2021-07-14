@@ -5,6 +5,7 @@
 #include <GaspiCxx/group/Group.hpp>
 
 #include <numeric>
+#include <algorithm> 
 #include <stdexcept>
 #include <vector>
 
@@ -39,6 +40,7 @@ namespace gaspi {
       std::vector<ElemType> inputs {elem};
       std::vector<ElemType> expected(group_all.size());
       std::vector<ElemType> outputs(group_all.size());
+
       for(auto i = 0UL;i < group_all.size(); ++i)
       {
         expected[i] = i + 1;
@@ -57,9 +59,18 @@ namespace gaspi {
     {
       using ElemType = int;
       std::vector<std::size_t> counts(group_all.size());
-      for(auto i = 0UL;i < group_all.size(); ++i)
+      std::vector<std::size_t> offsets(counts.size(), 0);
+
+      //rank i has count i + 1;
+      for(auto i = 0UL;i < counts.size(); ++i)
       {
         counts[i] = i + 1;
+      }
+
+      if(offsets.size() > 1)
+      {
+        std::partial_sum(counts.begin(), counts.end() - 1, 
+                         offsets.begin() + 1);
       }
 
       AllgathervLowLevel<ElemType, AllgathervAlgorithm::RING> allgatherv(
@@ -70,15 +81,12 @@ namespace gaspi {
       std::vector<ElemType> inputs(elem, elem);
       std::vector<ElemType> expected(output_size);
       
-      auto index = 0UL;
-      for(auto i = 1UL;i <= group_all.size(); ++i)
+      for(auto i = 0UL; i < counts.size(); ++i)
       {
-        for(auto j = i;j > 0; --j)
-        {
-          expected[index++] = i;
-        }
+        auto head = expected.begin() + offsets[i];
+        std::fill(head, head + counts[i], i + 1);
       }
-      
+
       std::vector<ElemType> outputs(output_size);
 
       allgatherv.waitForSetup();
@@ -94,6 +102,9 @@ namespace gaspi {
     {
       using ElemType = int;
       std::vector<std::size_t> counts(group_all.size(), 0);
+      std::vector<std::size_t> offsets(counts.size(), 0);
+
+      //Even rank has count 0, odd rank i has count i + 1
       for(auto i = 0UL;i < group_all.size(); ++i)
       {
         if(i % 2)
@@ -102,34 +113,34 @@ namespace gaspi {
         }
       }
 
-      ElemType const elem = group_all.rank().get() + 1;
+      if(offsets.size() > 1)
+      {
+        std::partial_sum(counts.begin(), counts.end() - 1, 
+                         offsets.begin() + 1);
+      }
+      
       std::vector<ElemType> inputs;
+      ElemType const elem = group_all.rank().get() + 1;
       auto count = counts[group_all.rank().get()];
+
       if(count > 0)
       {
-        for(auto i = 0UL;i < count;++i)
-        {
-          inputs.push_back(elem);;
-        }
+        inputs.resize(count);
+        std::fill(inputs.begin(), inputs.end(), elem);
       }
 
       auto output_size = std::accumulate(counts.begin(), counts.end(), 0);
-
       std::vector<ElemType> expected(output_size);
+      std::vector<ElemType> outputs(output_size);
       
-      auto index = 0;
-      for(auto i = 0UL;i < counts.size(); ++i)
+      for(auto i = 0UL; i < counts.size(); ++i)
       {
-        for(auto j = 0UL; j < counts[i]; ++j)
-        {
-          expected[index++] = i + 1;
-        }
+        auto head = expected.begin() + offsets[i];
+        std::fill(head, head + counts[i], i + 1);
       }
 
       AllgathervLowLevel<ElemType, AllgathervAlgorithm::RING> allgatherv(
         group_all, counts);
-      
-      std::vector<ElemType> outputs(output_size);
 
       allgatherv.waitForSetup();
       allgatherv.copyIn(inputs.data());

@@ -41,6 +41,7 @@ namespace gaspi
     {
       using SourceBuffer = gaspi::singlesided::write::SourceBuffer;
       using TargetBuffer = gaspi::singlesided::write::TargetBuffer;
+      using Endpoint = gaspi::singlesided::Endpoint;
       using ConnectHandle = gaspi::singlesided::Endpoint::ConnectHandle;
 
       public:
@@ -71,7 +72,6 @@ namespace gaspi
 
         bool algorithm_is_finished() const;
         void algorithm_reset_state();
-        void copy_to_source(SourceBuffer& source_comm, TargetBuffer& target_comm);
     };
 
     template<typename T>
@@ -92,14 +92,21 @@ namespace gaspi
       
         std::size_t send_index = rank.get();
         std::size_t receive_index = (number_ranks + send_index - 1) % number_ranks;
-
         for (auto i = 0UL; i < number_ranks - 1; ++i)
         {
-          source_buffers.push_back(
+          if(i == 0)
+          {
+            source_buffers.push_back(
               std::make_unique<SourceBuffer>(counts[send_index]*sizeof(T)));
+          }
+          else
+          {
+            source_buffers.push_back(
+              std::make_unique<SourceBuffer>(*dynamic_cast<Endpoint*>(target_buffers[i-1].get())));
+          }
+
           target_buffers.push_back(
               std::make_unique<TargetBuffer>(counts[receive_index]*sizeof(T)));
-
           SourceBuffer::Tag source_tag = i;
           TargetBuffer::Tag target_tag = i;
           source_handles.push_back(
@@ -175,17 +182,6 @@ namespace gaspi
     }
 
     template<typename T>
-    void AllgathervLowLevel<T, AllgathervAlgorithm::RING>::copy_to_source(
-              SourceBuffer& source_comm, TargetBuffer& target_comm)
-    {
-      auto const target_begin = static_cast<T*>(target_comm.address());
-      auto const target_end = target_begin +
-                              source_comm.description().size()/sizeof(T);
-      auto const source_begin = static_cast<T*>(source_comm.address());
-      std::copy(target_begin, target_end, source_begin);
-    }
-
-    template<typename T>
     bool AllgathervLowLevel<T, AllgathervAlgorithm::RING>::triggerProgressImpl()
     {
       if (algorithm_is_finished()) { return true; }
@@ -201,7 +197,6 @@ namespace gaspi
       }
       else
       {
-        copy_to_source(*source_buffers[current_step], *target_buffers[current_step - 1]);
         source_buffers[current_step]->initTransfer();
       }
 
