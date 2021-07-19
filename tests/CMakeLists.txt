@@ -4,6 +4,7 @@ add_executable (GaspiCxxTests
                 AllreduceNonBlockingTest.cpp
                 AllreduceNonBlockingLowLevelTest.cpp
                 AllgathervNonBlockingLowLevelTest.cpp
+                AllgatherNonBlockingTest.cpp
                 BroadcastNonBlockingTest.cpp
                 AlltoallTest.cpp
                 BarrierTest.cpp

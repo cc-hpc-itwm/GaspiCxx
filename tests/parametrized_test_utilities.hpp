@@ -22,8 +22,10 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
-
+#include <iostream>
 using DataSize = std::size_t;
+using Counts = std::vector<DataSize>;
+using Offsets = Counts;
 using ElementType = std::string;
 
 template<template <typename> class Factory>
@@ -46,7 +48,6 @@ class BaseData
     virtual void fill(double value) = 0;
     virtual void fill_from_list(std::vector<double> const& values) = 0;
     virtual void fill_from_list_and_scale(std::vector<double> const& values, std::size_t scaling_factor) = 0;
-
     bool operator==(BaseData const& bd) const
     {
       return is_equal(bd);
