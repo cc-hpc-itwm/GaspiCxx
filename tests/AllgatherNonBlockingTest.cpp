@@ -59,11 +59,12 @@ namespace gaspi {
 
     using TestCase = std::tuple<AllgathervAlgorithm, Counts, ElementType>;
     class AllgathervTest : public CollectivesFixture,
-                          public testing::WithParamInterface<TestCase>
+                           public testing::WithParamInterface<TestCase>
     {
       protected:
         AllgathervTest()
-        : algorithm(std::get<0>(GetParam())),
+        : start(42.22),
+          algorithm(std::get<0>(GetParam())),
           count(group_all.size()),
           offset(group_all.size(), 0),
           elem_type_string(std::get<2>(GetParam()))
@@ -104,6 +105,16 @@ namespace gaspi {
           return factory(std::accumulate(count.begin(), count.end(), 0));
         }
 
+        auto fill_expected_data(std::vector<double> &expected_values)
+        {
+          for(auto i = 0UL; i < count.size(); ++i)
+          {
+            auto head = expected_values.begin() + offset[i];
+            std::iota(head, head + count[i], start);
+          }
+        }
+
+        double start;
         AllgathervAlgorithm algorithm;
         Counts count;
         Offsets offset;
@@ -119,18 +130,13 @@ namespace gaspi {
       auto expected = make_output_data();
 
       std::vector<double> input_values(inputs->get_num_elements());
-      std::iota(input_values.begin(), input_values.end(), 42.22);
+      std::iota(input_values.begin(), input_values.end(), start);
       inputs->fill_from_list(input_values);
       
       std::vector<double> expected_values(expected->get_num_elements());
-
-      for(auto i = 0UL; i < count.size(); ++i)
-      {
-        auto head = expected_values.begin() + offset[i];
-        std::iota(head, head + count[i], 42.22);
-      }
-
+      fill_expected_data(expected_values);
       expected->fill_from_list(expected_values);
+
       outputs->fill(0);
 
       allgatherv->start(inputs->get_data());

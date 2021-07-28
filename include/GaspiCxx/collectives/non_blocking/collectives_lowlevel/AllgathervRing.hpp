@@ -102,7 +102,7 @@ namespace gaspi
           else
           {
             source_buffers.push_back(
-              std::make_unique<SourceBuffer>(*dynamic_cast<Endpoint*>(target_buffers[i-1].get())));
+              std::make_unique<SourceBuffer>(*target_buffers[i-1]));
           }
 
           target_buffers.push_back(
