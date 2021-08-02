@@ -8,6 +8,7 @@ set(SOURCE_FILES
     collectives/Alltoall.cpp
     group/Group.cpp
     group/Rank.cpp
+    group/Utilities.cpp
     passive/Passive.cpp
     segment/Segment.cpp
     segment/SegmentManager.cpp
