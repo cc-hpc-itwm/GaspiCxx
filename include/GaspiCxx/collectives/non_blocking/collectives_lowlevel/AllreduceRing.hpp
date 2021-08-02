@@ -61,10 +61,11 @@ namespace gaspi
         gaspi::group::Rank rank;
         gaspi::group::Rank left_neighbor;
         gaspi::group::Rank right_neighbor;
-        std::vector<std::unique_ptr<SourceBuffer>> source_buffers;
-        std::vector<std::unique_ptr<TargetBuffer>> target_buffers;
-        std::vector<ConnectHandle> source_handles;
-        std::vector<ConnectHandle> target_handles;
+        std::vector<std::unique_ptr<SourceBuffer>> source_buffers_reduce;
+        std::vector<std::unique_ptr<TargetBuffer>> target_buffers_reduce;
+        std::vector<std::unique_ptr<SourceBuffer>> source_buffers_gather;
+        std::vector<std::unique_ptr<TargetBuffer>> target_buffers_gather;
+        std::vector<ConnectHandle> handles;
         std::vector<T> data_for_1rank_case;
       
         std::size_t current_step;
@@ -80,8 +81,9 @@ namespace gaspi
 
         // algorithm-specific methods
         auto algorithm_get_current_stage() const;
+        bool is_last_step_reduce() const;
+        bool is_last_step_gather() const;
         void apply_reduce_op(SourceBuffer& source_comm, TargetBuffer& target_comm);
-        void copy_to_source(SourceBuffer& source_comm, TargetBuffer& target_comm);
     };
 
     template<typename T>
@@ -94,8 +96,8 @@ namespace gaspi
       rank(group.rank()),
       left_neighbor(group::decrementRankOnRing(rank, number_ranks)),
       right_neighbor(group::incrementRankOnRing(rank, number_ranks)),
-      source_buffers(), target_buffers(),
-      source_handles(), target_handles(),
+      source_buffers_reduce(), target_buffers_reduce(), source_buffers_gather(), target_buffers_gather(),
+      handles(),
       data_for_1rank_case(),
       current_step(0),
       steps_per_stage(number_ranks-1),
@@ -109,20 +111,33 @@ namespace gaspi
 
         for (auto i = 0UL; i < number_ranks; ++i)
         {
-          source_buffers.push_back(
+          source_buffers_reduce.push_back(
             std::make_unique<SourceBuffer>(size_padded));
-          target_buffers.push_back(
+          target_buffers_reduce.push_back(
             std::make_unique<TargetBuffer>(size_padded));
+        }
+
+        // Make sends in gather phase in-place
+        for (auto i = 0UL; i < number_ranks; ++i)
+        {
+          source_buffers_gather.push_back(std::make_unique<SourceBuffer>(*source_buffers_reduce[i]));
+          target_buffers_gather.push_back(std::make_unique<TargetBuffer>(*source_buffers_reduce[i]));
         }
 
         for (auto i = 0UL; i < number_ranks; ++i)
         {
-          SourceBuffer::Tag source_tag = i;
-          TargetBuffer::Tag target_tag = i;
-          source_handles.push_back(
-            source_buffers[i]->connectToRemoteTarget(group, right_neighbor, source_tag));
-          target_handles.push_back(
-            target_buffers[i]->connectToRemoteSource(group, left_neighbor, target_tag));
+          SourceBuffer::Tag const source_tag_reduce = i;
+          TargetBuffer::Tag const target_tag_reduce = i;
+          SourceBuffer::Tag const source_tag_gather = i + number_ranks;
+          TargetBuffer::Tag const target_tag_gather = i + number_ranks;
+          handles.push_back(
+            source_buffers_reduce[i]->connectToRemoteTarget(group, right_neighbor, source_tag_reduce));
+          handles.push_back(
+            target_buffers_reduce[i]->connectToRemoteSource(group, left_neighbor, target_tag_reduce));
+          handles.push_back(
+            source_buffers_gather[i]->connectToRemoteTarget(group, right_neighbor, source_tag_gather));
+          handles.push_back(
+            target_buffers_gather[i]->connectToRemoteSource(group, left_neighbor, target_tag_gather));
         }
       }
       else
@@ -134,11 +149,7 @@ namespace gaspi
     template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::waitForSetupImpl()
     {
-      for (auto& handle : source_handles)
-      {
-        handle.waitForCompletion();
-      }
-      for (auto& handle : target_handles)
+      for (auto& handle : handles)
       {
         handle.waitForCompletion();
       }
@@ -150,8 +161,9 @@ namespace gaspi
       if (number_elements > 0 && number_ranks > 1)
       {
         current_step = 0;
-        receive_buffer_index = group::RingIndex(left_neighbor.get(), number_ranks);
-        source_buffers[rank.get()]->initTransfer();
+        receive_buffer_index = group::RingIndex(rank.get(), number_ranks);
+        source_buffers_reduce[receive_buffer_index]->initTransfer();
+        receive_buffer_index--;
       }
     }
 
@@ -160,37 +172,39 @@ namespace gaspi
     {
       if (number_elements == 0 || number_ranks == 1) { return true; }
 
-      auto is_finished = false;
-      target_buffers[receive_buffer_index]->waitForCompletion();
-
       switch(algorithm_get_current_stage())
       {
         case RingStage::REDUCE:
         {
-          apply_reduce_op(*source_buffers[receive_buffer_index], *target_buffers[receive_buffer_index]);
+          target_buffers_reduce[receive_buffer_index]->waitForCompletion();
+          apply_reduce_op(*source_buffers_reduce[receive_buffer_index], *target_buffers_reduce[receive_buffer_index]);
+          if (!is_last_step_reduce())
+          {
+            source_buffers_reduce[receive_buffer_index]->initTransfer();
+          }
+          else
+          {
+            source_buffers_gather[receive_buffer_index]->initTransfer();
+          }
           break;
         }
         case RingStage::GATHER:
         {
-          copy_to_source(*source_buffers[receive_buffer_index], *target_buffers[receive_buffer_index]);
+          target_buffers_gather[receive_buffer_index]->waitForCompletion();
+          source_buffers_gather[receive_buffer_index]->initTransfer();
+          if (is_last_step_gather())
+          {
+            target_buffers_gather[receive_buffer_index]->ackTransfer();
+            source_buffers_gather[++receive_buffer_index]->waitForTransferAck();
+            return true;
+          }
           break;
         }
       }
 
-      if (current_step < 2 * steps_per_stage - 1)
-      {
-        source_buffers[receive_buffer_index]->initTransfer();
-        receive_buffer_index--;
-      }
-      else // last step
-      {
-        target_buffers[receive_buffer_index]->ackTransfer();
-        source_buffers[++receive_buffer_index]->waitForTransferAck();
-        is_finished = true;
-      }
-
       current_step++;
-      return is_finished;
+      receive_buffer_index--;
+      return false;
     }
 
     template<typename T>
@@ -206,7 +220,7 @@ namespace gaspi
       }
       else
       {
-        for (auto& buffer : source_buffers)
+        for (auto& buffer : source_buffers_reduce)
         {
           auto elements_to_copy = buffer->description().size()/sizeof(T);
           if (total_copied_elements + elements_to_copy > number_elements)
@@ -240,7 +254,7 @@ namespace gaspi
       }
       else
       {
-        for (auto& buffer : source_buffers)
+        for (auto& buffer : source_buffers_gather)
         {
           auto elements_to_copy = buffer->description().size()/sizeof(T);
           if (total_copied_elements + elements_to_copy > number_elements)
@@ -269,6 +283,18 @@ namespace gaspi
     }
 
     template<typename T>
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::is_last_step_reduce() const
+    {
+      return current_step == steps_per_stage - 1;
+    }
+
+    template<typename T>
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::is_last_step_gather() const
+    {
+      return current_step == 2 * steps_per_stage - 1;
+    }
+
+    template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::apply_reduce_op(
               SourceBuffer& source_comm, TargetBuffer& target_comm)
     {
@@ -278,17 +304,6 @@ namespace gaspi
       auto const target_begin = static_cast<T*>(target_comm.address());
       std::transform(source_begin, source_end, target_begin,
                      source_begin, std::plus<T>());
-    }
-
-    template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::copy_to_source(
-              SourceBuffer& source_comm, TargetBuffer& target_comm)
-    {
-      auto const target_begin = static_cast<T*>(target_comm.address());
-      auto const target_end = target_begin +
-                              source_comm.description().size()/sizeof(T);
-      auto const source_begin = static_cast<T*>(source_comm.address());
-      std::copy(target_begin, target_end, source_begin);
     }
   }
 }
