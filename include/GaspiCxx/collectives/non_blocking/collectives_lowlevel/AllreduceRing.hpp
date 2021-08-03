@@ -80,7 +80,7 @@ namespace gaspi
       
         std::size_t current_step;
         std::size_t steps_per_stage;
-        gaspi::group::RingIndex receive_buffer_index;
+        gaspi::group::RingIndex current_index;
 
         void waitForSetupImpl() override;
         void copyInImpl(void const*) override;
@@ -111,7 +111,7 @@ namespace gaspi
       data_for_1rank_case(),
       current_step(0),
       steps_per_stage(number_ranks-1),
-      receive_buffer_index(left_neighbor.get(), number_ranks)
+      current_index(rank.get(), number_ranks)
     {
       if (number_elements > 0 && number_ranks > 1)
       {
@@ -170,9 +170,9 @@ namespace gaspi
       if (number_elements > 0 && number_ranks > 1)
       {
         current_step = 0;
-        receive_buffer_index = group::RingIndex(rank.get(), number_ranks);
-        source_buffers_reduce[receive_buffer_index]->initTransfer();
-        receive_buffer_index--;
+        current_index = group::RingIndex(rank.get(), number_ranks);
+        source_buffers_reduce[current_index]->initTransfer();
+        current_index--;
       }
     }
 
@@ -185,26 +185,26 @@ namespace gaspi
       {
         case RingStage::REDUCE:
         {
-          target_buffers_reduce[receive_buffer_index]->waitForCompletion();
-          apply_reduce_op(*source_buffers_reduce[receive_buffer_index], *target_buffers_reduce[receive_buffer_index]);
+          target_buffers_reduce[current_index]->waitForCompletion();
+          apply_reduce_op(*source_buffers_reduce[current_index], *target_buffers_reduce[current_index]);
           if (!is_last_step_reduce())
           {
-            source_buffers_reduce[receive_buffer_index]->initTransfer();
+            source_buffers_reduce[current_index]->initTransfer();
           }
           else
           {
-            source_buffers_gather[receive_buffer_index]->initTransfer();
+            source_buffers_gather[current_index]->initTransfer();
           }
           break;
         }
         case RingStage::GATHER:
         {
-          target_buffers_gather[receive_buffer_index]->waitForCompletion();
-          source_buffers_gather[receive_buffer_index]->initTransfer();
+          target_buffers_gather[current_index]->waitForCompletion();
+          source_buffers_gather[current_index]->initTransfer();
           if (is_last_step_gather())
           {
-            target_buffers_gather[receive_buffer_index]->ackTransfer();
-            source_buffers_gather[++receive_buffer_index]->waitForTransferAck();
+            target_buffers_gather[current_index]->ackTransfer();
+            source_buffers_gather[++current_index]->waitForTransferAck();
             return true;
           }
           break;
@@ -212,7 +212,7 @@ namespace gaspi
       }
 
       current_step++;
-      receive_buffer_index--;
+      current_index--;
       return false;
     }
 
