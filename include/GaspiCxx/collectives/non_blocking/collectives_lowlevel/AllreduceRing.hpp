@@ -36,6 +36,16 @@ namespace gaspi
 {
   namespace collectives
   {
+    namespace
+    {
+      template <typename Integer,
+                std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
+      Integer ceil_div(Integer a, Integer b)
+      {
+        return (a + b - 1) / b;
+      }
+    }
+
     template<typename T>
     class AllreduceLowLevel<T, AllreduceAlgorithm::RING> : public AllreduceCommon
     {
@@ -105,8 +115,7 @@ namespace gaspi
     {
       if (number_elements > 0 && number_ranks > 1)
       {
-        auto const number_elements_padded = number_elements / number_ranks +
-                                            (number_elements % number_ranks != 0 ? 1 : 0);
+        auto const number_elements_padded = ceil_div(number_elements, number_ranks);
         auto const size_padded = sizeof(T) * number_elements_padded;
 
         for (auto i = 0UL; i < number_ranks; ++i)
