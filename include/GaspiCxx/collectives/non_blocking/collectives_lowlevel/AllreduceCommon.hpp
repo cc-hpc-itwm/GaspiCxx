@@ -23,6 +23,10 @@
 
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+
+#include <algorithm>
 
 namespace gaspi
 {
@@ -50,6 +54,19 @@ namespace gaspi
         gaspi::group::Group group;
         std::size_t number_elements;
         ReductionOp reduction_op;
+
+        template<typename T>
+        void apply_reduce_op(gaspi::singlesided::write::SourceBuffer& source_comm,
+                             gaspi::singlesided::write::TargetBuffer& target_comm)
+        {
+          auto const source_begin = static_cast<T*>(source_comm.address());
+          auto const source_end = source_begin +
+                                  source_comm.description().size()/sizeof(T);
+          auto const target_begin = static_cast<T*>(target_comm.address());
+
+          std::transform(source_begin, source_end, target_begin,
+                         source_begin, std::plus<T>());
+        }
     };
 
     template<typename T, AllreduceAlgorithm Algorithm>
