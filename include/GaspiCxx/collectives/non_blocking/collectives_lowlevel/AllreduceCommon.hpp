@@ -35,7 +35,6 @@ namespace gaspi
     enum class ReductionOp
     {
       SUM,
-      AVERAGE,
     };
 
     enum class AllreduceAlgorithm
