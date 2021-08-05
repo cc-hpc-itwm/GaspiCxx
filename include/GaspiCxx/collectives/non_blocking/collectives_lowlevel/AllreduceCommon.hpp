@@ -42,6 +42,7 @@ namespace gaspi
 
     enum class AllreduceAlgorithm
     {
+      RECURSIVE_DOUBLING,
       RING,
     };
 
