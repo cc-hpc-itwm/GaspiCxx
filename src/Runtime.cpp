@@ -163,8 +163,16 @@ Runtime
   ::getRuntime
     ()
 {
-  static auto instance = new Runtime();
-  return *instance;
+  // FIXME: Should we implement singleton with:
+  // {
+  //   static auto instance = new Runtime();
+  //   return *instance;
+  // }
+  // and use `atexit` to ensure the destructor (with final Barrier)
+  // is called after all (potential) static destructors?
+  //
+  static auto instance = Runtime();
+  return instance;
 }
 
 void
