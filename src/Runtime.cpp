@@ -56,8 +56,8 @@ Runtime
 , _ppassive(std::make_unique<passive::Passive>( *_psegment
                                               , *this ) )
 , _psegment_pool()
-, _pengine()
 , _pcomm_context(Runtime::configuration.get_communication_context())
+, _pengine()
 , _pglobal_barrier()
 { }
 
