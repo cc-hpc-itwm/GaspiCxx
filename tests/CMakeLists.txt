@@ -1,10 +1,10 @@
 add_executable (GaspiCxxTests
                 run_tests.cpp
-                AllgatherTest.cpp
                 AllreduceNonBlockingTest.cpp
                 AllreduceNonBlockingLowLevelTest.cpp
+                AllgatherTest.cpp
                 AllgathervNonBlockingLowLevelTest.cpp
-                AllgatherNonBlockingTest.cpp
+                AllgathervNonBlockingTest.cpp
                 BroadcastNonBlockingTest.cpp
                 AlltoallTest.cpp
                 BarrierTest.cpp
@@ -30,6 +30,7 @@ include (test_helpers)
 set(localranks_list 1 2 3 4)
 set(test_list Allreduce
               Allgather
+              Allgatherv
               Alltoall
               Barrier
               Broadcast
