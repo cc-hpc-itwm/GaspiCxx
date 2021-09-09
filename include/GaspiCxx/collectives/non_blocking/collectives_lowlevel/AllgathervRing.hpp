@@ -21,11 +21,10 @@
 
 #pragma once
 
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllgathervCommon.hpp>
+#include <GaspiCxx/group/Utilities.hpp>
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
-#include <GaspiCxx/singlesided/BufferDescription.hpp>
-#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
-#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllgathervCommon.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -41,7 +40,6 @@ namespace gaspi
     {
       using SourceBuffer = gaspi::singlesided::write::SourceBuffer;
       using TargetBuffer = gaspi::singlesided::write::TargetBuffer;
-      using Endpoint = gaspi::singlesided::Endpoint;
       using ConnectHandle = gaspi::singlesided::Endpoint::ConnectHandle;
 
       public:
@@ -55,12 +53,8 @@ namespace gaspi
         std::size_t number_ranks;
         std::vector<std::unique_ptr<SourceBuffer>> source_buffers;
         std::vector<std::unique_ptr<TargetBuffer>> target_buffers;
-        std::vector<ConnectHandle> source_handles;
-        std::vector<ConnectHandle> target_handles;
+        std::vector<ConnectHandle> handles;
         std::vector<T> data_for_1rank_case;
-
-        std::size_t send_buffer_index;
-        std::size_t receive_buffer_index;
         std::size_t current_step;
 
         void waitForSetupImpl() override;
@@ -82,84 +76,63 @@ namespace gaspi
       rank(group.rank()),
       number_ranks(group.size()),
       source_buffers(), target_buffers(),
-      source_handles(), target_handles(),
+      handles(),
       data_for_1rank_case(),
       current_step(0)
     {
-      if(number_ranks > 1){
-        auto const left_neighbor = (rank - 1 + number_ranks) % number_ranks;
-        auto const right_neighbor = (rank + 1) % number_ranks;
+      if(number_ranks > 1)
+      {
+        gaspi::group::Rank const left_neighbor(group::decrementRankOnRing(rank, number_ranks));
+        gaspi::group::Rank const right_neighbor(group::incrementRankOnRing(rank, number_ranks));
       
-        std::size_t send_index = rank.get();
-        std::size_t receive_index = (number_ranks + send_index - 1) % number_ranks;
+        source_buffers.push_back(std::make_unique<SourceBuffer>(counts[rank.get()]*sizeof(T)));
+
+        std::size_t receive_index = group::decrementIndexOnRing(rank.get(), number_ranks);
         for (auto i = 0UL; i < number_ranks - 1; ++i)
         {
-          if(i == 0)
-          {
-            source_buffers.push_back(
-              std::make_unique<SourceBuffer>(counts[send_index]*sizeof(T)));
-          }
-          else
-          {
-            source_buffers.push_back(
-              std::make_unique<SourceBuffer>(*target_buffers[i-1]));
-          }
-
           target_buffers.push_back(
               std::make_unique<TargetBuffer>(counts[receive_index]*sizeof(T)));
-          SourceBuffer::Tag source_tag = i;
-          TargetBuffer::Tag target_tag = i;
-          source_handles.push_back(
+          receive_index = group::decrementIndexOnRing(receive_index, number_ranks);
+
+          if(i > 0)
+          {
+            source_buffers.push_back(std::make_unique<SourceBuffer>(*target_buffers[i-1]));
+          }
+        }
+
+        for (auto i = 0UL; i < number_ranks - 1; ++i)
+        {
+          SourceBuffer::Tag const source_tag = i;
+          TargetBuffer::Tag const target_tag = i;
+          handles.push_back(
               source_buffers[i]->connectToRemoteTarget(group, right_neighbor, source_tag));
-          target_handles.push_back(
+          handles.push_back(
               target_buffers[i]->connectToRemoteSource(group, left_neighbor, target_tag));
-        
-          send_index = (send_index + number_ranks - 1) % number_ranks;
-          receive_index = (receive_index + number_ranks - 1) % number_ranks;
         }
       }
       else
       {
         data_for_1rank_case.resize(number_elements); 
       }
-
     }
 
     template<typename T>
     void AllgathervLowLevel<T, AllgathervAlgorithm::RING>::waitForSetupImpl()
     {
-      for (auto& handle : source_handles)
+      for (auto& handle : handles)
       {
         handle.waitForCompletion();
       }
-      for (auto& handle : target_handles)
-      {
-        handle.waitForCompletion();
-      }
-    }
-
-    template<typename T>
-    void AllgathervLowLevel<T, AllgathervAlgorithm::RING>::algorithm_reset_state()
-    {
-      current_step = 0;
-    }
-
-    template<typename T>
-    bool AllgathervLowLevel<T, AllgathervAlgorithm::RING>::algorithm_is_finished() const
-    {
-      return (current_step == number_ranks - 1);
     }
 
     template<typename T>
     void AllgathervLowLevel<T, AllgathervAlgorithm::RING>::startImpl()
     {
-      algorithm_reset_state();
-
       if(number_ranks > 1)
       {
+        current_step = 0;
         source_buffers[current_step]->initTransfer();
       }
-        
     }
 
     template<typename T>
@@ -174,40 +147,39 @@ namespace gaspi
       }
       else
       {
-        auto elements_to_copy = source_buffers[current_step]->description().size()/sizeof(T);
+        auto elements_to_copy = source_buffers[0]->description().size()/sizeof(T);
         auto const current_end = current_begin + elements_to_copy;
 
-        std::copy(current_begin, current_end, static_cast<T*>(source_buffers[current_step]->address()));          
+        std::copy(current_begin, current_end, static_cast<T*>(source_buffers[0]->address()));
       }
     }
 
     template<typename T>
     bool AllgathervLowLevel<T, AllgathervAlgorithm::RING>::triggerProgressImpl()
     {
-      if (algorithm_is_finished()) { return true; }
+      if (current_step == number_ranks - 1) { return true; }
 
       target_buffers[current_step]->waitForCompletion();
-      
       current_step++;
 
-      if (algorithm_is_finished())
+      if (current_step == number_ranks - 1)
       {
         target_buffers[current_step-1]->ackTransfer();
         source_buffers[current_step-1]->waitForTransferAck();
+        return true;
       }
       else
       {
         source_buffers[current_step]->initTransfer();
       }
-
-      return algorithm_is_finished();
+      return false;
     }
 
     template<typename T>
     void AllgathervLowLevel<T, AllgathervAlgorithm::RING>::copyOutImpl(void* outputs)
     {
       auto head = static_cast<T*>(outputs);
-      if(number_ranks == 1)
+      if (number_ranks == 1)
       {
         std::copy(data_for_1rank_case.begin(), data_for_1rank_case.end(),
                   head);
@@ -215,7 +187,7 @@ namespace gaspi
       else
       {
         std::size_t send_index = rank.get();
-        std::size_t receive_index = (number_ranks + send_index - 1) % number_ranks;
+        std::size_t receive_index = group::decrementIndexOnRing(send_index, number_ranks);
       
         auto current_begin = head + offsets[send_index];
         auto source_begin = static_cast<T*>(source_buffers[0]->address());
@@ -228,7 +200,7 @@ namespace gaspi
           source_begin = static_cast<T*>(target_buffers[i]->address());
           source_end = source_begin + counts[receive_index];
           std::copy(source_begin, source_end, current_begin);
-          receive_index = (receive_index  + number_ranks - 1) % number_ranks;
+          receive_index = group::decrementIndexOnRing(receive_index, number_ranks);
         }
       }
     }
