@@ -23,11 +23,13 @@
 
 #include <GaspiCxx/collectives/non_blocking/Collective.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllgathervCommon.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllgathervRing.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 #include <GaspiCxx/Runtime.hpp>
 
 #include <memory>
 #include <vector>
+#include <iostream>
 
 namespace gaspi
 {
@@ -39,10 +41,10 @@ namespace gaspi
     { 
       public:
         Allgatherv(gaspi::group::Group const& group,
-                  std::vector<std::size_t> const& counts,
+                  std::size_t const count,
                   progress_engine::ProgressEngine& progress_engine);
         Allgatherv(gaspi::group::Group const& group,
-                  std::vector<std::size_t> const& counts);
+                  std::size_t const count);
         ~Allgatherv();
 
         void start(void const* inputs) override;
@@ -60,13 +62,23 @@ namespace gaspi
     template<typename T, AllgathervAlgorithm Algorithm>
     Allgatherv<T, Algorithm>::Allgatherv(
       gaspi::group::Group const& group,
-      std::vector<std::size_t> const& counts,
+      std::size_t const count,
       progress_engine::ProgressEngine& progress_engine)
     : progress_engine(progress_engine),
-      handle(),
-      allgatherv_impl(std::make_shared<AllgathervLowLevel<T, Algorithm>>(
-                     group, counts))
+      handle()
     {
+      std::vector<std::size_t> counts(group.size(), 0);
+      
+      std::vector<std::size_t> counter(group.size(), 1);
+      AllgathervLowLevel<std::size_t, Algorithm> allgatherv_count(group, counter);
+      allgatherv_count.waitForSetup();
+      allgatherv_count.copyIn(&count);
+      allgatherv_count.start();
+      allgatherv_count.waitForCompletion();
+      allgatherv_count.copyOut(counts.data());
+
+      allgatherv_impl = std::make_shared<AllgathervLowLevel<T, Algorithm>>(
+                     group, counts);
       allgatherv_impl->waitForSetup();
       handle = progress_engine.register_collective(allgatherv_impl);
     }
@@ -74,8 +86,8 @@ namespace gaspi
     template<typename T, AllgathervAlgorithm Algorithm>
     Allgatherv<T, Algorithm>::Allgatherv(
       gaspi::group::Group const& group,
-      std::vector<std::size_t> const& counts)
-    : Allgatherv(group, counts,
+      std::size_t const count)
+    : Allgatherv(group, count,
                  gaspi::getRuntime().getDefaultProgressEngine())
     { }
 

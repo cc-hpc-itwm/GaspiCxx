@@ -45,13 +45,13 @@ namespace gaspi {
       public:
         static auto factory(AllgathervAlgorithm alg,
                             gaspi::group::Group const& group, 
-                            std::vector<std::size_t> const& counts)
+                            std::size_t const count)
         {
           std::unordered_map<AllgathervAlgorithm,
                             std::unique_ptr<Collective>> mapping;
           mapping.insert(generate_map_element<AllgathervAlgorithm, Allgatherv,
                                               T, AllgathervAlgorithm::RING>(
-                                              group, counts));
+                                              group, count));
 
           return std::move(mapping[alg]);
         }
@@ -90,7 +90,7 @@ namespace gaspi {
         auto make_allgatherv()
         {
           auto factory = select_factory_by_type<AllgathervFactory>(elem_type_string);
-          return factory(algorithm, group_all, count);
+          return factory(algorithm, group_all, count[group_all.rank().get()]);
         }
 
         auto make_input_data()
