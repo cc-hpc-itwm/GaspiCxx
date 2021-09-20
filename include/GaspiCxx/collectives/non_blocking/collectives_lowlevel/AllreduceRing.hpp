@@ -200,8 +200,11 @@ namespace gaspi
         case RingStage::GATHER:
         {
           target_buffers_gather[current_index]->waitForCompletion();
-          source_buffers_gather[current_index]->initTransfer();
-          if (is_last_step_gather())
+          if (!is_last_step_gather())
+          {
+            source_buffers_gather[current_index]->initTransfer();
+          }
+          else
           {
             target_buffers_gather[current_index]->ackTransfer();
             source_buffers_gather[++current_index]->waitForTransferAck();
