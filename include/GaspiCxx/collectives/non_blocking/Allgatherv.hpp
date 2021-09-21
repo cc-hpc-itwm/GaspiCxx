@@ -37,7 +37,7 @@ namespace gaspi
   {
 
     template<typename T, AllgathervAlgorithm Algorithm>
-    class Allgatherv : public Collective
+    class Allgatherv : public VariousCountCollective
     { 
       public:
         Allgatherv(gaspi::group::Group const& group,
@@ -53,10 +53,13 @@ namespace gaspi
         void waitForCompletion(void* outputs) override;
         void waitForCompletion(std::vector<T>& outputs);
 
+        std::vector<std::size_t> get_counts() override;
+
       private:
         progress_engine::ProgressEngine& progress_engine;
         progress_engine::ProgressEngine::CollectiveHandle handle;
         std::shared_ptr<AllgathervLowLevel<T, Algorithm>> allgatherv_impl;
+        std::vector<std::size_t> counts;
     };
 
     template<typename T, AllgathervAlgorithm Algorithm>
@@ -65,10 +68,9 @@ namespace gaspi
       std::size_t const count,
       progress_engine::ProgressEngine& progress_engine)
     : progress_engine(progress_engine),
-      handle()
-    {
-      std::vector<std::size_t> counts(group.size(), 0);
-      
+      handle(),
+      counts(group.size(), 0)
+    { 
       std::vector<std::size_t> counter(group.size(), 1);
       AllgathervLowLevel<std::size_t, Algorithm> allgatherv_count(group, counter);
       allgatherv_count.waitForSetup();
@@ -121,6 +123,12 @@ namespace gaspi
     void Allgatherv<T, Algorithm>::waitForCompletion(std::vector<T>& outputs)
     {
       waitForCompletion(static_cast<void*>(outputs.data()));
+    }
+
+    template<typename T, AllgathervAlgorithm Algorithm>
+    std::vector<std::size_t> Allgatherv<T, Algorithm>::get_counts()
+    {
+      return counts;
     }
   }
 }

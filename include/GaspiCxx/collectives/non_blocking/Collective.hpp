@@ -20,6 +20,7 @@
  */
 
 #pragma once
+#include <vector>
 
 namespace gaspi {
 namespace collectives {
@@ -69,6 +70,14 @@ class RootedReceiveCollective : public Collective
     virtual void waitForCompletion() = 0;
 
     virtual ~RootedReceiveCollective() = default;
+};
+
+class VariousCountCollective : public Collective
+{
+  public:
+    virtual std::vector<std::size_t> get_counts() = 0;
+
+    virtual ~VariousCountCollective() = default;
 };
 
 }
