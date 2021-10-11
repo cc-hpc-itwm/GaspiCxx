@@ -25,4 +25,7 @@ if(ENABLE_TESTS)
   find_package(GTest REQUIRED)
   include(GoogleTest)
   add_subdirectory (tests)
+
+  find_package(PythonModules COMPONENTS pytest)
+  add_subdirectory (tests/python)
 endif()
