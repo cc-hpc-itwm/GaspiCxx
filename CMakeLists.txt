@@ -18,6 +18,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
 add_subdirectory (src)
+add_subdirectory (src/python/bindings)
 add_subdirectory (examples)
 if(ENABLE_TESTS)
   enable_testing()
