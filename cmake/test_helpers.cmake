@@ -64,7 +64,7 @@ function (gaspicxx_gen_test_script)
   endforeach()
   if (ARG_IS_PYTHON_TEST)
     # Python test
-    file(APPEND ${script_path} "export PYTHONPATH=${CMAKE_BINARY_DIR}:${CMAKE_SOURCE_DIR}/src:\$\{PYTHONPATH\}\n")
+    file(APPEND ${script_path} "export PYTHONPATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/src/python:${CMAKE_BINARY_DIR}/src/python/bindings:\$\{PYTHONPATH\}\n")
     file(APPEND ${script_path} "\n${Python_EXECUTABLE} -m pytest ${ARG_TEST_EXECUTABLE}\n")
   else()
     # regular executable test
@@ -198,4 +198,38 @@ function (gaspicxx_generate_cleanup_test)
                         SLEEP 0)
   set_tests_properties(${CLEANUP_TEST_NAME}_${ARG_LOCALRANKS}ranks
                        PROPERTIES FIXTURES_CLEANUP ${CLEANUP_TEST_NAME})
+endfunction()
+
+function (gaspicxx_generate_python_gpi_test)
+  set (one_value_options NAME TEST_EXECUTABLE DESCRIPTION TIMEOUT)
+  set (multi_value_options LOCALRANKS_LIST LABELS ARGS)
+  set (required_options NAME TEST_EXECUTABLE LOCALRANKS_LIST)
+  _parse_arguments (ARG "${options}" "${one_value_options}" 
+                        "${multi_value_options}" "${required_options}" ${ARGN})
+  set(CLEANUP_TEST_NAME gpi_cleanup)
+  list(APPEND ARG_LABELS "Python")
+  list(REMOVE_DUPLICATES ARG_LABELS)
+
+  set(ARG_NAME "Py_${ARG_NAME}")
+  
+  # wrap call to the test executable in a script that exports the current environment
+  # the script can then be executed within a `gaspi_run` call
+  set(script_name run_${ARG_NAME}.sh)
+  set(script_path ${CMAKE_CURRENT_BINARY_DIR}/${script_name})
+  gaspicxx_gen_test_script(NAME ${script_name}
+                           SCRIPT_DIR ${CMAKE_CURRENT_BINARY_DIR}
+                           TEST_EXECUTABLE ${ARG_TEST_EXECUTABLE}
+                           IS_PYTHON_TEST)
+
+  message(STATUS "Test: Generating gaspi_run tests for ${ARG_NAME} with ${ARG_LOCALRANKS_LIST} ranks")
+  foreach(nlocalranks ${ARG_LOCALRANKS_LIST})
+    gaspicxx_add_gpi_test(NAME ${ARG_NAME}
+                          NRANKS ${nlocalranks}
+                          TEST_SCRIPT ${script_path}
+                          RUNCOMMAND ${GPI2_GASPI_RUN}
+                          TIMEOUT ${ARG_TIMEOUT}
+                          CLEANUP ${CLEANUP_TEST_NAME}
+                          SLEEP 0
+                          LABELS ${ARG_LABELS})
+  endforeach()
 endfunction()
