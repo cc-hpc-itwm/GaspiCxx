@@ -66,8 +66,8 @@ namespace passive { class Passive; }
     std::unique_ptr<segment::Segment> _psegment;
     std::unique_ptr<passive::Passive> _ppassive;
     std::unique_ptr<segment::SegmentPool> _psegment_pool;
-    std::unique_ptr<progress_engine::ProgressEngine> _pengine;
     std::unique_ptr<CommunicationContext> _pcomm_context;
+    std::unique_ptr<progress_engine::ProgressEngine> _pengine;
     std::unique_ptr<gaspi::collectives::blocking::Barrier> _pglobal_barrier;
 
     //! A runtime is a singleton.
