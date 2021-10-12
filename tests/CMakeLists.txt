@@ -1,15 +1,18 @@
 add_executable (GaspiCxxTests
                 run_tests.cpp
-                AllgatherTest.cpp
                 AllreduceNonBlockingTest.cpp
                 AllreduceNonBlockingLowLevelTest.cpp
+                AllgatherTest.cpp
+                AllgathervNonBlockingLowLevelTest.cpp
+                AllgathervNonBlockingTest.cpp
                 BroadcastNonBlockingTest.cpp
                 AlltoallTest.cpp
                 BarrierTest.cpp
                 RoundRobinDedicatedThreadTest.cpp
                 PassiveTest.cpp
                 SegmentMemoryManagerTest.cpp
-                SingleSidedWriteBufferTest.cpp)
+                SingleSidedWriteBufferTest.cpp
+)
 
 target_include_directories(GaspiCxxTests
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -27,6 +30,7 @@ include (test_helpers)
 set(localranks_list 1 2 3 4)
 set(test_list Allreduce
               Allgather
+              Allgatherv
               Alltoall
               Barrier
               Broadcast
