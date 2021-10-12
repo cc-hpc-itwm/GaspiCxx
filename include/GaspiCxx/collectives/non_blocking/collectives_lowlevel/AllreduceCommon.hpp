@@ -23,19 +23,26 @@
 
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/group/Group.hpp>
+#include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
+#include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
+
+#include <algorithm>
+#include <functional>
 
 namespace gaspi
 {
   namespace collectives
   {
+    // FIXME: Support the same Operations as MPI
     enum class ReductionOp
     {
+      PROD,
       SUM,
-      AVERAGE,
     };
 
     enum class AllreduceAlgorithm
     {
+      RECURSIVE_DOUBLING,
       RING,
     };
 
@@ -50,6 +57,34 @@ namespace gaspi
         gaspi::group::Group group;
         std::size_t number_elements;
         ReductionOp reduction_op;
+
+        template<typename T>
+        void apply_reduce_op(gaspi::singlesided::write::SourceBuffer& source_comm,
+                             gaspi::singlesided::write::TargetBuffer& target_comm)
+        {
+          auto const source_begin = static_cast<T*>(source_comm.address());
+          auto const source_end = source_begin +
+                                  source_comm.description().size()/sizeof(T);
+          auto const target_begin = static_cast<T*>(target_comm.address());
+
+          std::function<T(T const&, T const&)> reduction_functor;
+          switch (reduction_op)
+          {
+            case ReductionOp::PROD:
+            {
+              reduction_functor = std::multiplies<T>();
+              break;
+            }
+            case ReductionOp::SUM:
+            {
+              reduction_functor = std::plus<T>();
+              break;
+            }
+          }
+
+          std::transform(source_begin, source_end, target_begin,
+                         source_begin, reduction_functor);
+        }
     };
 
     template<typename T, AllreduceAlgorithm Algorithm>

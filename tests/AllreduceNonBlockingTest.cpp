@@ -23,6 +23,7 @@
 
 #include <GaspiCxx/Runtime.hpp>
 #include <GaspiCxx/collectives/non_blocking/Allreduce.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRecursiveDoubling.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRing.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
@@ -36,7 +37,8 @@
 namespace gaspi {
   namespace collectives {
 
-    std::vector<AllreduceAlgorithm> const allreduceAlgorithms{AllreduceAlgorithm::RING};
+    std::vector<AllreduceAlgorithm> const allreduceAlgorithms{AllreduceAlgorithm::RECURSIVE_DOUBLING,
+                                                              AllreduceAlgorithm::RING};
 
     template<typename T>
     class AllreduceFactory
@@ -49,9 +51,11 @@ namespace gaspi {
           std::unordered_map<AllreduceAlgorithm,
                             std::unique_ptr<Collective>> mapping;
           mapping.insert(generate_map_element<AllreduceAlgorithm, Allreduce,
+                                              T, AllreduceAlgorithm::RECURSIVE_DOUBLING>(
+                                              group, num_elements, red_op));
+          mapping.insert(generate_map_element<AllreduceAlgorithm, Allreduce,
                                               T, AllreduceAlgorithm::RING>(
                                               group, num_elements, red_op));
-
           return std::move(mapping[alg]);
         }
     };

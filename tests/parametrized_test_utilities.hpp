@@ -42,7 +42,7 @@ class BaseData
     virtual ~BaseData() {};
     virtual void* get_data() = 0;
 
-    virtual std::size_t get_num_elements() = 0;
+    virtual std::size_t get_num_elements() const = 0;
     virtual void fill(double value) = 0;
     virtual void fill_from_list(std::vector<double> const& values) = 0;
     virtual void fill_from_list_and_scale(std::vector<double> const& values, std::size_t scaling_factor) = 0;
@@ -66,12 +66,17 @@ class Data : public BaseData
     Data(Data const&) = default;
     ~Data() = default;
 
+    T const& operator[](std::size_t idx) const
+    {
+      return data[idx];
+    }
+
     void* get_data() override
     {
       return data.data();
     }
 
-    std::size_t get_num_elements() override
+    std::size_t get_num_elements() const override
     {
       return data.size();
     }
@@ -99,8 +104,25 @@ class Data : public BaseData
   private:
     bool is_equal(BaseData const& bd) const override
     {
+      auto const epsilon = 1e-2;
       auto* other_data = dynamic_cast<Data const*>(&bd);
-      return data == other_data->data;
+
+      if (get_num_elements() != other_data->get_num_elements())
+      {
+        return false;
+      }
+
+      for (std::size_t i = 0UL; i < get_num_elements(); ++i)
+      {
+        if (std::abs(data[i]-(*other_data)[i]) > epsilon)
+        {
+          std::cout << "Data element at position " << i
+                    << " does not match: " << data[i] << " [actual]"
+                    << " != " << (*other_data)[i] << " [expected]" << std::endl;
+          return false;
+        }
+      }
+      return true;
     }
 
     template <typename U>

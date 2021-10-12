@@ -93,7 +93,6 @@ namespace gaspi
         auto algorithm_get_current_stage() const;
         bool is_last_step_reduce() const;
         bool is_last_step_gather() const;
-        void apply_reduce_op(SourceBuffer& source_comm, TargetBuffer& target_comm);
     };
 
     template<typename T>
@@ -186,7 +185,7 @@ namespace gaspi
         case RingStage::REDUCE:
         {
           target_buffers_reduce[current_index]->waitForCompletion();
-          apply_reduce_op(*source_buffers_reduce[current_index], *target_buffers_reduce[current_index]);
+          apply_reduce_op<T>(*source_buffers_reduce[current_index], *target_buffers_reduce[current_index]);
           if (!is_last_step_reduce())
           {
             source_buffers_reduce[current_index]->initTransfer();
@@ -304,18 +303,6 @@ namespace gaspi
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::is_last_step_gather() const
     {
       return current_step == 2 * steps_per_stage - 1;
-    }
-
-    template<typename T>
-    void AllreduceLowLevel<T, AllreduceAlgorithm::RING>::apply_reduce_op(
-              SourceBuffer& source_comm, TargetBuffer& target_comm)
-    {
-      auto const source_begin = static_cast<T*>(source_comm.address());
-      auto const source_end = source_begin +
-                              source_comm.description().size()/sizeof(T);
-      auto const target_begin = static_cast<T*>(target_comm.address());
-      std::transform(source_begin, source_end, target_begin,
-                     source_begin, std::plus<T>());
     }
   }
 }
