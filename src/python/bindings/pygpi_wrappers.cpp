@@ -1,15 +1,15 @@
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/Runtime.hpp>
+#include <collectives.hpp>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 #include <pybind11/stl.h>
-
-#include <cstdint>
-#include <utility>
+#include <pybind11/stl_bind.h>
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(pygpi, m)
+PYBIND11_MODULE(pygpi_wrappers, m)
 {
   m.doc() = "GaspiCxx communication library";
 
@@ -34,4 +34,9 @@ PYBIND11_MODULE(pygpi, m)
     .def_property_readonly("global_rank", [](gaspi::group::Group const& g) { return g.global_rank(); })
     .def("contains_rank", &gaspi::group::Group::contains_rank)
     .def("contains_global_rank", &gaspi::group::Group::contains_global_rank);
+  py::enum_<gaspi::collectives::ReductionOp>(m, "ReductionOp")
+     .value("SUM", gaspi::collectives::ReductionOp::SUM);
+
+  bcast_factory(m);
+  allreduce_factory(m);
 }
