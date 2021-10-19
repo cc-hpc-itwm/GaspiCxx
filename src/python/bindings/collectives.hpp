@@ -12,6 +12,10 @@
 
 namespace py = pybind11;
 
+std::string generate_implemented_primitive_name(std::string const& class_name,
+                                                std::string const& dtype_name,
+                                                std::string const& algorithm_name);
+
 class Bindings
 {
   public:

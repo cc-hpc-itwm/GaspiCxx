@@ -37,6 +37,8 @@ PYBIND11_MODULE(pygpi_wrappers, m)
   py::enum_<gaspi::collectives::ReductionOp>(m, "ReductionOp")
      .value("SUM", gaspi::collectives::ReductionOp::SUM)
      .value("PROD", gaspi::collectives::ReductionOp::PROD);
+  m.def("generate_implemented_primitive_name", &generate_implemented_primitive_name,
+        py::arg("collective"), py::arg("dtype"), py::arg("algorithm"));
 
   bcast_factory(m);
   allreduce_factory(m);

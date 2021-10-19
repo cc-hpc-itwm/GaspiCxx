@@ -2,6 +2,13 @@
 
 namespace py = pybind11;
 
+std::string generate_implemented_primitive_name(std::string const& class_name,
+                                                std::string const& dtype_name,
+                                                std::string const& algorithm_name)
+{
+  return class_name + "_" + dtype_name + "_" + algorithm_name;
+}
+
 template <auto Start, auto End, class F>
 constexpr void constexpr_range(F&& f)
 {
@@ -32,11 +39,10 @@ constexpr void gen_bindings_list_of_algorithms(py::module& m, Func declare_colle
                                   gaspi::collectives::COLLECTIVE> \
                                   (m, BINDINGSCLASS(#COLLECTIVE, #TYPE));
 
-    auto Bindings::generate_instantiated_collective_name(std::string const& algorithm_name)
-    {
-      return class_name + "_" + dtype_name + "_" + algorithm_name;
-    }
-
+auto Bindings::generate_instantiated_collective_name(std::string const& algorithm_name)
+{
+  return generate_implemented_primitive_name(class_name, dtype_name, algorithm_name);
+}
 
 template <class BcastClass>
 void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
