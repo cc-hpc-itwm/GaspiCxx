@@ -1,6 +1,3 @@
-find_package(PythonModules REQUIRED)
-find_package(pybind11 CONFIG REQUIRED)
-
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/collectives.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pygpi_wrappers.cpp
