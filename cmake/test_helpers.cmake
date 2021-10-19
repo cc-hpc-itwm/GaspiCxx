@@ -54,7 +54,7 @@ function (gaspicxx_gen_test_script)
   
   message(STATUS "Test: Generating ${ARG_NAME} script")
   gaspicxx_gen_executable_script(SCRIPT_NAME ${ARG_NAME}
-                                   SCRIPT_DIR ${ARG_SCRIPT_DIR})
+                                 SCRIPT_DIR ${ARG_SCRIPT_DIR})
 
   gaspicxx_gen_environment_paths(VARIABLE_LIST env_paths)
 
@@ -64,7 +64,7 @@ function (gaspicxx_gen_test_script)
   endforeach()
   if (ARG_IS_PYTHON_TEST)
     # Python test
-    file(APPEND ${script_path} "export PYTHONPATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/src/python:${CMAKE_BINARY_DIR}/src/python/bindings:\$\{PYTHONPATH\}\n")
+    file(APPEND ${script_path} "export PYTHONPATH=${CMAKE_BINARY_DIR}:${CMAKE_BINARY_DIR}/python:${CMAKE_BINARY_DIR}/src/python/bindings:\$\{PYTHONPATH\}\n")
     file(APPEND ${script_path} "\n${Python_EXECUTABLE} -m pytest ${ARG_TEST_EXECUTABLE}\n")
   else()
     # regular executable test

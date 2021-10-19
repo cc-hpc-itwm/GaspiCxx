@@ -24,7 +24,7 @@ add_subdirectory (examples)
 if(BUILD_PYTHON_BINDINGS)
   find_package(PythonModules REQUIRED)
   find_package(pybind11 CONFIG REQUIRED)
-  add_subdirectory (src/python/bindings)
+  add_subdirectory (src/python)
 endif()
 
 if(ENABLE_TESTS)

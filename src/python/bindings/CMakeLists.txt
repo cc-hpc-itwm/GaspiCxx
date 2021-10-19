@@ -1,3 +1,4 @@
+# Pybind11 Python bindings
 set(SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/collectives.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pygpi_wrappers.cpp
@@ -22,4 +23,3 @@ install(EXPORT ${PYLIB_MODULE_NAME}Config
           ${PYLIB_MODULE_NAME}::
         DESTINATION
           ${CMAKE_INSTALL_LIBDIR}/cmake)
-
