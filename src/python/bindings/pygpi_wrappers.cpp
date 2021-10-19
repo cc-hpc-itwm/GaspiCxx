@@ -35,7 +35,8 @@ PYBIND11_MODULE(pygpi_wrappers, m)
     .def("contains_rank", &gaspi::group::Group::contains_rank)
     .def("contains_global_rank", &gaspi::group::Group::contains_global_rank);
   py::enum_<gaspi::collectives::ReductionOp>(m, "ReductionOp")
-     .value("SUM", gaspi::collectives::ReductionOp::SUM);
+     .value("SUM", gaspi::collectives::ReductionOp::SUM)
+     .value("PROD", gaspi::collectives::ReductionOp::PROD);
 
   bcast_factory(m);
   allreduce_factory(m);
