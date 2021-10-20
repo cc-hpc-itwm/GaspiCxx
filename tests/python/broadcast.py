@@ -18,6 +18,6 @@ class TestBroadcast:
     else:
       bcast.start(input = None)
 
-    result = bcast.waitForCompletion()
+    result = bcast.wait_for_completion()
     print(f"[rank {pygpi.get_rank()}] result = {result}")
     assert np.array_equal(result, buffer)

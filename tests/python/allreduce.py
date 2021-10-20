@@ -13,7 +13,7 @@ class TestAllreduce:
     print (f"buffer={buffer}")
     allreduce.start(buffer)
 
-    result = allreduce.waitForCompletion()
+    result = allreduce.wait_for_completion()
     expected = buffer * pygpi.get_size()
     print(f"[rank {pygpi.get_rank()}] result = {result}")
     assert np.array_equal(result, expected)
