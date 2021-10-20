@@ -81,7 +81,7 @@ void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
             bcast.start();
           }
         }, py::arg("input").none(true))
-    .def("waitForCompletion",
+    .def("wait_for_completion",
         [](BcastClass& bcast) { return bcast.waitForCompletion(); },
           py::return_value_policy::move);
 }
@@ -109,7 +109,7 @@ void AllreduceBindings::operator()(py::module &m, std::string algorithm_name)
           auto input_ptr = input->data(0);
           allreduce.start(input_ptr);
         })
-    .def("waitForCompletion",
+    .def("wait_for_completion",
         [](AllreduceClass& allreduce) { return allreduce.waitForCompletion(); },
         py::return_value_policy::move);
 }

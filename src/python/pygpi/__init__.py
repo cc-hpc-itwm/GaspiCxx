@@ -1,6 +1,6 @@
 import pygpi_wrappers
 
-pygpi_wrappers.initPyGPI()
+pygpi_wrappers.init_pygpi()
 
 from pygpi_wrappers import get_rank, get_size, ReductionOp
 from pygpi_wrappers import Group

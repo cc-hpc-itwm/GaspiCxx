@@ -13,7 +13,7 @@ PYBIND11_MODULE(pygpi_wrappers, m)
 {
   m.doc() = "GaspiCxx communication library";
 
-  m.def("initPyGPI", []()
+  m.def("init_pygpi", []()
                 {
                   gaspi::initGaspiCxx();
                 });
