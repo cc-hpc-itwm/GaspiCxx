@@ -95,6 +95,10 @@ public:
   // return `true`, all others will return `false`.
   bool waitForCompletion();
 
+  // Return the number of elements in the output buffer
+  // of the current rank
+  virtual std::size_t getOutputCount() = 0;
+
 protected:
   virtual void waitForSetupImpl() = 0;
   virtual void startImpl() = 0;
