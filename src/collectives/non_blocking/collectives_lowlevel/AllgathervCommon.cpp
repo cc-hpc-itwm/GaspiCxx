@@ -39,5 +39,9 @@ namespace gaspi
                          offsets.begin() + 1);
     }
 
+    std::size_t AllgathervCommon::getOutputCount()
+    {
+      return number_elements;
+    }
   }
 }

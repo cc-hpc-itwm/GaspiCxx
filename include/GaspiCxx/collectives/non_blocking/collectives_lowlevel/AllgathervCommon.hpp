@@ -38,6 +38,7 @@ namespace gaspi
       public:
         AllgathervCommon(gaspi::group::Group const& group,
                          std::vector<std::size_t> const& counts);
+        std::size_t getOutputCount() override;
 
       protected:
         gaspi::group::Group group;
