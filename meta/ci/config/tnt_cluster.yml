@@ -13,6 +13,7 @@
     - module load ${CMAKE_MODULE} 
     - module load ${GTEST_MODULE}
     - module load ${GASPI_GPI2_MODULE}
+    - conda activate tf2.4
     - export LD_LIBRARY_PATH=${GASPI_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
 .tnt_cluster_build:
