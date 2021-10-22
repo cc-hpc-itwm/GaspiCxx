@@ -69,31 +69,31 @@ void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
         },
         py::arg("data") = py::none())
     .def("start",
-        [](BcastClass& bcast, std::optional<std::vector<T>> input)
+        [](BcastClass& bcast, std::optional<std::vector<T>> data)
         {
-          if (input)
+          if (data)
           {
-            bcast.start(input->data());
+            bcast.start(data->data());
           }
           else
           {
             bcast.start();
           }
         },
-        py::arg("input") = py::none())
+        py::arg("data") = py::none())
     .def("start",
-        [](BcastClass& bcast, std::optional<T> input)
+        [](BcastClass& bcast, std::optional<T> data)
         {
-          if (input)
+          if (data)
           {
-            bcast.start(&input);
+            bcast.start(&data);
           }
           else
           {
             bcast.start();
           }
         },
-        py::arg("input") = py::none())
+        py::arg("data") = py::none())
     .def("wait_for_completion",
         [](BcastClass& bcast)
         {
@@ -124,19 +124,19 @@ void AllreduceBindings::operator()(py::module &m, std::string algorithm_name)
         }
         ), py::return_value_policy::move)
     .def("start",
-        [](AllreduceClass& allreduce, py::array input)
+        [](AllreduceClass& allreduce, py::array data)
         {
-          allreduce.start(input.data());
+          allreduce.start(data.data());
         })
     .def("start", // overload for list inputs
-        [](AllreduceClass& allreduce, std::vector<T> const& input)
+        [](AllreduceClass& allreduce, std::vector<T> const& data)
         {
-          allreduce.start(input.data());
+          allreduce.start(data.data());
         })
     .def("start", // overload for single values
-        [](AllreduceClass& allreduce, T const input)
+        [](AllreduceClass& allreduce, T const data)
         {
-          allreduce.start(&input);
+          allreduce.start(&data);
         })
     .def("wait_for_completion",
         [](AllreduceClass& allreduce)
