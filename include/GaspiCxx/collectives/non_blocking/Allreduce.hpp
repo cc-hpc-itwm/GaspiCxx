@@ -54,7 +54,8 @@ namespace gaspi
 
         void waitForCompletion(void* outputs) override;
         void waitForCompletion(std::vector<T>& outputs);
-        std::vector<T> waitForCompletion();
+
+        std::size_t getOutputCount();
 
       private:
         progress_engine::ProgressEngine& progress_engine;
@@ -119,11 +120,9 @@ namespace gaspi
     }
 
     template<typename T, AllreduceAlgorithm Algorithm>
-    std::vector<T> Allreduce<T, Algorithm>::waitForCompletion()
+    std::size_t Allreduce<T, Algorithm>::getOutputCount()
     {
-      std::vector<T> outputs(allreduce_impl->get_output_count());
-      waitForCompletion(static_cast<void*>(outputs.data()));
-      return outputs;
+      return allreduce_impl->getOutputCount();
     }
   }
 }
