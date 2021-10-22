@@ -56,7 +56,8 @@ namespace gaspi
 
         void waitForCompletion(void* output) override;
         void waitForCompletion(std::vector<T>& output);
-        std::vector<T> waitForCompletion();
+
+        std::size_t getOutputCount();
 
       private:
         progress_engine::ProgressEngine& progress_engine;
@@ -142,11 +143,9 @@ namespace gaspi
     }
 
     template<typename T, BroadcastAlgorithm Algorithm>
-    std::vector<T> Broadcast<T, Algorithm>::waitForCompletion()
+    std::size_t Broadcast<T, Algorithm>::getOutputCount()
     {
-      std::vector<T> output(broadcast_impl->get_output_count());
-      waitForCompletion(static_cast<void*>(output.data()));
-      return output;
+      return broadcast_impl->getOutputCount();
     }
   }
 }
