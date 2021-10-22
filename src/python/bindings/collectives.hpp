@@ -38,7 +38,7 @@ class BroadcastBindings : public Bindings
   public:
     using Bindings::Bindings;
 
-    template <class BcastClass>
+    template <class BcastClass, typename T>
     void operator()(py::module &m, std::string algorithm_name);
 };
 
@@ -49,7 +49,7 @@ class AllreduceBindings : public Bindings
   public:
     using Bindings::Bindings;
 
-    template <class AllreduceClass>
+    template <class AllreduceClass, typename T>
     void operator()(py::module &m, std::string algorithm_name);
 };
 

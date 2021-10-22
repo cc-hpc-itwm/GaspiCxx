@@ -30,7 +30,7 @@ constexpr void gen_bindings_list_of_algorithms(py::module& m, Func declare_colle
     {
       auto constexpr algorithm = AlgorithmsInfo::implemented[i];
       auto const algorithm_name = AlgorithmsInfo::names[algorithm];
-      declare_collective.template operator()<CollectiveOp<T, algorithm>>(m, algorithm_name);
+      declare_collective.template operator()<CollectiveOp<T, algorithm>, T>(m, algorithm_name);
     });
 }
 #define DEFINE_BINDINGS(COLLECTIVE, TYPE, ALG_INFO, BINDINGSCLASS)  \
@@ -44,7 +44,7 @@ auto Bindings::generate_instantiated_collective_name(std::string const& algorith
   return generate_implemented_primitive_name(class_name, dtype_name, algorithm_name);
 }
 
-template <class BcastClass>
+template <class BcastClass, typename T>
 void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
 {
   auto const pyclass_name = generate_instantiated_collective_name(algorithm_name);
@@ -69,31 +69,51 @@ void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
         },
         py::arg("data") = py::none())
     .def("start",
-        [](BcastClass& bcast, std::optional<py::array> input)
+        [](BcastClass& bcast, std::optional<std::vector<T>> input)
         {
           if (input)
           {
-            auto input_ptr = input->data(0);
-            bcast.start(input_ptr);
+            bcast.start(input->data());
           }
           else
           {
             bcast.start();
           }
-        }, py::arg("input").none(true))
+        },
+        py::arg("input") = py::none())
+    .def("start",
+        [](BcastClass& bcast, std::optional<T> input)
+        {
+          if (input)
+          {
+            bcast.start(&input);
+          }
+          else
+          {
+            bcast.start();
+          }
+        },
+        py::arg("input") = py::none())
     .def("wait_for_completion",
-        [](BcastClass& bcast) { return bcast.waitForCompletion(); },
-          py::return_value_policy::move);
+        [](BcastClass& bcast)
+        {
+          py::array_t<T> output(bcast.getOutputCount());
+          bcast.waitForCompletion(output.mutable_data());
+          return output;
+        },
+        py::return_value_policy::move);
+
 }
 
 void bcast_factory(py::module &m)
 {
   DEFINE_BINDINGS(Broadcast, int, BroadcastInfo, BroadcastBindings)
+  DEFINE_BINDINGS(Broadcast, long, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, float, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, double, BroadcastInfo, BroadcastBindings)
 }
 
-template <class AllreduceClass>
+template <class AllreduceClass, typename T>
 void AllreduceBindings::operator()(py::module &m, std::string algorithm_name)
 {
   auto const pyclass_name = generate_instantiated_collective_name(algorithm_name);
@@ -104,19 +124,34 @@ void AllreduceBindings::operator()(py::module &m, std::string algorithm_name)
         }
         ), py::return_value_policy::move)
     .def("start",
-        [](AllreduceClass& allreduce, std::optional<py::array> input)
+        [](AllreduceClass& allreduce, py::array input)
         {
-          auto input_ptr = input->data(0);
-          allreduce.start(input_ptr);
+          allreduce.start(input.data());
+        })
+    .def("start", // overload for list inputs
+        [](AllreduceClass& allreduce, std::vector<T> const& input)
+        {
+          allreduce.start(input.data());
+        })
+    .def("start", // overload for single values
+        [](AllreduceClass& allreduce, T const input)
+        {
+          allreduce.start(&input);
         })
     .def("wait_for_completion",
-        [](AllreduceClass& allreduce) { return allreduce.waitForCompletion(); },
+        [](AllreduceClass& allreduce)
+        {
+          py::array_t<T> output(allreduce.getOutputCount());
+          allreduce.waitForCompletion(output.mutable_data());
+          return output;
+        },
         py::return_value_policy::move);
 }
 
 void allreduce_factory(py::module &m)
 {
   DEFINE_BINDINGS(Allreduce, int, AllreduceInfo, AllreduceBindings)
+  DEFINE_BINDINGS(Allreduce, long, AllreduceInfo, AllreduceBindings)
   DEFINE_BINDINGS(Allreduce, float, AllreduceInfo, AllreduceBindings)
   DEFINE_BINDINGS(Allreduce, double, AllreduceInfo, AllreduceBindings)
 }
