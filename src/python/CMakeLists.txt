@@ -9,5 +9,5 @@ add_custom_target(CopyPythonFiles ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${PYTHON_DIRS} ${CMAKE_BINARY_DIR}/python/pygpi)
 
 install(DIRECTORY ${PYTHON_DIRS}
-        DESTINATION ${INSTALL_LIB_DIR}/python
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/python
         FILES_MATCHING PATTERN "*.py")
