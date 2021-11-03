@@ -30,7 +30,7 @@
 
 #include <algorithm>
 #include <cmath>
-#include <memory>
+#include <cstring>
 #include <vector>
 
 namespace gaspi
