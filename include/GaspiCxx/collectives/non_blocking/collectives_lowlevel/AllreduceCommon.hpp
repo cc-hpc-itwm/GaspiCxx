@@ -29,6 +29,7 @@
 #include <array>
 #include <algorithm>
 #include <functional>
+#include <unordered_map>
 
 namespace gaspi
 {
@@ -52,7 +53,7 @@ namespace gaspi
         static inline std::unordered_map<Algorithm, std::string> names
                       { {Algorithm::RING, "ring" },
                         {Algorithm::RECURSIVE_DOUBLING, "recursivedoubling" } };
-        static inline constexpr std::array implemented
+        static inline constexpr std::array<Algorithm, 2> implemented
                       { Algorithm::RING, Algorithm::RECURSIVE_DOUBLING };
     };
     using AllreduceAlgorithm = AllreduceInfo::Algorithm;

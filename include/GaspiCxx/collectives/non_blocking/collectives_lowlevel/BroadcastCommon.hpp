@@ -43,7 +43,7 @@ namespace gaspi
         static inline std::unordered_map<Algorithm, std::string> names
                       { {Algorithm::BASIC_LINEAR, "linear" },
                         {Algorithm::SEND_TO_ALL, "sendtoall"} };
-        static inline constexpr std::array implemented
+        static inline constexpr std::array<Algorithm, 2> implemented
                       { Algorithm::BASIC_LINEAR, Algorithm::SEND_TO_ALL};
     };
     using BroadcastAlgorithm = BroadcastInfo::Algorithm;
