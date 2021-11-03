@@ -67,6 +67,9 @@ class TargetBuffer : public Endpoint {
 
     TargetBuffer(Endpoint const&);
 
+    ~TargetBuffer
+      () = default;
+
     // bilateral function
     // needs to be invoked by the correspondent
     // WriteTargetBuffer having the same size

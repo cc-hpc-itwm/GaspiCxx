@@ -110,11 +110,6 @@ SourceBuffer
   _type = Endpoint::Type::SOURCE;
 }
 
-SourceBuffer
-  ::~SourceBuffer
-    ()
-{ }
-
 Endpoint::ConnectHandle
 SourceBuffer
   ::connectToRemoteTarget

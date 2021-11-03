@@ -114,6 +114,7 @@ class Endpoint : public Buffer {
     // but creates new notifications
     Endpoint(Endpoint const&);
 
+    virtual
     ~Endpoint();
 
     void

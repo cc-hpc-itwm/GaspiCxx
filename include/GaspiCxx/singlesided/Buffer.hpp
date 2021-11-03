@@ -83,6 +83,7 @@ class Buffer {
       , segment
           ::Notification notification );
 
+    virtual
     ~Buffer
       ();
 

@@ -75,7 +75,7 @@ class SourceBuffer : public Endpoint {
     SourceBuffer(Endpoint const&);
 
     ~SourceBuffer
-      ();
+      () = default;
 
     // bilateral function
     // needs to be invoked by the correspondent
