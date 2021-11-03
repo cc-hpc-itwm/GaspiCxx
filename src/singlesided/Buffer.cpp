@@ -105,8 +105,8 @@ Buffer
   ::Buffer
    ( segment::Segment & segment
    , std::size_t size )
-: _allocMemory(new MemoryAllocation(segment.allocator(),size))
-, _allocNotify(new NotifyAllocation(segment))
+: _allocMemory(std::make_shared<MemoryAllocation>(segment.allocator(),size))
+, _allocNotify(std::make_unique<NotifyAllocation>(segment))
 , _pointer( _allocMemory->pointer() )
 , _size (size)
 , _notification(_allocNotify->notification() )
@@ -119,7 +119,7 @@ Buffer
    , segment::Segment & segment
    , std::size_t size )
 : _allocMemory()
-, _allocNotify(new NotifyAllocation(segment))
+, _allocNotify(std::make_unique<NotifyAllocation>(segment))
 , _pointer( pointer )
 , _size (size)
 , _notification(_allocNotify->notification())
@@ -141,7 +141,7 @@ Buffer
    , std::size_t size
    , segment
        ::Notification notification )
-: _allocMemory(new MemoryAllocation(segment.allocator(),size))
+: _allocMemory(std::make_shared<MemoryAllocation>(segment.allocator(),size))
 , _allocNotify()
 , _pointer( _allocMemory->pointer() )
 , _size (size)

@@ -47,16 +47,7 @@ MemoryManager
 {
   pthread_mutex_destroy(&_mutex);
 
-  if( _blocks.size() > 1 ) {
-    std::stringstream ss;
-    ss << "~MemoryManager: Managed memory still in use at destruction"
-       << std::endl
-       << *this
-       << std::endl;
-    std::cerr << ss.str() << std::endl;
-  }
-
-  if( !_blocks.front().free ) {
+  if(( _blocks.size() > 1 ) || ( !_blocks.front().free )) {
     std::stringstream ss;
     ss << "~MemoryManager: Managed memory still in use at destruction"
        << std::endl

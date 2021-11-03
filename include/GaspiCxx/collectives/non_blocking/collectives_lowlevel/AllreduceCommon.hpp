@@ -52,6 +52,7 @@ namespace gaspi
         AllreduceCommon(gaspi::group::Group const& group,
                         std::size_t number_elements,
                         ReductionOp reduction_op);
+        virtual ~AllreduceCommon() = default;
 
       protected:
         gaspi::group::Group group;
