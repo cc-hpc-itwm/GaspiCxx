@@ -1,7 +1,8 @@
 import pygpi_wrappers
 
+import abc
+import atexit
 import inspect
-import logging
 import numpy as np
 
 def list_implemented_primitives(module, primitive_name):
@@ -9,6 +10,7 @@ def list_implemented_primitives(module, primitive_name):
   return {name : cl for name, cl in classes if name.startswith(f"{primitive_name}_")}
 
 def collective_class_selector(collective, dtype, algorithm):
+  dtype = dtype_to_collective_type(dtype)
   implementations = list_implemented_primitives(pygpi_wrappers, collective)
   name = pygpi_wrappers.generate_implemented_primitive_name(collective, dtype, algorithm)
   if name not in implementations:
@@ -28,24 +30,72 @@ def dtype_to_collective_type(dtype):
     return "long"
   raise ValueError(f"[dtype_to_collective_type] Unknown dtype `{dtype}` for PyGPI primitives")
 
-def Broadcast(*args, algorithm = None, dtype = None, **kwargs):
-  collective = "Broadcast"
-  algorithm = algorithm or "sendtoall"
-  if dtype is None:
-    logging.getLogger().warn(f"[pygpi.Broadcast] Setting default dtype to `float`")
-    dtype = "float"
-  else:
-    dtype = dtype_to_collective_type(dtype)
-  bcast_class = collective_class_selector(collective, dtype, algorithm)
-  return bcast_class(*args, **kwargs)
 
-def Allreduce(*args, algorithm = None, dtype = None, **kwargs):
-  collective = "Allreduce"
-  algorithm = algorithm or "ring"
-  if dtype is None:
-    logging.getLogger().warn(f"[pygpi.Allreduce] Setting default dtype to `float`")
-    dtype = "float"
-  else:
-    dtype = dtype_to_collective_type(dtype)
-  allreduce_class = collective_class_selector(collective, dtype, algorithm)
-  return allreduce_class(*args, **kwargs)
+class Collective(abc.ABC):
+  def __init__(self, *args, **kwargs):
+    collective_class = collective_class_selector(self.collective, self.dtype,
+                                                 self.algorithm)
+    self.collective_impl = collective_class(*args, **kwargs)
+    atexit.register(self.close)
+
+  @property
+  @abc.abstractmethod
+  def collective(self):
+    pass
+
+  @property
+  @abc.abstractmethod
+  def dtype(self):
+    pass
+
+  @property
+  @abc.abstractmethod
+  def algorithm(self):
+    pass
+
+  def close(self):
+    del self.collective_impl
+
+  def start(self, *args, **kwargs):
+    return self.collective_impl.start(*args, **kwargs)
+
+  def wait_for_completion(self, *args, **kwargs):
+    return self.collective_impl.wait_for_completion(*args, **kwargs)
+
+
+class Allreduce(Collective):
+  def __init__(self, *args, algorithm = None, dtype = None, **kwargs):
+    self._algorithm = algorithm or "ring"
+    self._dtype = dtype or "float"
+    super().__init__(*args, **kwargs)
+
+  @property
+  def collective(self):
+    return "Allreduce"
+
+  @property
+  def dtype(self):
+    return self._dtype
+
+  @property
+  def algorithm(self):
+    return self._algorithm
+
+
+class Broadcast(Collective):
+  def __init__(self, *args, algorithm = None, dtype = None, **kwargs):
+    self._algorithm = algorithm or "sendtoall"
+    self._dtype = dtype or "float"
+    super().__init__(*args, **kwargs)
+
+  @property
+  def collective(self):
+    return "Broadcast"
+
+  @property
+  def dtype(self):
+    return self._dtype
+
+  @property
+  def algorithm(self):
+    return self._algorithm
