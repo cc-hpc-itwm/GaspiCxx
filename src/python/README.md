@@ -11,7 +11,8 @@ following features:
 * Non-blocking collective communication
   - [X] Allreduce
   - [X] Broadcast
-  - [ ] Allgather(v)
+  - [X] Allgatherv
+  - [ ] Allgather
   - [ ] Gather(v)
 * Blocking collective communication
   - [ ] Barrier
@@ -49,6 +50,12 @@ Each (non-blocking) collective provides two methods:
 method signaling the start of communication
 * `wait_for_completion`: blocking function that returns the result of the operation
 (or `None` for the ranks that do not require a result).
+
+Additionally, each collective implements the following properties:
+* `obj.collective` - the collective type, e.g. "Allreduce"
+* `obj.algorithm` - which algorithm is in use
+* `obj.dtype` - data type required for each of the buffer elements
+
 
 The collective object can be reused for multiple communications on different input buffers.
 
