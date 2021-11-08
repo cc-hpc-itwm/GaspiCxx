@@ -44,6 +44,97 @@ auto Bindings::generate_instantiated_collective_name(std::string const& algorith
   return generate_implemented_primitive_name(class_name, dtype_name, algorithm_name);
 }
 
+
+template <class AllgathervClass, typename T>
+void AllgathervBindings::operator()(py::module &m, std::string algorithm_name)
+{
+  auto const pyclass_name = generate_instantiated_collective_name(algorithm_name);
+  py::class_<AllgathervClass>(m, pyclass_name.c_str())
+    .def(py::init([](gaspi::group::Group const& group, std::size_t nelems)
+        {
+          return std::make_unique<AllgathervClass>(group, nelems);
+        }
+        ), py::arg("group"), py::arg("nelems"),
+           py::return_value_policy::move)
+    .def("start",
+        [](AllgathervClass& allgatherv, std::optional<py::array> data)
+        {
+          allgatherv.start(data->data());
+        })
+    .def("start",
+        [](AllgathervClass& allgatherv, std::optional<std::vector<T>> data)
+        {
+          allgatherv.start(data->data());
+        })
+    .def("start",
+        [](AllgathervClass& allgatherv, std::optional<T> data)
+        {
+          allgatherv.start(&data);
+        })
+    .def("wait_for_completion",
+        [](AllgathervClass& allgatherv)
+        {
+          py::array_t<T> output(allgatherv.getOutputCount());
+          allgatherv.waitForCompletion(output.mutable_data());
+          return output;
+        },
+        py::return_value_policy::move);
+
+}
+
+void allgatherv_factory(py::module &m)
+{
+  DEFINE_BINDINGS(Allgatherv, int, AllgathervInfo, AllgathervBindings)
+  DEFINE_BINDINGS(Allgatherv, long, AllgathervInfo, AllgathervBindings)
+  DEFINE_BINDINGS(Allgatherv, float, AllgathervInfo, AllgathervBindings)
+  DEFINE_BINDINGS(Allgatherv, double, AllgathervInfo, AllgathervBindings)
+}
+
+
+template <class AllreduceClass, typename T>
+void AllreduceBindings::operator()(py::module &m, std::string algorithm_name)
+{
+  auto const pyclass_name = generate_instantiated_collective_name(algorithm_name);
+  py::class_<AllreduceClass>(m, pyclass_name.c_str())
+    .def(py::init([](gaspi::group::Group const& group, std::size_t nelems, gaspi::collectives::ReductionOp op)
+        {
+          return std::make_unique<AllreduceClass>(group, nelems, op);
+        }
+        ), py::arg("group"), py::arg("nelems"), py::arg("op"),
+           py::return_value_policy::move)
+    .def("start",
+        [](AllreduceClass& allreduce, py::array data)
+        {
+          allreduce.start(data.data());
+        })
+    .def("start", // overload for list inputs
+        [](AllreduceClass& allreduce, std::vector<T> const& data)
+        {
+          allreduce.start(data.data());
+        })
+    .def("start", // overload for single values
+        [](AllreduceClass& allreduce, T const data)
+        {
+          allreduce.start(&data);
+        })
+    .def("wait_for_completion",
+        [](AllreduceClass& allreduce)
+        {
+          py::array_t<T> output(allreduce.getOutputCount());
+          allreduce.waitForCompletion(output.mutable_data());
+          return output;
+        },
+        py::return_value_policy::move);
+}
+
+void allreduce_factory(py::module &m)
+{
+  DEFINE_BINDINGS(Allreduce, int, AllreduceInfo, AllreduceBindings)
+  DEFINE_BINDINGS(Allreduce, long, AllreduceInfo, AllreduceBindings)
+  DEFINE_BINDINGS(Allreduce, float, AllreduceInfo, AllreduceBindings)
+  DEFINE_BINDINGS(Allreduce, double, AllreduceInfo, AllreduceBindings)
+}
+
 template <class BcastClass, typename T>
 void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
 {
@@ -111,47 +202,4 @@ void bcast_factory(py::module &m)
   DEFINE_BINDINGS(Broadcast, long, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, float, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, double, BroadcastInfo, BroadcastBindings)
-}
-
-template <class AllreduceClass, typename T>
-void AllreduceBindings::operator()(py::module &m, std::string algorithm_name)
-{
-  auto const pyclass_name = generate_instantiated_collective_name(algorithm_name);
-  py::class_<AllreduceClass>(m, pyclass_name.c_str())
-    .def(py::init([](gaspi::group::Group const& group, std::size_t nelems, gaspi::collectives::ReductionOp op)
-        {
-          return std::make_unique<AllreduceClass>(group, nelems, op);
-        }
-        ), py::return_value_policy::move)
-    .def("start",
-        [](AllreduceClass& allreduce, py::array data)
-        {
-          allreduce.start(data.data());
-        })
-    .def("start", // overload for list inputs
-        [](AllreduceClass& allreduce, std::vector<T> const& data)
-        {
-          allreduce.start(data.data());
-        })
-    .def("start", // overload for single values
-        [](AllreduceClass& allreduce, T const data)
-        {
-          allreduce.start(&data);
-        })
-    .def("wait_for_completion",
-        [](AllreduceClass& allreduce)
-        {
-          py::array_t<T> output(allreduce.getOutputCount());
-          allreduce.waitForCompletion(output.mutable_data());
-          return output;
-        },
-        py::return_value_policy::move);
-}
-
-void allreduce_factory(py::module &m)
-{
-  DEFINE_BINDINGS(Allreduce, int, AllreduceInfo, AllreduceBindings)
-  DEFINE_BINDINGS(Allreduce, long, AllreduceInfo, AllreduceBindings)
-  DEFINE_BINDINGS(Allreduce, float, AllreduceInfo, AllreduceBindings)
-  DEFINE_BINDINGS(Allreduce, double, AllreduceInfo, AllreduceBindings)
 }

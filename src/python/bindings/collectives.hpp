@@ -1,7 +1,9 @@
-#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastCommon.hpp>
-#include <GaspiCxx/collectives/non_blocking/Broadcast.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceCommon.hpp>
 #include <GaspiCxx/collectives/non_blocking/Allreduce.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllgathervCommon.hpp>
+#include <GaspiCxx/collectives/non_blocking/Allgatherv.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastCommon.hpp>
+#include <GaspiCxx/collectives/non_blocking/Broadcast.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/Runtime.hpp>
 
@@ -33,16 +35,18 @@ class Bindings
     std::string dtype_name;
 };
 
-class BroadcastBindings : public Bindings
+
+class AllgathervBindings : public Bindings
 {
   public:
     using Bindings::Bindings;
 
-    template <class BcastClass, typename T>
+    template <class AllgathervClass, typename T>
     void operator()(py::module &m, std::string algorithm_name);
 };
 
-void bcast_factory(py::module &m);
+void allgatherv_factory(py::module &m);
+
 
 class AllreduceBindings : public Bindings
 {
@@ -54,3 +58,14 @@ class AllreduceBindings : public Bindings
 };
 
 void allreduce_factory(py::module &m);
+
+class BroadcastBindings : public Bindings
+{
+  public:
+    using Bindings::Bindings;
+
+    template <class BcastClass, typename T>
+    void operator()(py::module &m, std::string algorithm_name);
+};
+
+void bcast_factory(py::module &m);

@@ -38,6 +38,7 @@ PYBIND11_MODULE(pygpi_wrappers, m)
   m.def("generate_implemented_primitive_name", &generate_implemented_primitive_name,
         py::arg("collective"), py::arg("dtype"), py::arg("algorithm"));
 
-  bcast_factory(m);
+  allgatherv_factory(m);
   allreduce_factory(m);
+  bcast_factory(m);
 }

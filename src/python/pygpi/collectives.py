@@ -63,6 +63,25 @@ class Collective(abc.ABC):
     return self.collective_impl.wait_for_completion(*args, **kwargs)
 
 
+class Allgatherv(Collective):
+  def __init__(self, *args, algorithm = None, dtype = None, **kwargs):
+    self._algorithm = algorithm or "ring"
+    self._dtype = dtype or "float"
+    super().__init__(*args, **kwargs)
+
+  @property
+  def collective(self):
+    return "Allgatherv"
+
+  @property
+  def dtype(self):
+    return self._dtype
+
+  @property
+  def algorithm(self):
+    return self._algorithm
+
+
 class Allreduce(Collective):
   def __init__(self, *args, algorithm = None, dtype = None, **kwargs):
     self._algorithm = algorithm or "ring"
