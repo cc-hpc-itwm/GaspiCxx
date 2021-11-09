@@ -29,7 +29,7 @@ class TestBroadcast:
     assert np.array_equal(output_array, expected_output_array)
 
   @pytest.mark.parametrize("array_length", [0, 8, 35, 67002])
-  @pytest.mark.parametrize("dtype", [np.float, np.double, np.float32, np.int32])
+  @pytest.mark.parametrize("dtype", [np.float, np.double, np.float32, np.int32, np.int16])
   def test_array_different_inputs(self, array_length, dtype):
     root = pygpi.get_size()-1
     input_array = np.array([idx + root for idx in range(array_length)], dtype = dtype)

@@ -20,7 +20,7 @@ class TestAllgatherv:
     assert np.array_equal(output_array, expected_output_array)
 
   @pytest.mark.parametrize("array_length", [0, 8, 35, 67002])
-  @pytest.mark.parametrize("dtype", [np.float, np.double, np.float32, np.int32])
+  @pytest.mark.parametrize("dtype", [np.float, np.double, np.float32, np.int32, np.int16])
   def test_array_different_inputs(self, array_length, dtype):
     input_array = np.empty(shape=(array_length), dtype=dtype)
     input_array.fill(pygpi.get_rank())
