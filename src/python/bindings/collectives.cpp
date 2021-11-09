@@ -84,6 +84,7 @@ void AllgathervBindings::operator()(py::module &m, std::string algorithm_name)
 
 void allgatherv_factory(py::module &m)
 {
+  DEFINE_BINDINGS(Allgatherv, int16_t, AllgathervInfo, AllgathervBindings)
   DEFINE_BINDINGS(Allgatherv, int, AllgathervInfo, AllgathervBindings)
   DEFINE_BINDINGS(Allgatherv, long, AllgathervInfo, AllgathervBindings)
   DEFINE_BINDINGS(Allgatherv, float, AllgathervInfo, AllgathervBindings)
@@ -129,11 +130,13 @@ void AllreduceBindings::operator()(py::module &m, std::string algorithm_name)
 
 void allreduce_factory(py::module &m)
 {
+  DEFINE_BINDINGS(Allreduce, int16_t, AllreduceInfo, AllreduceBindings)
   DEFINE_BINDINGS(Allreduce, int, AllreduceInfo, AllreduceBindings)
   DEFINE_BINDINGS(Allreduce, long, AllreduceInfo, AllreduceBindings)
   DEFINE_BINDINGS(Allreduce, float, AllreduceInfo, AllreduceBindings)
   DEFINE_BINDINGS(Allreduce, double, AllreduceInfo, AllreduceBindings)
 }
+
 
 template <class BcastClass, typename T>
 void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
@@ -198,8 +201,10 @@ void BroadcastBindings::operator()(py::module &m, std::string algorithm_name)
 
 void bcast_factory(py::module &m)
 {
+  DEFINE_BINDINGS(Broadcast, int16_t, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, int, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, long, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, float, BroadcastInfo, BroadcastBindings)
   DEFINE_BINDINGS(Broadcast, double, BroadcastInfo, BroadcastBindings)
 }
+

@@ -25,7 +25,7 @@ def dtype_to_collective_type(dtype):
   elif dtype in [np.int, np.int32, "int"]:
     return "int"
   elif dtype in [np.int16]:
-    return "int16"
+    return "int16_t"
   elif dtype in [np.int64, "long"]:
     return "long"
   raise ValueError(f"[dtype_to_collective_type] Unknown dtype `{dtype}` for PyGPI primitives")
