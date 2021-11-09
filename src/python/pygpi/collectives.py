@@ -118,3 +118,26 @@ class Broadcast(Collective):
   @property
   def algorithm(self):
     return self._algorithm
+
+class Barrier:
+  def __init__(self, *args, **kwargs):
+    self.collective_impl = pygpi_wrappers.Barrier(*args, **kwargs)
+    atexit.register(self.close)
+
+  def execute(self):
+    self.collective_impl.execute()
+
+  @property
+  def collective(self):
+    return "Barrier"
+
+  @property
+  def dtype(self):
+    return None
+
+  @property
+  def algorithm(self):
+    return None
+
+  def close(self):
+    del self.collective_impl

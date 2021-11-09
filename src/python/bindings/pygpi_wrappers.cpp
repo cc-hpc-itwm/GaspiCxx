@@ -1,3 +1,4 @@
+#include <GaspiCxx/collectives/Barrier.hpp>
 #include <GaspiCxx/group/Group.hpp>
 #include <GaspiCxx/Runtime.hpp>
 #include <collectives.hpp>
@@ -32,9 +33,28 @@ PYBIND11_MODULE(pygpi_wrappers, m)
     .def_property_readonly("global_rank", [](gaspi::group::Group const& g) { return g.global_rank(); })
     .def("contains_rank", &gaspi::group::Group::contains_rank)
     .def("contains_global_rank", &gaspi::group::Group::contains_global_rank);
+
+  py::class_<gaspi::collectives::blocking::Barrier>(m, "Barrier")
+    .def(py::init([](std::optional<gaspi::group::Group> group)
+        {
+          using Barrier = gaspi::collectives::blocking::Barrier;
+          if (!group)
+          {
+            return std::make_unique<Barrier>(gaspi::group::Group());
+          }
+          else
+          {
+            return std::make_unique<Barrier>(*group);
+          }
+        }
+        ), py::arg("group") = py::none(),
+           py::return_value_policy::move)
+    .def("execute", &gaspi::collectives::blocking::Barrier::execute);
+
   py::enum_<gaspi::collectives::ReductionOp>(m, "ReductionOp")
      .value("SUM", gaspi::collectives::ReductionOp::SUM)
      .value("PROD", gaspi::collectives::ReductionOp::PROD);
+
   m.def("generate_implemented_primitive_name", &generate_implemented_primitive_name,
         py::arg("collective"), py::arg("dtype"), py::arg("algorithm"));
 
