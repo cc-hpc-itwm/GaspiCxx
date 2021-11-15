@@ -47,6 +47,7 @@ namespace gaspi
 
         std::mutex operators_mutex;
         std::condition_variable condition;
+        bool updated_operators;
 
         CollectiveHandle current_handle;
         std::unordered_map<CollectiveHandle,
