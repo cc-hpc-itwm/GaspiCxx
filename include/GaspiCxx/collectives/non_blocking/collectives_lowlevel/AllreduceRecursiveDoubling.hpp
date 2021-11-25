@@ -165,6 +165,9 @@ namespace gaspi
         std::size_t iteration;
         std::size_t number_iterations;
 
+        bool wait_for_data;
+        bool first_step_non_power_two_case;
+
         void waitForSetupImpl() override;
         void copyInImpl(void const*) override;
         void copyOutImpl(void*) override;
@@ -178,8 +181,10 @@ namespace gaspi
         bool is_even_non_extra_rank() const;
         bool is_odd_non_extra_rank() const;
         bool is_active_rank() const;
+        bool is_power_two_case() const;
         bool is_non_power_two_case() const;
         bool is_last_iteration() const;
+        bool is_first_step_non_power_two_case() const;
     };
 
     template<typename T>
@@ -198,7 +203,9 @@ namespace gaspi
       handles(),
       data_for_1rank_case(),
       iteration(0),
-      number_iterations(static_cast<std::size_t>(std::log2(number_ranks_used)))
+      number_iterations(static_cast<std::size_t>(std::log2(number_ranks_used))),
+      wait_for_data(true),
+      first_step_non_power_two_case(true)
     {
       if (number_elements > 0 && number_ranks > 1)
       {
@@ -270,28 +277,18 @@ namespace gaspi
     template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::startImpl()
     {
-      if (number_elements > 0 && number_ranks > 1)
+      if (number_elements == 0 || number_ranks == 1) { return; }
+
+      iteration = 0;
+      first_step_non_power_two_case = true;
+      wait_for_data = true;
+      if (is_extra_rank())
       {
-        iteration = 0;
-
-        if (is_non_power_two_case())
-        {
-          // Send initial vector to active ranks
-          if (is_odd_non_extra_rank())
-          {
-            source_buffer_non_power_two_case->initTransfer();
-          }
-          else if (is_even_non_extra_rank())
-          {
-            target_buffer_non_power_two_case->waitForCompletion();
-            apply_reduce_op<T>(*source_buffers[iteration], *target_buffer_non_power_two_case);
-          }
-        }
-
-        if (is_active_rank())
-        {
-          source_buffers[iteration]->initTransfer();
-        }
+        source_buffers[iteration]->initTransfer();
+      }
+      else if (is_odd_non_extra_rank())
+      {
+        source_buffer_non_power_two_case->initTransfer();
       }
     }
 
@@ -299,48 +296,80 @@ namespace gaspi
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::triggerProgressImpl()
     {
       if (number_elements == 0 || number_ranks == 1) { return true; }
-      if (iteration >= number_iterations) { return false; }
 
-      if (is_active_rank())
+      bool made_progress = false;
+      if (is_even_non_extra_rank() && is_first_step_non_power_two_case())
       {
-        target_buffers[iteration]->waitForCompletion();
-
-        // Make sure data has left source_buffers[iteration] before
-        // accumulating the data received in target_buffers[iteration],
-        // which can only be done with notifications.
-        target_buffers[iteration]->ackTransfer();
-        source_buffers[iteration]->waitForTransferAck();
-        apply_reduce_op<T>(*source_buffers[iteration], *target_buffers[iteration]);
+        // Send initial vector to active ranks
+        made_progress = target_buffer_non_power_two_case->checkForCompletion();
+        if (made_progress)
+        {
+          first_step_non_power_two_case = false;
+          apply_reduce_op<T>(*source_buffers[iteration], *target_buffer_non_power_two_case);
+          source_buffers[iteration]->initTransfer();
+        }
+        else { return false; }
       }
-
-      iteration++;
 
       if (is_last_iteration())
       {
-        if (is_non_power_two_case())
+        if (is_power_two_case())
+        { return true; }
+
+        bool done = true;
+        // Send results back to non-active ranks
+        if (is_even_non_extra_rank())
         {
-          // Send results back to non-active ranks
-          if (is_even_non_extra_rank())
+          done = source_buffer_non_power_two_case->checkForTransferAck();
+        }
+        else if (is_odd_non_extra_rank())
+        {
+          done = target_buffer_non_power_two_case->checkForCompletion();
+          if (done)
           {
-            source_buffer_non_power_two_case->initTransfer();
-            source_buffer_non_power_two_case->waitForTransferAck();
-          }
-          else if (is_odd_non_extra_rank())
-          {
-            target_buffer_non_power_two_case->waitForCompletion();
             target_buffer_non_power_two_case->ackTransfer();
           }
         }
-        return true;
+        return done;
       }
-      else
+
+      if (is_active_rank())
       {
-        if (is_active_rank())
+        if (wait_for_data)
         {
-          source_buffers[iteration]->initTransfer();
+          made_progress = target_buffers[iteration]->checkForCompletion();
         }
-        return false;
+        else
+        {
+          made_progress = source_buffers[iteration]->checkForTransferAck();
+        }
+        if (!made_progress) { return false; }
+
+        if (wait_for_data)
+        {
+          // Make sure data has left source_buffers[iteration] before
+          // accumulating the data received in target_buffers[iteration],
+          // which can only be done with notifications.
+          target_buffers[iteration]->ackTransfer();
+          wait_for_data = false;
+          return false;
+        }
+
+        apply_reduce_op<T>(*source_buffers[iteration], *target_buffers[iteration]);
+        wait_for_data = true;
       }
+
+      iteration++;
+      if (!is_last_iteration() && is_active_rank())
+      {
+        source_buffers[iteration]->initTransfer();
+      }
+
+      if (is_last_iteration() && is_even_non_extra_rank())
+      {
+        source_buffer_non_power_two_case->initTransfer();
+      }
+      return false;
     }
 
     template<typename T>
@@ -414,15 +443,27 @@ namespace gaspi
     }
 
     template<typename T>
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::is_power_two_case() const
+    {
+      return number_ranks_rest == 0;
+    }
+
+    template<typename T>
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::is_non_power_two_case() const
     {
-      return number_ranks_rest != 0;
+      return !is_power_two_case();
     }
 
     template<typename T>
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::is_last_iteration() const
     {
       return iteration == number_iterations;
+    }
+
+    template<typename T>
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::is_first_step_non_power_two_case() const
+    {
+      return iteration == 0 && first_step_non_power_two_case;
     }
   }
 }
