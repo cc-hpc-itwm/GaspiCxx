@@ -60,6 +60,7 @@ namespace gaspi
 
         std::vector<ConnectHandle> source_handles;
         std::unique_ptr<ConnectHandle> target_handle;
+        std::size_t transfers_in_progress;
 
         void waitForSetupImpl() override;
         void copyInImpl(void const*) override;
@@ -145,6 +146,7 @@ namespace gaspi
         {
           source_buffer->initTransfer();
         }
+        transfers_in_progress = source_buffers.size();
       }
     }
 
@@ -157,15 +159,21 @@ namespace gaspi
       {
         for (auto& source_buffer : source_buffers)
         {
-          source_buffer->waitForTransferAck();
+          auto done = source_buffer->checkForTransferAck();
+          if (done) transfers_in_progress--;
         }
+        if (transfers_in_progress == 0) { return true; }
       }
       else
       {
-        target_buffer->waitForCompletion();
-        target_buffer->ackTransfer();
+        auto done = target_buffer->checkForCompletion();
+        if (done)
+        {
+          target_buffer->ackTransfer();
+          return true;
+        }
       }
-      return true;
+      return false;
     }
 
     template<typename T>
