@@ -53,7 +53,7 @@ namespace gaspi
         void waitForCompletion(void* outputs) override;
         void waitForCompletion(std::vector<T>& outputs);
 
-        std::size_t getOutputCount();
+        std::size_t getOutputCount() override;
         std::vector<std::size_t> get_counts() override;
 
       private:

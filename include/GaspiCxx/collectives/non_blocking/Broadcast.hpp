@@ -57,7 +57,7 @@ namespace gaspi
         void waitForCompletion(void* output) override;
         void waitForCompletion(std::vector<T>& output);
 
-        std::size_t getOutputCount();
+        std::size_t getOutputCount() override;
 
       private:
         progress_engine::ProgressEngine& progress_engine;
