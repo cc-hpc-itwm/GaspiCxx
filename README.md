@@ -44,13 +44,13 @@ GaspiCxx depends on:
 
 To install `GPI-2`, clone the following [git repository]
 (https://github.com/cc-hpc-itwm/GPI-2.git)
-and checkout the `1.5.0` tag:
+and checkout the `1.5.1` tag:
 
 ```bash
 git clone https://github.com/cc-hpc-itwm/GPI-2.git
 cd GPI-2
 git fetch --tags
-git checkout -b v1.5.0 v1.5.0
+git checkout -b v1.5.1 v1.5.1
 ```
 
 Now, use [autotools](https://www.gnu.org/software/automake/)
@@ -81,7 +81,7 @@ export PATH=${GPI2_INSTALLATION_PATH}/bin:$PATH
 Compile and install the GaspiCxx library as follows:
 
 ```bash
-git clone git@gitlab.itwm.fraunhofer.de:gruenewa/GaspiCxx.git
+git clone https://github.com/cc-hpc-itwm/GaspiCxx.git
 cd GaspiCxx
 mkdir build && cd build
 
