@@ -148,6 +148,15 @@ namespace gaspi
                           ReductionOp reduction_op);
 
       private:
+        enum class AlgStage
+        {
+          NOT_STARTED,
+          WAIT_FOR_DATA,
+          WAIT_FOR_ACK,
+          INITIAL_STEP_NON_POWER_TWO,
+          FINAL_STEP_NON_POWER_TWO,
+        };
+
         std::size_t number_ranks;
         std::size_t number_ranks_used;
         std::size_t number_ranks_rest;
@@ -165,6 +174,8 @@ namespace gaspi
         std::size_t iteration;
         std::size_t number_iterations;
 
+        AlgStage alg_stage;
+
         void waitForSetupImpl() override;
         void copyInImpl(void const*) override;
         void copyOutImpl(void*) override;
@@ -178,6 +189,7 @@ namespace gaspi
         bool is_even_non_extra_rank() const;
         bool is_odd_non_extra_rank() const;
         bool is_active_rank() const;
+        bool is_power_two_case() const;
         bool is_non_power_two_case() const;
         bool is_last_iteration() const;
     };
@@ -198,7 +210,8 @@ namespace gaspi
       handles(),
       data_for_1rank_case(),
       iteration(0),
-      number_iterations(static_cast<std::size_t>(std::log2(number_ranks_used)))
+      number_iterations(static_cast<std::size_t>(std::log2(number_ranks_used))),
+      alg_stage(AlgStage::NOT_STARTED)
     {
       if (number_elements > 0 && number_ranks > 1)
       {
@@ -270,28 +283,18 @@ namespace gaspi
     template<typename T>
     void AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::startImpl()
     {
-      if (number_elements > 0 && number_ranks > 1)
+      if (number_elements == 0 || number_ranks == 1) { return; }
+
+      iteration = 0;
+      alg_stage = is_non_extra_rank() ? AlgStage::INITIAL_STEP_NON_POWER_TWO:
+                                        AlgStage::WAIT_FOR_DATA;
+      if (is_extra_rank())
       {
-        iteration = 0;
-
-        if (is_non_power_two_case())
-        {
-          // Send initial vector to active ranks
-          if (is_odd_non_extra_rank())
-          {
-            source_buffer_non_power_two_case->initTransfer();
-          }
-          else if (is_even_non_extra_rank())
-          {
-            target_buffer_non_power_two_case->waitForCompletion();
-            apply_reduce_op<T>(*source_buffers[iteration], *target_buffer_non_power_two_case);
-          }
-        }
-
-        if (is_active_rank())
-        {
-          source_buffers[iteration]->initTransfer();
-        }
+        source_buffers[iteration]->initTransfer();
+      }
+      if (is_odd_non_extra_rank())
+      {
+        source_buffer_non_power_two_case->initTransfer();
       }
     }
 
@@ -299,48 +302,85 @@ namespace gaspi
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::triggerProgressImpl()
     {
       if (number_elements == 0 || number_ranks == 1) { return true; }
-      if (iteration >= number_iterations) { return false; }
 
-      if (is_active_rank())
+      if (is_even_non_extra_rank() && alg_stage == AlgStage::INITIAL_STEP_NON_POWER_TWO)
       {
-        target_buffers[iteration]->waitForCompletion();
+        bool made_progress = false;
 
-        // Make sure data has left source_buffers[iteration] before
-        // accumulating the data received in target_buffers[iteration],
-        // which can only be done with notifications.
-        target_buffers[iteration]->ackTransfer();
-        source_buffers[iteration]->waitForTransferAck();
-        apply_reduce_op<T>(*source_buffers[iteration], *target_buffers[iteration]);
+        // Wait for initial vector from non-active ranks
+        made_progress = target_buffer_non_power_two_case->checkForCompletion();
+        if (!made_progress) { return false; }
+
+        apply_reduce_op<T>(*source_buffers[iteration], *target_buffer_non_power_two_case);
+        source_buffers[iteration]->initTransfer();
+        alg_stage = AlgStage::WAIT_FOR_DATA;
       }
 
-      iteration++;
-
-      if (is_last_iteration())
+      if (alg_stage == AlgStage::FINAL_STEP_NON_POWER_TWO)
       {
-        if (is_non_power_two_case())
+        if (is_power_two_case())
+        { return true; }
+
+        bool done = true;
+        if (is_even_non_extra_rank())
         {
-          // Send results back to non-active ranks
-          if (is_even_non_extra_rank())
+          done = source_buffer_non_power_two_case->checkForTransferAck();
+        }
+        else if (is_odd_non_extra_rank())
+        {
+          done = target_buffer_non_power_two_case->checkForCompletion();
+          if (done)
           {
-            source_buffer_non_power_two_case->initTransfer();
-            source_buffer_non_power_two_case->waitForTransferAck();
-          }
-          else if (is_odd_non_extra_rank())
-          {
-            target_buffer_non_power_two_case->waitForCompletion();
             target_buffer_non_power_two_case->ackTransfer();
           }
         }
-        return true;
+        return done;
       }
-      else
+
+      if (is_active_rank())
       {
-        if (is_active_rank())
+        bool made_progress = false;
+        if (alg_stage == AlgStage::WAIT_FOR_DATA)
         {
-          source_buffers[iteration]->initTransfer();
+          made_progress = target_buffers[iteration]->checkForCompletion();
         }
-        return false;
+        else if (alg_stage == AlgStage::WAIT_FOR_ACK)
+        {
+          made_progress = source_buffers[iteration]->checkForTransferAck();
+        }
+        if (!made_progress) { return false; }
+
+        if (alg_stage == AlgStage::WAIT_FOR_DATA)
+        {
+          // Make sure data has left source_buffers[iteration] before
+          // accumulating the data received in target_buffers[iteration],
+          // which can only be done with notifications.
+          target_buffers[iteration]->ackTransfer();
+          alg_stage = AlgStage::WAIT_FOR_ACK;
+          return false;
+        }
+        else
+        {
+          apply_reduce_op<T>(*source_buffers[iteration], *target_buffers[iteration]);
+          if (!is_last_iteration())
+          {
+            source_buffers[iteration + 1]->initTransfer();
+            alg_stage = AlgStage::WAIT_FOR_DATA;
+          }
+        }
       }
+
+      if (is_last_iteration())
+      {
+        // Send results back to non-active ranks
+        if (is_even_non_extra_rank())
+        {
+          source_buffer_non_power_two_case->initTransfer();
+        }
+        alg_stage = AlgStage::FINAL_STEP_NON_POWER_TWO;
+      }
+      iteration++;
+      return false;
     }
 
     template<typename T>
@@ -414,15 +454,21 @@ namespace gaspi
     }
 
     template<typename T>
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::is_power_two_case() const
+    {
+      return number_ranks_rest == 0;
+    }
+
+    template<typename T>
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::is_non_power_two_case() const
     {
-      return number_ranks_rest != 0;
+      return !is_power_two_case();
     }
 
     template<typename T>
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RECURSIVE_DOUBLING>::is_last_iteration() const
     {
-      return iteration == number_iterations;
+      return iteration == number_iterations - 1;
     }
   }
 }

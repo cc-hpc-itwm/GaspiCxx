@@ -93,6 +93,7 @@ namespace gaspi
         auto algorithm_get_current_stage() const;
         bool is_last_step_reduce() const;
         bool is_last_step_gather() const;
+        bool is_last_step() const;
     };
 
     template<typename T>
@@ -180,11 +181,35 @@ namespace gaspi
     {
       if (number_elements == 0 || number_ranks == 1) { return true; }
 
+      auto made_progress = false;
+      if (is_last_step()) // wait for final transfer acknowledgements
+      {
+        auto index = group::RingIndex(current_index + 2, number_ranks);
+        made_progress = source_buffers_gather[index]->checkForTransferAck();
+        return made_progress;
+      }
+
+      // each algorithm stage starts by waiting for data to arrive
       switch(algorithm_get_current_stage())
       {
         case RingStage::REDUCE:
         {
-          target_buffers_reduce[current_index]->waitForCompletion();
+          made_progress = target_buffers_reduce[current_index]->checkForCompletion();
+          break;
+        }
+        case RingStage::GATHER:
+        {
+          made_progress = target_buffers_gather[current_index]->checkForCompletion();
+        }
+      }
+      if (!made_progress) { return false; }
+
+      // when data transfer for the current stage had ended, start transfers
+      // for the next iteration
+      switch(algorithm_get_current_stage())
+      {
+        case RingStage::REDUCE:
+        {
           apply_reduce_op<T>(*source_buffers_reduce[current_index], *target_buffers_reduce[current_index]);
           if (!is_last_step_reduce())
           {
@@ -198,7 +223,6 @@ namespace gaspi
         }
         case RingStage::GATHER:
         {
-          target_buffers_gather[current_index]->waitForCompletion();
           if (!is_last_step_gather())
           {
             source_buffers_gather[current_index]->initTransfer();
@@ -206,10 +230,7 @@ namespace gaspi
           else
           {
             target_buffers_gather[current_index]->ackTransfer();
-            source_buffers_gather[++current_index]->waitForTransferAck();
-            return true;
           }
-          break;
         }
       }
 
@@ -303,6 +324,12 @@ namespace gaspi
     bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::is_last_step_gather() const
     {
       return current_step == 2 * steps_per_stage - 1;
+    }
+
+    template<typename T>
+    bool AllreduceLowLevel<T, AllreduceAlgorithm::RING>::is_last_step() const
+    {
+      return current_step == 2 * steps_per_stage;
     }
   }
 }

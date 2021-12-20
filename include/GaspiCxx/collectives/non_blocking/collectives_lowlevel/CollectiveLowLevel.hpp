@@ -68,6 +68,8 @@ public:
   void start();
 
   // Implements generation of progress.
+  // Must be NON-BLOCKING (implemented based on `check*` buffer primitives)
+  // to be compatible with a `ProgressEngine`
   // Can be called in any state, but only one thread will
   // trigger progress if and only if state equals RUNNING.
   // Changes state from RUNNING to FINISHED if
