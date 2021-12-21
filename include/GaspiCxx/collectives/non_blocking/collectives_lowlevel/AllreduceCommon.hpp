@@ -64,6 +64,7 @@ namespace gaspi
         AllreduceCommon(gaspi::group::Group const& group,
                         std::size_t number_elements,
                         ReductionOp reduction_op);
+        virtual ~AllreduceCommon() = default;
         std::size_t getOutputCount() override;
 
       protected:

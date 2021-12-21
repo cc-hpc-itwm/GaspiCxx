@@ -54,6 +54,7 @@ namespace gaspi
         BroadcastCommon(gaspi::group::Group const& group,
                         std::size_t number_elements,
                         gaspi::group::Rank const& root);
+        virtual ~BroadcastCommon() = default;
         std::size_t getOutputCount() override;
 
       protected:
