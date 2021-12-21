@@ -25,6 +25,8 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastCommon.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 #include <GaspiCxx/Runtime.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastSendToAll.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/BroadcastBasicLinear.hpp>
 
 #include <memory>
 #include <stdexcept>
@@ -54,6 +56,8 @@ namespace gaspi
 
         void waitForCompletion(void* output) override;
         void waitForCompletion(std::vector<T>& output);
+
+        std::size_t getOutputCount() override;
 
       private:
         progress_engine::ProgressEngine& progress_engine;
@@ -136,6 +140,12 @@ namespace gaspi
     void Broadcast<T, Algorithm>::waitForCompletion(std::vector<T>& output)
     {
       waitForCompletion(static_cast<void*>(output.data()));
+    }
+
+    template<typename T, BroadcastAlgorithm Algorithm>
+    std::size_t Broadcast<T, Algorithm>::getOutputCount()
+    {
+      return broadcast_impl->getOutputCount();
     }
   }
 }

@@ -23,6 +23,8 @@
 
 #include <GaspiCxx/collectives/non_blocking/Collective.hpp>
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceCommon.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRing.hpp>
+#include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/AllreduceRecursiveDoubling.hpp>
 #include <GaspiCxx/progress_engine/ProgressEngine.hpp>
 #include <GaspiCxx/Runtime.hpp>
 
@@ -52,6 +54,8 @@ namespace gaspi
 
         void waitForCompletion(void* outputs) override;
         void waitForCompletion(std::vector<T>& outputs);
+
+        std::size_t getOutputCount() override;
 
       private:
         progress_engine::ProgressEngine& progress_engine;
@@ -113,6 +117,12 @@ namespace gaspi
     void Allreduce<T, Algorithm>::waitForCompletion(std::vector<T>& outputs)
     {
       waitForCompletion(static_cast<void*>(outputs.data()));
+    }
+
+    template<typename T, AllreduceAlgorithm Algorithm>
+    std::size_t Allreduce<T, Algorithm>::getOutputCount()
+    {
+      return allreduce_impl->getOutputCount();
     }
   }
 }

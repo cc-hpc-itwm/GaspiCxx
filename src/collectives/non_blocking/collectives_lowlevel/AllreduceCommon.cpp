@@ -34,5 +34,9 @@ namespace gaspi
       reduction_op(reduction_op)
     { }
 
+    std::size_t AllreduceCommon::getOutputCount()
+    {
+      return number_elements;
+    }
   }
 }

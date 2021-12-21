@@ -23,21 +23,33 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
+#include <array>
+#include <unordered_map>
+
 namespace gaspi
 {
   namespace collectives
   {
-    enum class AllgathervAlgorithm
+    class AllgathervInfo
     {
-      NEIGHBOR,
-      RING,
+      public:
+        enum class Algorithm
+        {
+          RING,
+        };
+        static inline std::unordered_map<Algorithm, std::string> names
+                      { {Algorithm::RING, "ring" } };
+        static inline constexpr std::array<Algorithm, 1> implemented
+                      { Algorithm::RING };
     };
+    using AllgathervAlgorithm = AllgathervInfo::Algorithm;
 
     class AllgathervCommon : public CollectiveLowLevel
     {
       public:
         AllgathervCommon(gaspi::group::Group const& group,
                          std::vector<std::size_t> const& counts);
+        std::size_t getOutputCount() override;
 
       protected:
         gaspi::group::Group group;

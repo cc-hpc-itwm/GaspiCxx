@@ -26,8 +26,10 @@
 #include <GaspiCxx/singlesided/write/SourceBuffer.hpp>
 #include <GaspiCxx/singlesided/write/TargetBuffer.hpp>
 
+#include <array>
 #include <algorithm>
 #include <functional>
+#include <unordered_map>
 
 namespace gaspi
 {
@@ -40,11 +42,21 @@ namespace gaspi
       SUM,
     };
 
-    enum class AllreduceAlgorithm
+    class AllreduceInfo
     {
-      RECURSIVE_DOUBLING,
-      RING,
+      public:
+        enum class Algorithm
+        {
+          RING,
+          RECURSIVE_DOUBLING,
+        };
+        static inline std::unordered_map<Algorithm, std::string> names
+                      { {Algorithm::RING, "ring" },
+                        {Algorithm::RECURSIVE_DOUBLING, "recursivedoubling" } };
+        static inline constexpr std::array<Algorithm, 2> implemented
+                      { Algorithm::RING, Algorithm::RECURSIVE_DOUBLING };
     };
+    using AllreduceAlgorithm = AllreduceInfo::Algorithm;
 
     class AllreduceCommon : public CollectiveLowLevel
     {
@@ -52,6 +64,7 @@ namespace gaspi
         AllreduceCommon(gaspi::group::Group const& group,
                         std::size_t number_elements,
                         ReductionOp reduction_op);
+        std::size_t getOutputCount() override;
 
       protected:
         gaspi::group::Group group;
