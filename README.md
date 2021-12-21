@@ -11,7 +11,7 @@ GaspiCxx is designed to achieve the following goals:
 The interface design replaces the explicit management of communication
 resources required by the native GPI-2 interface with fully-transparent
 and easy-to-use primitives.
-The GaspiCxx API provides the following automatically managed resources:
+The GaspiCxx API implements the following automatically managed resources:
 * Groups
 * Segments
 * Queues
@@ -23,6 +23,12 @@ The GaspiCxx API provides the following automatically managed resources:
   * Broadcast
 * Blocking collectives
   * Barrier
+
+Additionally, GaspiCxx provides a Python extension called `PyGPI`, which exposes the
+GaspiCxx point-to-point and collective primitives as an easy-to-use, intuitive Python library.
+More details regarding the installation and configuration of `PyGPI` can be found
+[here](src/python/README.md).
+
 
 ## Installation
 
@@ -42,8 +48,7 @@ GaspiCxx depends on:
 
 #### Installing GPI-2
 
-To install `GPI-2`, clone the following [git repository]
-(https://github.com/cc-hpc-itwm/GPI-2.git)
+To install `GPI-2`, clone the following [git repository](https://github.com/cc-hpc-itwm/GPI-2.git)
 and checkout the `1.5.1` tag:
 
 ```bash
@@ -111,7 +116,9 @@ make -j$nprocs install
 
 ```bash
 export GASPICXX_INSTALLATION_PATH=/your/gaspicxx/installation/path
-cmake -DENABLE_TESTS=ON -DCMAKE_PREFIX_PATH=${GTEST_INSTALLATION_PATH} -DCMAKE_INSTALL_PREFIX=${GASPICXX_INSTALLATION_PATH} ../
+cmake -DENABLE_TESTS=ON                                      \
+      -DCMAKE_PREFIX_PATH=${GTEST_INSTALLATION_PATH}         \
+      -DCMAKE_INSTALL_PREFIX=${GASPICXX_INSTALLATION_PATH} ../
 make -j$nprocs install
 ```
 
