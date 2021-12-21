@@ -107,8 +107,8 @@ protected:
   virtual void copyInImpl(void const*) = 0;
   virtual void copyOutImpl(void*) = 0;
 
-  std::atomic<State> _state;
   std::mutex _state_mutex;
+  std::atomic<State> _state;
 };
 
 }
