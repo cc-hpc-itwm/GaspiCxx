@@ -1,7 +1,10 @@
 cmake_minimum_required (VERSION 3.8)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-project (GaspiCxx)
+include (read_version)
+configure_version(VERSION_FILE "${CMAKE_SOURCE_DIR}/version.in")
+
+project (GaspiCxx ${GaspiCxx_VERSION})
 
 include(GNUInstallDirs)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -13,8 +16,18 @@ option (BUILD_SHARED_LIBS "Create shared libraries [default: disabled (creates s
 option (BUILD_PYTHON_BINDINGS "Build Python bindings [default: disabled]" off)
 
 set (CMAKE_CXX_STANDARD 17)
-set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
+
+# Set a default build type if none was specified
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting default build type to '${default_build_type}'.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Define build type." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
