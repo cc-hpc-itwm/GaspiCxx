@@ -1,5 +1,5 @@
 
-# PyGPI python communication library
+# PyGPI Python Communication Library
 
 PyGPI is a communication library designed to provide easy-to-use, intuitive access to GPI-based
 communication.
@@ -8,14 +8,14 @@ following features:
 * [X] Global access functions such as `get_rank`, `get_size`
 * [X] `Group` functionality for defining processes involved in a particular communication
 * [ ] Single-sided point-to-point communication using `Source/TargetBuffer`s
-* Non-blocking collective communication
+* [ ] Non-blocking collective communication
   - [X] Allreduce
   - [X] Broadcast
   - [X] Allgatherv
   - [ ] Allgather
   - [ ] Gather(v)
-* Blocking collective communication
-  - [ ] Barrier
+* [x] Blocking collective communication
+  - [x] Barrier
 
 
 ## Assumptions
@@ -91,22 +91,49 @@ conda install python=3.8
 conda install pybind11 -c conda-forge
 ```
 
-Note that [Pybind11](https://github.com/pybind/pybind11) is available through `pip` and `conda`. However, the `pip`-package does not seem to include a cmake package. This is why we recommend installing Pybind11 via `conda`.
+Note that [Pybind11](https://github.com/pybind/pybind11) is available through `pip` and `conda`.
+However, the `pip`-package does not seem to include a cmake package. This is why we recommend
+installing Pybind11 via `conda`.
 
 
-### Install GaspiCxx
+### Install GaspiCxx with PyGPI support
 
-Compile and install the GaspiCxx from the git repository as a shared library.
+Follow the installation steps for the dependencies of GaspiCxx in the [README](../../README.md) file.
+Then compile and install GaspiCxx from the git repository as a shared library.
 
 ```bash
-git clone git@gitlab.itwm.fraunhofer.de:gruenewa/GaspiCxx.git
+git clone https://github.com/cc-hpc-itwm/GaspiCxx.git
 cd GaspiCxx
 mkdir build && cd build
 
 export GASPICXX_INSTALLATION_PATH=/your/gaspicxx/installation/path
-cmake -DBUILD_PYTHON_BINDINGS=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${GASPICXX_INSTALLATION_PATH} ../
-make install
+cmake -DBUILD_PYTHON_BINDING=ON                              \
+      -DBUILD_SHARED_LIBS=ON                                 \
+      -DCMAKE_PREFIX_PATH=${GTEST_INSTALLATION_PATH}         \
+      -DCMAKE_INSTALL_PREFIX=${GASPICXX_INSTALLATION_PATH} ../
+make -j$nprocs install
 ```
+
+
+### (Optional) Compile GaspiCxx tests
+The `PyGPI` tests rely on the `pytest` package, which can be installed in the same `conda` environment using `pip`:
+```bash
+conda activate pygpi
+pip install -U pytest
+```
+
+Then compile GaspiCxx with testing enabled:
+
+```bash
+export GASPICXX_INSTALLATION_PATH=/your/gaspicxx/installation/path
+cmake -DENABLE_TESTS=ON                                      \
+      -DBUILD_PYTHON_BINDINGS=ON                             \
+      -DBUILD_SHARED_LIBS=ON                                 \
+      -DCMAKE_PREFIX_PATH=${GTEST_INSTALLATION_PATH}         \
+      -DCMAKE_INSTALL_PREFIX=${GASPICXX_INSTALLATION_PATH} ../
+make -j$nprocs install
+```
+
 
 ### Execute PyGPI example
 
@@ -120,7 +147,7 @@ localhost
 * Create a `script.sh` file to execute a simple DNN training run:
 ```bash
 cat script.sh
-export PYTHONPATH=${GASPICXX_INSTALLATION_PATH}/lib/:${GASPICXX_INSTALLATION_PATH}/lib/python
+export PYTHONPATH=${GASPICXX_INSTALLATION_PATH}/lib/:${GASPICXX_INSTALLATION_PATH}/lib
 export LD_LIBRARY_PATH=${GASPICXX_INSTALLATION_PATH}/lib:${LD_LIBRARY_PATH}
 
 python ${SRC_PATH}/simple_collective_example.py
@@ -132,7 +159,7 @@ python ${SRC_PATH}/simple_collective_example.py
 gaspi_run -m ./nodesfile -n ${NUM_PROCESSES} ./script.sh
 ```
 The `${NUM_PROCESSES}` variable should match the number of lines in the `nodesfile`.
-
+The same `hostname` can be repeated multiple times in the `nodesfile` if multiple ranks per host are needed.
 
 ## TODOs
 * add helper functions to list available algorithms/dtypes for each collective
