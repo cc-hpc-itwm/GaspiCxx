@@ -67,6 +67,11 @@ namespace gaspi
           return true;
         }
 
+        std::size_t getOutputCount() override
+        {
+          return 0;
+        }
+
     };
   }
 

@@ -34,5 +34,9 @@ namespace gaspi
       root(root)
     { }
 
+    std::size_t BroadcastCommon::getOutputCount()
+    {
+      return number_elements;
+    }
   }
 }

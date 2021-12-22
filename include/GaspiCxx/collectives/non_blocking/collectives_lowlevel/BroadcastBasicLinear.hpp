@@ -162,12 +162,26 @@ namespace gaspi
     {
       if (number_ranks == 1 || number_elements == 0) return true;
 
+      // After reaching `last_iteration` either wait for
+      // acknowledgment (`second_last` rank), or exit
+      // unconditionally
+      if (iteration == last_iteration)
+      {
+        auto done = true;
+        if (rank == second_last)
+        {
+          done = source_buffer->checkForTransferAck();
+        }
+        return done;
+      }
+
       // Rank with position `iteration` after `first` receives data,
       // and forwards it to the next rank, except if it is `last` rank,
       // in which case, it sends acknowledgement to `second_last` instead
       if (rank_after_first == group::Rank(iteration))
       {
-        target_buffer->waitForCompletion();
+        bool made_progress = target_buffer->checkForCompletion();
+        if (!made_progress) { return false; }
 
         if (rank != last)
         {
@@ -181,19 +195,7 @@ namespace gaspi
 
       // Every rank goes to next iteration
       iteration++;
-
-      // After reaching `last_iteration` either wait for
-      // acknowledgment (`second_last` rank), or exit
-      // unconditionally
-      if (iteration == last_iteration)
-      {
-        if (rank == second_last) source_buffer->waitForTransferAck();
-        return true;
-      }
-      else
-      {
-        return false;
-      }
+      return false;
     }
 
     template<typename T>

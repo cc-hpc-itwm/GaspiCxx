@@ -41,6 +41,8 @@ class Collective
     //! and copy results to `outputs`
     virtual void waitForCompletion(void* outputs) = 0;
 
+    virtual std::size_t getOutputCount() = 0;
+
     virtual ~Collective() = default;
 };
 

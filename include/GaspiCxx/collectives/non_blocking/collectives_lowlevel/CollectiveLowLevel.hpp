@@ -68,6 +68,8 @@ public:
   void start();
 
   // Implements generation of progress.
+  // Must be NON-BLOCKING (implemented based on `check*` buffer primitives)
+  // to be compatible with a `ProgressEngine`
   // Can be called in any state, but only one thread will
   // trigger progress if and only if state equals RUNNING.
   // Changes state from RUNNING to FINISHED if
@@ -93,6 +95,10 @@ public:
   // return `true`, all others will return `false`.
   bool waitForCompletion();
 
+  // Return the number of elements in the output buffer
+  // of the current rank
+  virtual std::size_t getOutputCount() = 0;
+
 protected:
   virtual void waitForSetupImpl() = 0;
   virtual void startImpl() = 0;
@@ -101,8 +107,8 @@ protected:
   virtual void copyInImpl(void const*) = 0;
   virtual void copyOutImpl(void*) = 0;
 
-  std::atomic<State> _state;
   std::mutex _state_mutex;
+  std::atomic<State> _state;
 };
 
 }

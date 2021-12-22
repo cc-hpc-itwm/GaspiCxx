@@ -64,8 +64,7 @@ namespace gaspi
         void startImpl() override;
         bool triggerProgressImpl() override;
 
-        bool algorithm_is_finished() const;
-        void algorithm_reset_state();
+        bool is_last_step() const;
     };
 
     template<typename T>
@@ -157,16 +156,21 @@ namespace gaspi
     template<typename T>
     bool AllgathervLowLevel<T, AllgathervAlgorithm::RING>::triggerProgressImpl()
     {
-      if (current_step == number_ranks - 1) { return true; }
+      if (number_ranks == 1) { return true; }
 
-      target_buffers[current_step]->waitForCompletion();
-      current_step++;
-
-      if (current_step == number_ranks - 1)
+      if (is_last_step())
       {
-        target_buffers[current_step-1]->ackTransfer();
-        source_buffers[current_step-1]->waitForTransferAck();
-        return true;
+        auto made_progress = source_buffers[current_step - 1]->checkForTransferAck();
+        return made_progress;
+      }
+
+      auto made_progress = target_buffers[current_step]->checkForCompletion();
+      if (!made_progress) { return false; }
+
+      current_step++;
+      if (is_last_step())
+      {
+        target_buffers[current_step - 1]->ackTransfer();
       }
       else
       {
@@ -203,6 +207,13 @@ namespace gaspi
           receive_index = group::decrementIndexOnRing(receive_index, number_ranks);
         }
       }
+    }
+
+
+    template<typename T>
+    bool AllgathervLowLevel<T, AllgathervAlgorithm::RING>::is_last_step() const
+    {
+      return current_step == number_ranks - 1;
     }
   }
 }

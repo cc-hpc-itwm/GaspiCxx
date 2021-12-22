@@ -24,15 +24,29 @@
 #include <GaspiCxx/collectives/non_blocking/collectives_lowlevel/CollectiveLowLevel.hpp>
 #include <GaspiCxx/group/Group.hpp>
 
+#include <array>
+#include <string>
+#include <unordered_map>
+
 namespace gaspi
 {
   namespace collectives
   {
-    enum class BroadcastAlgorithm
+    class BroadcastInfo
     {
-      BASIC_LINEAR,
-      SEND_TO_ALL,
+      public:
+        enum class Algorithm
+        {
+          BASIC_LINEAR,
+          SEND_TO_ALL,
+        };
+        static inline std::unordered_map<Algorithm, std::string> names
+                      { {Algorithm::BASIC_LINEAR, "linear" },
+                        {Algorithm::SEND_TO_ALL, "sendtoall"} };
+        static inline constexpr std::array<Algorithm, 2> implemented
+                      { Algorithm::BASIC_LINEAR, Algorithm::SEND_TO_ALL};
     };
+    using BroadcastAlgorithm = BroadcastInfo::Algorithm;
 
     class BroadcastCommon : public CollectiveLowLevel
     {
@@ -41,6 +55,7 @@ namespace gaspi
                         std::size_t number_elements,
                         gaspi::group::Rank const& root);
         virtual ~BroadcastCommon() = default;
+        std::size_t getOutputCount() override;
 
       protected:
         gaspi::group::Group group;

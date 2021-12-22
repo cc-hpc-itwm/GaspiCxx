@@ -21,12 +21,16 @@
 
 #include <GaspiCxx/progress_engine/RoundRobinDedicatedThread.hpp>
 
+#include <algorithm>
+#include <vector>
+
 namespace gaspi
 {
   namespace progress_engine
   {
     RoundRobinDedicatedThread::RoundRobinDedicatedThread()
-    : current_handle(0UL),
+    : updated_operators(false),
+      current_handle(0UL),
       terminate_man_thread(false),
       management_thread(&RoundRobinDedicatedThread::generate_progress, this)
     {}
@@ -46,22 +50,34 @@ namespace gaspi
 
     void RoundRobinDedicatedThread::generate_progress()
     {
+      std::vector<std::shared_ptr<gaspi::collectives::CollectiveLowLevel>> current_operators;
+
       while (!terminate_man_thread)
       {
-        std::unique_lock<std::mutex> lock(operators_mutex);
-        condition.wait(lock, [&done = terminate_man_thread,
-                              &operators = operators]
-                              {
-                                return (operators.size()>0) || done;
-                              });
+        {
+          std::unique_lock<std::mutex> lock(operators_mutex);
+          condition.wait(lock, [&done = terminate_man_thread,
+                                &operators = operators]
+                                {
+                                  return (operators.size()>0) || done;
+                                });
+          if (updated_operators)
+          {
+            current_operators.clear();
+            std::transform(operators.begin(), operators.end(), std::back_inserter(current_operators),
+                           [](auto const& p) { return p.second; });
+            updated_operators = false;
+          }
+          lock.unlock();
+        }
+
         if (!terminate_man_thread)
         {
-          for (auto& handle_and_operator : operators)
+          for (auto& op : current_operators)
           {
-            handle_and_operator.second->triggerProgress();
+            op->triggerProgress();
           }
         }
-        lock.unlock();
       }
     }
 
@@ -71,6 +87,7 @@ namespace gaspi
     {
       {
         std::lock_guard<std::mutex> const lock(operators_mutex);
+        updated_operators = true;
         ++current_handle;
         bool const is_okay = operators.insert({current_handle, collective}).second;
         if(!is_okay)
@@ -86,6 +103,7 @@ namespace gaspi
                                     CollectiveHandle const& handle)
     {
       std::lock_guard<std::mutex> const lock(operators_mutex);
+      updated_operators = true;
       auto const count = operators.erase(handle);
       if(count != 1)
       {
