@@ -32,7 +32,15 @@ PYBIND11_MODULE(pygpi_wrappers, m)
     .def_property_readonly("rank", [](gaspi::group::Group const& g) { return g.rank().get(); })
     .def_property_readonly("global_rank", [](gaspi::group::Group const& g) { return g.global_rank(); })
     .def("contains_rank", &gaspi::group::Group::contains_rank)
-    .def("contains_global_rank", &gaspi::group::Group::contains_global_rank);
+    .def("contains_global_rank", &gaspi::group::Group::contains_global_rank)
+    .def("to_global_rank", [](gaspi::group::Group const& g, std::size_t local_rank)
+        {
+          return g.toGlobalRank(gaspi::group::Rank(local_rank));
+        })
+    .def("to_group_rank", [](gaspi::group::Group const& g, gaspi::group::GlobalRank const& global_rank)
+        {
+          return g.toGroupRank(global_rank).get();
+        });
 
   py::class_<gaspi::collectives::blocking::Barrier>(m, "Barrier")
     .def(py::init([](std::optional<gaspi::group::Group> group)
