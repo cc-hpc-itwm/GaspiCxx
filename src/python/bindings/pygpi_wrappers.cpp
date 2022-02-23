@@ -61,7 +61,11 @@ PYBIND11_MODULE(pygpi_wrappers, m)
 
   py::enum_<gaspi::collectives::ReductionOp>(m, "ReductionOp")
      .value("SUM", gaspi::collectives::ReductionOp::SUM)
-     .value("PROD", gaspi::collectives::ReductionOp::PROD);
+     .value("PROD", gaspi::collectives::ReductionOp::PROD)
+     .value("MIN", gaspi::collectives::ReductionOp::MIN)
+     .value("MAX", gaspi::collectives::ReductionOp::MAX)
+     .value("AND", gaspi::collectives::ReductionOp::AND)
+     .value("OR", gaspi::collectives::ReductionOp::OR);
 
   m.def("generate_implemented_primitive_name", &generate_implemented_primitive_name,
         py::arg("collective"), py::arg("dtype"), py::arg("algorithm"));
