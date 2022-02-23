@@ -35,11 +35,14 @@ namespace gaspi
 {
   namespace collectives
   {
-    // FIXME: Support the same Operations as MPI
     enum class ReductionOp
     {
       PROD,
       SUM,
+      MIN,
+      MAX,
+      AND,
+      OR
     };
 
     class AllreduceInfo
@@ -92,6 +95,32 @@ namespace gaspi
             case ReductionOp::SUM:
             {
               reduction_functor = std::plus<T>();
+              break;
+            }
+            case ReductionOp::MIN:
+            {
+              reduction_functor = [](T const& a, T const& b)
+                                  {
+                                    return (a<b)?a:b;
+                                  };
+              break;
+            }
+            case ReductionOp::MAX:
+            {
+              reduction_functor = [](T const& a, T const& b)
+                                  {
+                                    return (a>b)?a:b;
+                                  };
+              break;
+            }
+            case ReductionOp::AND:
+            {
+              reduction_functor = std::logical_and<T>();
+              break;
+            }
+            case ReductionOp::OR:
+            {
+              reduction_functor = std::logical_or<T>();
               break;
             }
           }
