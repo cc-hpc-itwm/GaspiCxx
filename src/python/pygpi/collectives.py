@@ -18,16 +18,20 @@ def collective_class_selector(collective, dtype, algorithm):
   return implementations[name]
 
 def dtype_to_collective_type(dtype):
-  if dtype in [np.float,  np.float64, np.double, "double"]:
+  if dtype in [np.float, np.float64, np.double, float, "float"]:
     return "double"
-  elif dtype in [np.float32, "float"]:
+  elif dtype in [np.float32]:
     return "float"
-  elif dtype in [np.int, np.int32, "int"]:
+  elif dtype in [np.int32]:
     return "int"
   elif dtype in [np.int16]:
     return "int16_t"
-  elif dtype in [np.int64, "long"]:
+  elif dtype in [np.int8]:
+    return "int8_t"
+  elif dtype in [np.int64, np.int, int, "int"]:
     return "long"
+  elif dtype in [np.bool, bool, "bool"]:
+    return "int8_t"
   raise ValueError(f"[dtype_to_collective_type] Unknown dtype `{dtype}` for PyGPI primitives")
 
 
@@ -60,7 +64,8 @@ class Collective(abc.ABC):
     return self.collective_impl.start(*args, **kwargs)
 
   def wait_for_completion(self, *args, **kwargs):
-    return self.collective_impl.wait_for_completion(*args, **kwargs)
+    out_array = self.collective_impl.wait_for_completion(*args, **kwargs)
+    return out_array.astype(self.dtype, copy = False)
 
 
 class Allgatherv(Collective):
