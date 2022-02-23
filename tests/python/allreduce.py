@@ -73,6 +73,42 @@ class TestAllreduce:
     assert len(output) == 1
     assert expected_output == output[0]
 
+  @pytest.mark.parametrize("dtype", ["int", "float"])
+  def test_reduction_PROD(self, dtype):
+    list_length = 30
+    input_list = [ pygpi.get_size() ] * list_length
+    expected_output = [elem ** pygpi.get_size() for elem in input_list]
+
+    allreduce = pygpi.Allreduce(pygpi.Group(), list_length, pygpi.ReductionOp.PROD,
+                                dtype = dtype)
+    allreduce.start(input_list)
+    output_array = allreduce.wait_for_completion()
+    assert np.array_equal(output_array, expected_output)
+
+  @pytest.mark.parametrize("dtype", [int, float])
+  def test_reduction_MIN(self, dtype):
+    list_reps = 20
+    input_list = [pygpi.get_rank(), -5 * pygpi.get_rank(), 3 * pygpi.get_rank()] * list_reps
+    expected_output = [ 0, -5 * (pygpi.get_size() - 1), 0] * list_reps
+
+    allreduce = pygpi.Allreduce(pygpi.Group(), len(input_list), pygpi.ReductionOp.MIN,
+                                dtype = dtype)
+    allreduce.start(input_list)
+    output_array = allreduce.wait_for_completion()
+    assert np.array_equal(output_array, expected_output)
+
+  @pytest.mark.parametrize("dtype", ["int", "float"])
+  def test_reduction_MAX(self, dtype):
+    list_reps = 20
+    input_list = [pygpi.get_rank(), -5 * pygpi.get_rank(), 3 * pygpi.get_rank()] * list_reps
+    expected_output = [(pygpi.get_size() - 1), 0, 3 * (pygpi.get_size() - 1)] * list_reps
+
+    allreduce = pygpi.Allreduce(pygpi.Group(), len(input_list), pygpi.ReductionOp.MAX,
+                                dtype = dtype)
+    allreduce.start(input_list)
+    output_array = allreduce.wait_for_completion()
+    assert np.array_equal(output_array, expected_output)
+
   @pytest.mark.parametrize("list_length", [0, 1001])
   @pytest.mark.parametrize("dtype", ["int", "float"])
   @pytest.mark.parametrize("algorithm", ["ring", "recursivedoubling"])
