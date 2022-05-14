@@ -40,14 +40,17 @@ Passive
    , CommunicationContext & context )
 : _segment(segment)
 , _context(context)
-, _passiveBufSize(std::min(static_cast<std::size_t>(1024),segment.size()/2))
+, _passiveBufSize(std::min(1024UL, segment.size()/2))
 , _passiveBufPointer( _segment.allocator().allocate(_passiveBufSize) )
 {
     // maximal passive message size
-  MAX_PASSIVE_MESSAGE_SIZE_ = ( ( _passiveBufSize - 4 * (int)sizeof(int) ) / 2 );
+  MAX_PASSIVE_MESSAGE_SIZE_ = ( ( _passiveBufSize
+                                - 2 * sizeof(unsigned int)  // sizes for the send and recv message tag
+                                - 2 * sizeof(std::size_t)   // sizes for the send and recv message size
+                                ) / 2 );
   PASSIVE_SENDRECVBUF_SIZE_ = ( MAX_PASSIVE_MESSAGE_SIZE_
-                              + (int)sizeof(int)  // size for the message tag
-                              + (int)sizeof(int)  // size for the message size
+                              + sizeof(unsigned int)  // size for the message tag
+                              + sizeof(std::size_t)  // size for the message size
                               );
 
   // doing the passive forwarding initalization
@@ -96,22 +99,22 @@ Passive
    (const std::string & ErrMsg )
 {
   const char * const pMessage = ErrMsg.c_str();
-  int                size     = (int)ErrMsg.size();
+  std::size_t        size     = ErrMsg.size();
   unsigned int       destRank = 0;
 
   return sendPassive( GERR
-                , pMessage
-            , size
-            , destRank
-            );
+                    , pMessage
+                    , size
+                    , destRank
+                    );
 }
 
 bool
 Passive
   ::sendMessg
      ( const char *  const pData
-   , const size_t datSize
-   , const int targetRank )
+     , const size_t        datSize
+     , const unsigned int  targetRank )
 {
 
   /// Request target buffer description as target for
@@ -184,7 +187,7 @@ Passive
 
 bool
 Passive::recvMessg( std::vector<char> & Data
-              , int & rank )
+                  , unsigned int & rank )
 {
   bool finished = false;
 
@@ -385,7 +388,7 @@ Passive::finish()
   gaspi_rank_t const rank(global_rank());
 
   const char * const pMessage = NULL;
-  int                size     = 0;
+  std::size_t        size     = 0;
   unsigned int       destRank = rank;
 
   sendPassive( FNSH
@@ -423,9 +426,9 @@ Passive::passive_thread_func_(void * arg)
 
   while (!FINISHED)
   {
-    int                   msg_tag;
-    int                   msg_size;
-    int                   msg_rank;
+    unsigned int          msg_tag;
+    std::size_t           msg_size;
+    unsigned int          msg_rank;
     std::unique_ptr<char[]> msg_ptr;
 
     msg_ptr = pPassiveCommMan->recvPassive( msg_tag
@@ -597,27 +600,29 @@ Passive::passive_thread_func_(void * arg)
 
 bool
 Passive
-  ::sendPassive( int msg_tag
+  ::sendPassive( unsigned int msg_tag
                , const char * const pMessage
-               , int srcSize
+               , std::size_t srcSize
                , unsigned int destRank )
 {
   //const unsigned long localOffset( PASSIVE_SENDBUF_OFF_ );
-  const int           size( (int)(srcSize + 2 * sizeof(int) ) );
+  const std::size_t   size(srcSize + sizeof(unsigned int) + sizeof(std::size_t));
   const unsigned int  rank(destRank);
 
   char * g_ptr (_segment.allocator().allocate(size));
 
-  int * const pMsgTag  = reinterpret_cast<int *> ( g_ptr + 0 * sizeof(int) );
-  int * const pMsgSize = reinterpret_cast<int *> ( g_ptr + 1 * sizeof(int) );
-  char * const pMsg    = reinterpret_cast<char *>( g_ptr + 2 * sizeof(int) );
+  auto const pMsgTag  = reinterpret_cast<unsigned int *> ( g_ptr );
+  auto const pMsgSize = reinterpret_cast<std::size_t *> ( g_ptr + sizeof(unsigned int) );
+  auto const pMsg    = reinterpret_cast<char *>( g_ptr
+                                               + sizeof(unsigned int)   // type size of pMsgTag
+                                               + sizeof(std::size_t) ); // type size of pMsgSize
 
   *pMsgTag  = msg_tag;
   *pMsgSize = srcSize;
 
   memcpy( reinterpret_cast<void *>(pMsg)
-      , reinterpret_cast<const void *>(pMessage)
-      , srcSize );
+        , reinterpret_cast<const void *>(pMessage)
+        , srcSize );
 
   GASPI_CHECK
     ( gaspi_passive_send
@@ -635,9 +640,9 @@ Passive
 std::unique_ptr<char[]>
 Passive
   ::recvPassive
-   ( int & msg_tag
-   , int & size
-   , int & srcRank )
+   ( unsigned int & msg_tag
+   , std::size_t  & size
+   , unsigned int & srcRank )
 {
   gaspi_rank_t  senderRank;
 
@@ -653,9 +658,11 @@ Passive
 
   srcRank = senderRank;
 
-  int * const  pMsgTag  = reinterpret_cast<int *> ( g_ptr + 0L * sizeof(int) );
-  int * const  pMsgSize = reinterpret_cast<int *> ( g_ptr + 1L * sizeof(int) );
-  char * const pMsgData = reinterpret_cast<char *>( g_ptr + 2L * sizeof(int) );
+  auto const pMsgTag  = reinterpret_cast<unsigned int *> ( g_ptr );
+  auto const pMsgSize = reinterpret_cast<std::size_t *> ( g_ptr + sizeof(unsigned int) );
+  auto const pMsgData = reinterpret_cast<char *>( g_ptr
+                                                + sizeof(unsigned int)    // type size of pMsgTag
+                                                + sizeof(std::size_t) );  // type size of pMsgSize
 
   msg_tag = *pMsgTag;
   size = *pMsgSize;

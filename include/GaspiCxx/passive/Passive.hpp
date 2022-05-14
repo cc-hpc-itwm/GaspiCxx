@@ -64,11 +64,11 @@ namespace passive {
 
 class Passive
 {
-    using Rank = int;
+    using Rank = unsigned int;
 
   public:
 
-        using Tag = long;
+    using Tag = unsigned int;
 
     Passive
       ( segment::Segment &
@@ -88,13 +88,13 @@ class Passive
     bool
     sendMessg
       ( const char *  const pData
-      , const size_t DatSize
-      , const int rank );
+      , const size_t  DataSize
+      , const unsigned int rank );
 
     // \brief receiving a message
     bool
     recvMessg( std::vector<char> & Data
-             , int & rank );
+             , unsigned int & rank );
 
     bool
     iSendTagMessg
@@ -121,15 +121,15 @@ class Passive
     passive_thread_func_(void * args);
 
     bool
-    sendPassive( int msg_tag
+    sendPassive( unsigned int msg_tag
                , const char * const pMessage
-               , int size
+               , std::size_t size
                , unsigned int destRank );
 
     std::unique_ptr<char[]>
-    recvPassive( int & msg_tag
-               , int & size
-               , int & srcRank );
+    recvPassive( unsigned int & msg_tag
+               , std::size_t & size
+               , unsigned int & srcRank );
 
     void
     iSendRecvComm
@@ -175,14 +175,14 @@ class Passive
                    , RTBD   // receive target buffer description
                    };
 
-    int                    passive_msg_tag_;
-    int                    passive_msg_size_;
-    int                    passive_msg_rank_;
+    unsigned int          passive_msg_tag_;
+    std::size_t           passive_msg_size_;
+    unsigned int          passive_msg_rank_;
     std::unique_ptr<singlesided::Buffer> passive_msg_ptr_;
 
 
-    int           MAX_PASSIVE_MESSAGE_SIZE_;
-    int           PASSIVE_SENDRECVBUF_SIZE_;
+    std::size_t           MAX_PASSIVE_MESSAGE_SIZE_;
+    std::size_t           PASSIVE_SENDRECVBUF_SIZE_;
 
     using Key = std::tuple<Tag,Rank>;
 
@@ -191,6 +191,6 @@ class Passive
 };
 
 }	// end of namespace passive
-}   // end of namespace gaspio
+}   // end of namespace gaspi
 
 #endif /* PASSIVECOMMMAN_H_ */
