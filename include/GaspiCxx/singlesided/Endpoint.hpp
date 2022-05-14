@@ -48,7 +48,7 @@ class Endpoint : public Buffer {
 
   public:
 
-    using Tag = int;
+    using Tag = unsigned int;
 
     class ConnectHandle {
 

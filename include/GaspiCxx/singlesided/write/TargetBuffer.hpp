@@ -33,7 +33,7 @@ class TargetBuffer : public Endpoint {
 
   public:
 
-    using Tag = int;
+    using Tag = unsigned int;
 
     TargetBuffer
       ( std::size_t size );
