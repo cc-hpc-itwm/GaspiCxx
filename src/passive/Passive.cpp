@@ -29,8 +29,6 @@ extern "C" {
 #include <GASPI.h>
 }
 
-#include <unistd.h>
-
 namespace gaspi {
 namespace passive {
 
@@ -58,16 +56,16 @@ Passive
       passive_isendrcv_bool_ = false;
 
       pthread_mutex_init( &passive_isendrcv_mutx_
-              , NULL );
+              , nullptr );
       pthread_cond_init ( &passive_isendrcv_cond_
-              , NULL );
+              , nullptr );
 
       passive_fwd_recv_bool_ = false;
 
       pthread_mutex_init( &passive_fwd_recv_mutx_
-              , NULL );
+              , nullptr );
       pthread_cond_init ( &passive_fwd_recv_cond_
-              , NULL );
+              , nullptr );
   }
 
   // For portability, explicitly create threads in a joinable state
@@ -387,7 +385,7 @@ Passive::finish()
 {
   gaspi_rank_t const rank(global_rank());
 
-  const char * const pMessage = NULL;
+  const char * const pMessage = nullptr;
   std::size_t        size     = 0;
   unsigned int       destRank = rank;
 
@@ -399,7 +397,7 @@ Passive::finish()
 
   /* Wait for the passive thread to complete */
   pthread_join( gpi_passive_thread_id_
-              , NULL );
+              , nullptr );
 
 
   /* Clean up and exit */
@@ -595,7 +593,7 @@ Passive::passive_thread_func_(void * arg)
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 bool
