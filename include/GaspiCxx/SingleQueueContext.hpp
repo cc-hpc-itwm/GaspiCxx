@@ -38,9 +38,6 @@ class SingleQueueContext : public CommunicationContext
     SingleQueueContext
       ();
 
-    virtual
-    ~SingleQueueContext() = default;
-
     void
     writePart
       ( singlesided::BufferDescription sourceBufferDescription
