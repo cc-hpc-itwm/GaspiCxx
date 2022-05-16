@@ -220,27 +220,27 @@ namespace gaspi
           source_buffers.push_back(std::make_unique<SourceBuffer>(size_buffer_bytes));
           target_buffers.push_back(std::make_unique<TargetBuffer>(size_buffer_bytes));
 
-          for (auto iteration = 1UL; iteration < number_iterations; ++iteration)
+          for (auto i = 1UL; i < number_iterations; ++i)
           {
             source_buffers.push_back(std::make_unique<SourceBuffer>(*source_buffers.front()));
             target_buffers.push_back(std::make_unique<TargetBuffer>(size_buffer_bytes));
           }
 
-          for (auto iteration = 0UL; iteration < number_iterations; ++iteration)
+          for (auto i = 0UL; i < number_iterations; ++i)
           {
-            auto const distance = static_cast<std::size_t>(std::exp2(iteration));
+            auto const distance = static_cast<std::size_t>(std::exp2(i));
             auto const relabeled_rank = rank.get() < 2 * number_ranks_rest ?
                                           rank.get() / 2 : rank.get() - number_ranks_rest;
             auto const relabeled_neighbor = relabeled_rank ^ distance; // +/- distance
             auto const neighbor = relabeled_neighbor < number_ranks_rest ?
                                     group::Rank(relabeled_neighbor * 2) :
                                     group::Rank(relabeled_neighbor + number_ranks_rest);
-            auto const source_tag = SourceBuffer::Tag(iteration);
-            auto const target_tag = TargetBuffer::Tag(iteration);
+            auto const source_tag = static_cast<SourceBuffer::Tag>(i);
+            auto const target_tag = static_cast<TargetBuffer::Tag>(i);
             handles.push_back(
-              source_buffers[iteration]->connectToRemoteTarget(group, neighbor, source_tag));
+              source_buffers[i]->connectToRemoteTarget(group, neighbor, source_tag));
             handles.push_back(
-              target_buffers[iteration]->connectToRemoteSource(group, neighbor, target_tag));
+              target_buffers[i]->connectToRemoteSource(group, neighbor, target_tag));
           }
         }
 
