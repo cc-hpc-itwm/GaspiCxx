@@ -36,7 +36,7 @@ set(test_list Allreduce
               Broadcast
               RoundRobinDedicatedThread
               Passive
-              SegmentMemoryManager
+              MemoryManager
               SingleSidedWriteBuffer
               )
 
