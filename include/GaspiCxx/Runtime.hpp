@@ -41,11 +41,17 @@ namespace passive { class Passive; }
 
      public:
 
-       RuntimeBase
-         ();
+      RuntimeBase
+        ();
 
-       ~RuntimeBase
-         ();
+      RuntimeBase
+        (const RuntimeBase&) = delete;
+
+      RuntimeBase&
+        operator=(const RuntimeBase&) = delete;
+
+      virtual ~RuntimeBase
+        ();
    };
 
   //! This class provides an runtime for GASPI communication.
@@ -96,7 +102,7 @@ namespace passive { class Passive; }
     Runtime &
     getRuntime();
 
-    ~Runtime();
+    ~Runtime() override;
 
     //! Return the segment
     segment::Segment &
