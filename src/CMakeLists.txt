@@ -4,8 +4,6 @@ set(SOURCE_FILES
     RoundRobinQueuesContext.cpp
     Runtime.cpp
     RuntimeConfiguration.cpp
-    collectives/Allgather.cpp
-    collectives/Alltoall.cpp
     group/Group.cpp
     group/Rank.cpp
     group/Utilities.cpp

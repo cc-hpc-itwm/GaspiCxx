@@ -2,11 +2,9 @@ add_executable (GaspiCxxTests
                 run_tests.cpp
                 AllreduceNonBlockingTest.cpp
                 AllreduceNonBlockingLowLevelTest.cpp
-                AllgatherTest.cpp
                 AllgathervNonBlockingLowLevelTest.cpp
                 AllgathervNonBlockingTest.cpp
                 BroadcastNonBlockingTest.cpp
-                AlltoallTest.cpp
                 BarrierTest.cpp
                 RoundRobinDedicatedThreadTest.cpp
                 PassiveTest.cpp
@@ -29,9 +27,7 @@ add_custom_target (run_tests
 include (test_helpers)
 set(localranks_list 1 2 3 4)
 set(test_list Allreduce
-              Allgather
               Allgatherv
-              Alltoall
               Barrier
               Broadcast
               RoundRobinDedicatedThread
