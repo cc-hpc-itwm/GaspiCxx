@@ -32,7 +32,7 @@ namespace group {
 
 namespace detail {
 
-std::vector<GlobalRank>
+static std::vector<GlobalRank>
 generate_group_all()
 {
   gaspi_rank_t nProc;
@@ -43,7 +43,7 @@ generate_group_all()
   return group_all;
 }
 
-GlobalRank
+static GlobalRank
 generate_current_rank()
 {
   gaspi_rank_t global_rank;
