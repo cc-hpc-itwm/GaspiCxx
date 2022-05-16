@@ -30,7 +30,7 @@ std::string
 getCurrentWorkingDirectory
   ( ) {
 
-  char* const currentDirectory (getcwd (NULL, 0));
+  char* const currentDirectory (getcwd (nullptr, 0));
 
   if (currentDirectory == nullptr) {
     int errsv = errno;
