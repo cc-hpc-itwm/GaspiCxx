@@ -36,8 +36,8 @@ namespace gaspi
         DynamicSegmentPool();
         DynamicSegmentPool(std::size_t);
         DynamicSegmentPool(DynamicSegmentPool const&) = delete;
-        DynamicSegmentPool(DynamicSegmentPool&&) = delete;
-        ~DynamicSegmentPool() = default;
+        DynamicSegmentPool& operator=(const DynamicSegmentPool&) = delete;
+        ~DynamicSegmentPool() override = default;
 
         Segment& getSegment(std::size_t) override;
 
