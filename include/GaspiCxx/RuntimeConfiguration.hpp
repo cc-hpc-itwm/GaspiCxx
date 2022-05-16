@@ -53,9 +53,6 @@ class RuntimeConfiguration
     explicit RuntimeConfiguration(
       SegmentPoolType, ProgressEngineType, CommunicationContextType);
 
-    RuntimeConfiguration(RuntimeConfiguration const&) = default;
-    ~RuntimeConfiguration() = default;
-
     std::unique_ptr<segment::SegmentPool> get_segment_pool() const;
     std::unique_ptr<progress_engine::ProgressEngine> get_progress_engine() const;
     std::unique_ptr<CommunicationContext> get_communication_context() const;
