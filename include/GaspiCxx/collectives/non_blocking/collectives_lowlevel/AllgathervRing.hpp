@@ -101,8 +101,8 @@ namespace gaspi
 
         for (auto i = 0UL; i < number_ranks - 1; ++i)
         {
-          SourceBuffer::Tag const source_tag = i;
-          TargetBuffer::Tag const target_tag = i;
+          auto const source_tag = static_cast<SourceBuffer::Tag>(i);
+          auto const target_tag = static_cast<TargetBuffer::Tag>(i);
           handles.push_back(
               source_buffers[i]->connectToRemoteTarget(group, right_neighbor, source_tag));
           handles.push_back(
