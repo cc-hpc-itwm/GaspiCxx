@@ -169,13 +169,6 @@ Endpoint
   _allocMemory = other._allocMemory;
 }
 
-Endpoint
-  ::~Endpoint
-   ()
-{
-
-}
-
 void
 Endpoint
   ::setRemotePartner

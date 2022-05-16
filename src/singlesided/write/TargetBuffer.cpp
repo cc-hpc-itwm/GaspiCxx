@@ -110,6 +110,14 @@ TargetBuffer
   _type = Endpoint::Type::TARGET;
 }
 
+TargetBuffer
+  ::TargetBuffer
+   ( TargetBuffer const& other )
+: Endpoint(other)
+{
+  _type = Endpoint::Type::TARGET;
+}
+
 Endpoint::ConnectHandle
 TargetBuffer
   ::connectToRemoteSource

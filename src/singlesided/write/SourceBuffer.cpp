@@ -111,9 +111,12 @@ SourceBuffer
 }
 
 SourceBuffer
-  ::~SourceBuffer
-    ()
-{ }
+  ::SourceBuffer
+   ( SourceBuffer const& other )
+: Endpoint(other)
+{
+  _type = Endpoint::Type::SOURCE;
+}
 
 Endpoint::ConnectHandle
 SourceBuffer

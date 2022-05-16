@@ -65,7 +65,15 @@ class TargetBuffer : public Endpoint {
       , segment
           ::Notification notification );
 
-    TargetBuffer(Endpoint const&);
+    TargetBuffer
+      (Endpoint const&);
+
+    TargetBuffer
+      (const TargetBuffer&);
+    TargetBuffer&
+      operator=(const TargetBuffer&) = delete;
+    ~TargetBuffer
+      () override = default;
 
     // bilateral function
     // needs to be invoked by the correspondent
