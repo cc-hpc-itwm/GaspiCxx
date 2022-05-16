@@ -36,6 +36,10 @@ namespace gaspi
       public:
         using CollectiveHandle = std::size_t;
 
+        ProgressEngine() = default;
+
+        ProgressEngine(const ProgressEngine&) = delete;
+        ProgressEngine& operator=(const ProgressEngine&) = delete;
         virtual ~ProgressEngine() = default;
 
         virtual CollectiveHandle register_collective(

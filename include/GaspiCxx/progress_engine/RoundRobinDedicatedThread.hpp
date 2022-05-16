@@ -36,7 +36,10 @@ namespace gaspi
     {
       public:
         RoundRobinDedicatedThread();
-        ~RoundRobinDedicatedThread();
+
+        RoundRobinDedicatedThread(const RoundRobinDedicatedThread&) = delete;
+        RoundRobinDedicatedThread& operator=(const RoundRobinDedicatedThread&) = delete;
+        ~RoundRobinDedicatedThread() override;
 
         CollectiveHandle register_collective(
                 std::shared_ptr<collectives::CollectiveLowLevel>) override;
