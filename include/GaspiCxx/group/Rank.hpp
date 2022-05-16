@@ -39,10 +39,6 @@ public:
   Rank
     ( Type rank );
 
-  Rank
-    ( Rank const&) = default;
-  ~Rank() = default;
-
   Type
   get
     () const;
