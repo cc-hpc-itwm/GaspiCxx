@@ -167,13 +167,12 @@ class Passive
     pthread_mutex_t passive_fwd_recv_mutx_;
     pthread_cond_t  passive_fwd_recv_cond_;
 
-    enum MSG_TAG_t { IDLE
-                   , GERR	// global error
-                   , FNSH	// finish passive communication thread
-                   , DATP   // communicate partial data
-                   , DATE   // communicate end data
-                   , RTBD   // receive target buffer description
-                   };
+    enum class MSG_TAG_t { GERR	  // global error
+                         , FNSH	  // finish passive communication thread
+                         , DATP   // communicate partial data
+                         , DATE   // communicate end data
+                         , RTBD   // receive target buffer description
+                         };
 
     std::size_t          passive_msg_size_;
     Rank                 passive_msg_rank_;
