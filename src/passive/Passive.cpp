@@ -43,11 +43,11 @@ Passive
 {
     // maximal passive message size
   MAX_PASSIVE_MESSAGE_SIZE_ = ( ( _passiveBufSize
-                                - 2 * sizeof(unsigned int)  // sizes for the send and recv message tag
+                                - 2 * sizeof(MSG_TAG_t)  // sizes for the send and recv message tag
                                 - 2 * sizeof(std::size_t)   // sizes for the send and recv message size
                                 ) / 2 );
   PASSIVE_SENDRECVBUF_SIZE_ = ( MAX_PASSIVE_MESSAGE_SIZE_
-                              + sizeof(unsigned int)  // size for the message tag
+                              + sizeof(MSG_TAG_t)  // size for the message tag
                               + sizeof(std::size_t)  // size for the message size
                               );
 
@@ -100,7 +100,7 @@ Passive
   std::size_t        size     = ErrMsg.size();
   Rank               destRank = 0;
 
-  return sendPassive( GERR
+  return sendPassive( MSG_TAG_t::GERR
                     , pMessage
                     , size
                     , destRank
@@ -141,7 +141,7 @@ Passive
       }
 
       sendPassive
-        ( DATE
+        ( MSG_TAG_t::DATE
         , pkgBuffer
         , pkgSize
         , targetRank );
@@ -333,7 +333,7 @@ Passive
       }
 
       sendPassive
-        ( RTBD
+        ( MSG_TAG_t::RTBD
         , pkgBuffer
         , pkgSize
         , rank );
@@ -389,7 +389,7 @@ Passive::finish()
   std::size_t        size     = 0;
   Rank               destRank = rank;
 
-  sendPassive( FNSH
+  sendPassive( MSG_TAG_t::FNSH
              , pMessage
              , size
              , destRank
@@ -424,7 +424,7 @@ Passive::passive_thread_func_(void * arg)
 
   while (!FINISHED)
   {
-    unsigned int          msg_tag;
+    MSG_TAG_t             msg_tag;
     std::size_t           msg_size;
     Rank                  msg_rank;
     std::unique_ptr<char[]> msg_ptr;
@@ -435,7 +435,7 @@ Passive::passive_thread_func_(void * arg)
 
     switch (msg_tag)
     {
-      case GERR:
+      case MSG_TAG_t::GERR:
       {
         std::string buf_string(msg_ptr.get(),msg_size);
 
@@ -463,13 +463,13 @@ Passive::passive_thread_func_(void * arg)
         break;
       }
 
-      case FNSH:
+      case MSG_TAG_t::FNSH:
       {
         FINISHED = true;
         break;
       }
 
-      case RTBD:
+      case MSG_TAG_t::RTBD:
       {
         Tag rcvTargetBufferTag;
         singlesided::BufferDescription rcvTargetBufferDesc;
@@ -493,12 +493,12 @@ Passive::passive_thread_func_(void * arg)
         break;
       }
 
-      case DATP:
+      case MSG_TAG_t::DATP:
       {
         // make the same as DATE
       }
 
-      case DATE:
+      case MSG_TAG_t::DATE:
       {
 
         { // do nothing here
@@ -597,21 +597,21 @@ Passive::passive_thread_func_(void * arg)
 
 bool
 Passive
-  ::sendPassive( unsigned int msg_tag
+  ::sendPassive( MSG_TAG_t msg_tag
                , const char * const pMessage
                , std::size_t srcSize
                , Rank destRank )
 {
   //const unsigned long localOffset( PASSIVE_SENDBUF_OFF_ );
-  const std::size_t   size(srcSize + sizeof(unsigned int) + sizeof(std::size_t));
+  const std::size_t   size(srcSize + sizeof(MSG_TAG_t) + sizeof(std::size_t));
   const Rank  rank(destRank);
 
   char * g_ptr (_segment.allocator().allocate(size));
 
-  auto const pMsgTag  = reinterpret_cast<unsigned int *> ( g_ptr );
-  auto const pMsgSize = reinterpret_cast<std::size_t *> ( g_ptr + sizeof(unsigned int) );
+  auto const pMsgTag  = reinterpret_cast<MSG_TAG_t *> ( g_ptr );
+  auto const pMsgSize = reinterpret_cast<std::size_t *> ( g_ptr + sizeof(MSG_TAG_t) );
   auto const pMsg    = reinterpret_cast<char *>( g_ptr
-                                               + sizeof(unsigned int)   // type size of pMsgTag
+                                               + sizeof(MSG_TAG_t)      // type size of pMsgTag
                                                + sizeof(std::size_t) ); // type size of pMsgSize
 
   *pMsgTag  = msg_tag;
@@ -637,7 +637,7 @@ Passive
 std::unique_ptr<char[]>
 Passive
   ::recvPassive
-   ( unsigned int & msg_tag
+   ( MSG_TAG_t & msg_tag
    , std::size_t  & size
    , Rank & srcRank )
 {
@@ -655,10 +655,10 @@ Passive
 
   srcRank = senderRank;
 
-  auto const pMsgTag  = reinterpret_cast<unsigned int *> ( g_ptr );
-  auto const pMsgSize = reinterpret_cast<std::size_t *> ( g_ptr + sizeof(unsigned int) );
+  auto const pMsgTag  = reinterpret_cast<MSG_TAG_t *> ( g_ptr );
+  auto const pMsgSize = reinterpret_cast<std::size_t *> ( g_ptr + sizeof(MSG_TAG_t) );
   auto const pMsgData = reinterpret_cast<char *>( g_ptr
-                                                + sizeof(unsigned int)    // type size of pMsgTag
+                                                + sizeof(MSG_TAG_t)       // type size of pMsgTag
                                                 + sizeof(std::size_t) );  // type size of pMsgSize
 
   msg_tag = *pMsgTag;
