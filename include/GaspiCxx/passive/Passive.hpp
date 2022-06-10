@@ -175,7 +175,6 @@ class Passive
                    , RTBD   // receive target buffer description
                    };
 
-    unsigned int          passive_msg_tag_;
     std::size_t          passive_msg_size_;
     Rank                 passive_msg_rank_;
     std::unique_ptr<singlesided::Buffer> passive_msg_ptr_;

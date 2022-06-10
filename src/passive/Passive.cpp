@@ -546,7 +546,6 @@ Passive::passive_thread_func_(void * arg)
             }
           }
 
-          pPassiveCommMan->passive_msg_tag_  = -1;
           pPassiveCommMan->passive_msg_size_ = g_requested_size;
           pPassiveCommMan->passive_msg_rank_ = msg_rank;
           pPassiveCommMan->passive_msg_ptr_  = std::move(pRequestedBuffer);
