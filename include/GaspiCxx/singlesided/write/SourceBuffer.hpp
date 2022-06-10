@@ -40,8 +40,6 @@ class SourceBuffer : public Endpoint {
 
   public:
 
-    using Tag = unsigned int;
-
     SourceBuffer
       ( std::size_t size );
 
