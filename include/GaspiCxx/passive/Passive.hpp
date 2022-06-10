@@ -89,12 +89,12 @@ class Passive
     sendMessg
       ( const char *  const pData
       , const size_t  DataSize
-      , const unsigned int rank );
+      , const Rank rank );
 
     // \brief receiving a message
     bool
     recvMessg( std::vector<char> & Data
-             , unsigned int & rank );
+             , Rank & rank );
 
     bool
     iSendTagMessg
@@ -124,12 +124,12 @@ class Passive
     sendPassive( unsigned int msg_tag
                , const char * const pMessage
                , std::size_t size
-               , unsigned int destRank );
+               , Rank destRank );
 
     std::unique_ptr<char[]>
     recvPassive( unsigned int & msg_tag
                , std::size_t & size
-               , unsigned int & srcRank );
+               , Rank & srcRank );
 
     void
     iSendRecvComm
@@ -176,8 +176,8 @@ class Passive
                    };
 
     unsigned int          passive_msg_tag_;
-    std::size_t           passive_msg_size_;
-    unsigned int          passive_msg_rank_;
+    std::size_t          passive_msg_size_;
+    Rank                 passive_msg_rank_;
     std::unique_ptr<singlesided::Buffer> passive_msg_ptr_;
 
 

@@ -98,7 +98,7 @@ Passive
 {
   const char * const pMessage = ErrMsg.c_str();
   std::size_t        size     = ErrMsg.size();
-  unsigned int       destRank = 0;
+  Rank               destRank = 0;
 
   return sendPassive( GERR
                     , pMessage
@@ -112,7 +112,7 @@ Passive
   ::sendMessg
      ( const char *  const pData
      , const size_t        datSize
-     , const unsigned int  targetRank )
+     , const Rank          targetRank )
 {
 
   /// Request target buffer description as target for
@@ -185,7 +185,7 @@ Passive
 
 bool
 Passive::recvMessg( std::vector<char> & Data
-                  , unsigned int & rank )
+                  , Rank & rank )
 {
   bool finished = false;
 
@@ -387,7 +387,7 @@ Passive::finish()
 
   const char * const pMessage = nullptr;
   std::size_t        size     = 0;
-  unsigned int       destRank = rank;
+  Rank               destRank = rank;
 
   sendPassive( FNSH
              , pMessage
@@ -426,7 +426,7 @@ Passive::passive_thread_func_(void * arg)
   {
     unsigned int          msg_tag;
     std::size_t           msg_size;
-    unsigned int          msg_rank;
+    Rank                  msg_rank;
     std::unique_ptr<char[]> msg_ptr;
 
     msg_ptr = pPassiveCommMan->recvPassive( msg_tag
@@ -601,11 +601,11 @@ Passive
   ::sendPassive( unsigned int msg_tag
                , const char * const pMessage
                , std::size_t srcSize
-               , unsigned int destRank )
+               , Rank destRank )
 {
   //const unsigned long localOffset( PASSIVE_SENDBUF_OFF_ );
   const std::size_t   size(srcSize + sizeof(unsigned int) + sizeof(std::size_t));
-  const unsigned int  rank(destRank);
+  const Rank  rank(destRank);
 
   char * g_ptr (_segment.allocator().allocate(size));
 
@@ -640,7 +640,7 @@ Passive
   ::recvPassive
    ( unsigned int & msg_tag
    , std::size_t  & size
-   , unsigned int & srcRank )
+   , Rank & srcRank )
 {
   gaspi_rank_t  senderRank;
 
