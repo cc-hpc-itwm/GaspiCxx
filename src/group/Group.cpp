@@ -32,7 +32,7 @@ namespace group {
 
 namespace detail {
 
-std::vector<GlobalRank>
+static std::vector<GlobalRank>
 generate_group_all()
 {
   gaspi_rank_t nProc;
@@ -43,7 +43,7 @@ generate_group_all()
   return group_all;
 }
 
-GlobalRank
+static GlobalRank
 generate_current_rank()
 {
   gaspi_rank_t global_rank;
@@ -82,7 +82,7 @@ Group
     throw std::runtime_error
       (CODE_ORIGIN + "Current rank does not belong to group");
   }
-  _group_rank = Rank(std::distance(_group.begin(), iter));
+  _group_rank = Rank(static_cast<Rank::Type>(std::distance(_group.begin(), iter)));
 }
 
 std::vector<GlobalRank> const &
@@ -117,7 +117,7 @@ bool
 Group
   ::contains_rank(Rank const& rank) const
 {
-  return rank < group::Rank(_group.size());
+  return rank < group::Rank(static_cast<Rank::Type>(_group.size()));
 }
 
 bool
@@ -159,7 +159,7 @@ Group
                               global_rank);
   if (iter != group().end())
   {
-    return Rank(std::distance(group().begin(), iter));
+    return Rank(static_cast<Rank::Type>(std::distance(group().begin(), iter)));
   }
 
   std::stringstream ss;

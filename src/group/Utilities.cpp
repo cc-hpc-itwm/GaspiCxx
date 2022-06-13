@@ -52,7 +52,7 @@ namespace gaspi
 
     RingIndex::operator int() const
     {
-      return index;
+      return static_cast<int>(index);
     }
 
     RingIndex& RingIndex::operator++()

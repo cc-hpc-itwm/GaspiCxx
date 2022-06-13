@@ -245,13 +245,13 @@ namespace gaspi
       ::create_and_connect_remaining_source_buffers(
         std::vector<gaspi::group::Rank> const& ranks)
     {
-      for (auto const& rank : ranks)
+      for (auto const& r : ranks)
       {
-        SourceBuffer::Tag const tag = rank.get();
+        SourceBuffer::Tag const tag = r.get();
         source_buffers.push_back(
             std::make_unique<SourceBuffer>(*source_buffers.front()));
         source_handles.push_back(
-            source_buffers.back()->connectToRemoteTarget(group, rank, tag));
+            source_buffers.back()->connectToRemoteTarget(group, r, tag));
       }
     }
 

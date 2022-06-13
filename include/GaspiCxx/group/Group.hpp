@@ -48,9 +48,6 @@ class Group
     Group
       (std::vector<GlobalRank> const &);
 
-    virtual
-    ~Group() = default;
-
     std::vector<GlobalRank> const &
     group
       () const;

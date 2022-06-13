@@ -33,6 +33,8 @@ namespace collectives {
 class Collective
 {
   public:
+    Collective() = default;
+
     //! Start non-blocking collective operation
     //! with data provided in `inputs`
     virtual void start(void const* inputs) = 0;
@@ -43,6 +45,8 @@ class Collective
 
     virtual std::size_t getOutputCount() = 0;
 
+    Collective(const Collective&) = delete;
+    Collective& operator=(const Collective&) = delete;
     virtual ~Collective() = default;
 };
 

@@ -91,14 +91,14 @@ TEST_F(PassiveTest, SendMessg)
 
    if( getRuntime().global_rank() == group::GlobalRank(0) ) {
 
-     int nRecv( getRuntime().size() - 1 );
+     unsigned int nRecv( getRuntime().size() - 1 );
 
-     for(int iRecv(0)
+     for(unsigned int iRecv(0)
         ;    iRecv<nRecv
         ;  ++iRecv ) {
 
        std::vector<char> cData;
-       int rank;
+       unsigned int rank;
        passive.recvMessg
          ( cData
          , rank );
@@ -139,9 +139,9 @@ TEST_F(PassiveTest, iSendRecvTest)
 
    if( getRuntime().global_rank() == group::GlobalRank(0) ) {
 
-     int nRecv( getRuntime().size() - 1 );
+     unsigned int nRecv( getRuntime().size() - 1 );
 
-     for(int iRecv(0)
+     for(unsigned int iRecv(0)
         ;    iRecv<nRecv
         ;  ++iRecv ) {
 

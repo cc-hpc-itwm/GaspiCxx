@@ -40,8 +40,6 @@ class SourceBuffer : public Endpoint {
 
   public:
 
-    using Tag = int;
-
     SourceBuffer
       ( std::size_t size );
 
@@ -74,8 +72,12 @@ class SourceBuffer : public Endpoint {
 
     SourceBuffer(Endpoint const&);
 
+    SourceBuffer
+      (const SourceBuffer&);
+    SourceBuffer&
+      operator=(const SourceBuffer&) = delete;
     ~SourceBuffer
-      ();
+      () override = default;
 
     // bilateral function
     // needs to be invoked by the correspondent

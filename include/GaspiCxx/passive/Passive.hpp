@@ -64,11 +64,11 @@ namespace passive {
 
 class Passive
 {
-    using Rank = int;
+    using Rank = unsigned int;
 
   public:
 
-        using Tag = long;
+    using Tag = unsigned int;
 
     Passive
       ( segment::Segment &
@@ -88,13 +88,13 @@ class Passive
     bool
     sendMessg
       ( const char *  const pData
-      , const size_t DatSize
-      , const int rank );
+      , const size_t  DataSize
+      , const Rank rank );
 
     // \brief receiving a message
     bool
     recvMessg( std::vector<char> & Data
-             , int & rank );
+             , Rank & rank );
 
     bool
     iSendTagMessg
@@ -109,6 +109,12 @@ class Passive
       , singlesided::Buffer & );
 
   private:
+    enum class MSG_TAG_t { GERR	  // global error
+                         , FNSH	  // finish passive communication thread
+                         , DATP   // communicate partial data
+                         , DATE   // communicate end data
+                         , RTBD   // receive target buffer description
+                         };
 
     gaspi_rank_t
     global_rank();
@@ -121,15 +127,15 @@ class Passive
     passive_thread_func_(void * args);
 
     bool
-    sendPassive( int msg_tag
+    sendPassive( MSG_TAG_t msg_tag
                , const char * const pMessage
-               , int size
-               , unsigned int destRank );
+               , std::size_t size
+               , Rank destRank );
 
     std::unique_ptr<char[]>
-    recvPassive( int & msg_tag
-               , int & size
-               , int & srcRank );
+    recvPassive( MSG_TAG_t & msg_tag
+               , std::size_t & size
+               , Rank & srcRank );
 
     void
     iSendRecvComm
@@ -149,12 +155,11 @@ class Passive
          , Tag tag
          , singlesided::BufferDescription const & rcvTargetBufferDesc );
 
-    segment::Segment & _segment;
-    CommunicationContext &          _context;
+    segment::Segment &      _segment;
+    CommunicationContext &  _context;
 
     std::size_t _passiveBufSize;
     void *      _passiveBufPointer;
-
 
     pthread_t      gpi_passive_thread_id_;
     pthread_attr_t gpi_passive_thread_attr_;
@@ -167,22 +172,13 @@ class Passive
     pthread_mutex_t passive_fwd_recv_mutx_;
     pthread_cond_t  passive_fwd_recv_cond_;
 
-    enum MSG_TAG_t { IDLE
-                   , GERR	// global error
-                   , FNSH	// finish passive communication thread
-                   , DATP   // communicate partial data
-                   , DATE   // communicate end data
-                   , RTBD   // receive target buffer description
-                   };
-
-    int                    passive_msg_tag_;
-    int                    passive_msg_size_;
-    int                    passive_msg_rank_;
+    std::size_t          passive_msg_size_;
+    Rank                 passive_msg_rank_;
     std::unique_ptr<singlesided::Buffer> passive_msg_ptr_;
 
 
-    int           MAX_PASSIVE_MESSAGE_SIZE_;
-    int           PASSIVE_SENDRECVBUF_SIZE_;
+    std::size_t           MAX_PASSIVE_MESSAGE_SIZE_;
+    std::size_t           PASSIVE_SENDRECVBUF_SIZE_;
 
     using Key = std::tuple<Tag,Rank>;
 
@@ -191,6 +187,6 @@ class Passive
 };
 
 }	// end of namespace passive
-}   // end of namespace gaspio
+}   // end of namespace gaspi
 
 #endif /* PASSIVECOMMMAN_H_ */

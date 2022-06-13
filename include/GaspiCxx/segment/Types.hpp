@@ -25,8 +25,8 @@
 namespace gaspi {
 namespace segment {
 
-using SegmentID = int;
-using Notification = int;
+using SegmentID = std::size_t;
+using Notification = std::size_t;
 
 }
 }

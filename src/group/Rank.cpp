@@ -77,7 +77,7 @@ Rank
 Rank
 Rank
   ::operator+(int const & other) const {
-  return *this + Rank(other);
+  return *this + Rank(static_cast<Type>(other));
 }
 
 Rank
@@ -89,7 +89,7 @@ Rank
 Rank
 Rank
   ::operator-(int const & other) const {
-  return *this - Rank(other);
+  return *this - Rank(static_cast<Type>(other));
 }
 
 Rank

@@ -38,10 +38,14 @@ namespace gaspi
     class SegmentPool
     {
       public:
+        SegmentPool() = default;
+
         // Return a reference to a `Segment` that
         // has at least `size` bytes of memory available
         virtual Segment& getSegment(std::size_t size) = 0;
 
+        SegmentPool(SegmentPool const&) = delete;
+        SegmentPool& operator=(const SegmentPool&) = delete;
         virtual ~SegmentPool() = default;
     };
   }

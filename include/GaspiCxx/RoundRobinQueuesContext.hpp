@@ -41,7 +41,7 @@ class RoundRobinQueuesContext : public CommunicationContext
 
     RoundRobinQueuesContext(RoundRobinQueuesContext const&) = delete;
     RoundRobinQueuesContext& operator=(RoundRobinQueuesContext const&) = delete;
-    ~RoundRobinQueuesContext();
+    ~RoundRobinQueuesContext() override;
 
     void
     writePart

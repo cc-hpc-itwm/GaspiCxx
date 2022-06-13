@@ -28,7 +28,10 @@ namespace blocking {
 class Collective
 {
 public:
+  Collective() = default;
 
+  Collective(const Collective&) = delete;
+  Collective& operator=(const Collective&) = delete;
   virtual	~Collective() = default;
 
 };

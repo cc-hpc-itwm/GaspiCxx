@@ -19,7 +19,7 @@ namespace gaspi {
         number_steps(std::ceil(std::log2(group.size())))
       {
         auto const rank = group.rank();
-        auto const number_ranks = group.size();
+        auto const number_ranks = static_cast<int>(group.size());
         auto const zero_size = 0UL;
 
         // create buffers

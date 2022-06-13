@@ -49,7 +49,7 @@ namespace gaspi
       public:
         AllgathervCommon(gaspi::group::Group const& group,
                          std::vector<std::size_t> const& counts);
-        virtual ~AllgathervCommon() = default;
+        virtual ~AllgathervCommon() override = default;
         std::size_t getOutputCount() override;
 
       protected:

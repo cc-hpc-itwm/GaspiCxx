@@ -39,7 +39,7 @@ MemoryManager
   b.free  = true;
   _blocks.push_back(b);
 
-  pthread_mutex_init(&_mutex, NULL);
+  pthread_mutex_init(&_mutex, nullptr);
 }
 
 MemoryManager
@@ -71,7 +71,7 @@ MemoryManager
   ::allocate( std::size_t size)
 {
   if ( size == 0 ) {
-    return NULL;
+    return nullptr;
   }
 
   LockGuard guard(_mutex);
@@ -132,7 +132,7 @@ MemoryManager
    ( void * g_ptr
    , std::size_t g_size )
 {
-   if(g_ptr == NULL) {
+   if(g_ptr == nullptr) {
      return;
    }
 

@@ -135,10 +135,11 @@ namespace gaspi
 
         for (auto i = 0UL; i < number_ranks; ++i)
         {
-          SourceBuffer::Tag const source_tag_reduce = i;
-          TargetBuffer::Tag const target_tag_reduce = i;
-          SourceBuffer::Tag const source_tag_gather = i + number_ranks;
-          TargetBuffer::Tag const target_tag_gather = i + number_ranks;
+          auto const source_tag_reduce = static_cast<SourceBuffer::Tag>(i);
+          auto const target_tag_reduce = static_cast<TargetBuffer::Tag>(i);
+          auto const source_tag_gather = static_cast<SourceBuffer::Tag>(i + number_ranks);
+          auto const target_tag_gather = static_cast<TargetBuffer::Tag>(i + number_ranks);
+
           handles.push_back(
             source_buffers_reduce[i]->connectToRemoteTarget(group, right_neighbor, source_tag_reduce));
           handles.push_back(

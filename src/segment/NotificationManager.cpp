@@ -36,7 +36,7 @@ NotificationManager
   b.free  = true;
   _blocks.push_back(b);
 
-  pthread_mutex_init(&_mutex, NULL);
+  pthread_mutex_init(&_mutex, nullptr);
 }
 
 NotificationManager

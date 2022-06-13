@@ -83,7 +83,15 @@ class Buffer {
       , segment
           ::Notification notification );
 
-    ~Buffer
+    Buffer
+      (const Buffer&) = delete;
+    Buffer&
+      operator=(const Buffer&) = delete;
+    Buffer
+      (Buffer&&) = default;
+    Buffer&
+      operator=(Buffer&&) = delete;
+    virtual ~Buffer
       ();
 
     BufferDescription

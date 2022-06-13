@@ -48,7 +48,7 @@ class Endpoint : public Buffer {
 
   public:
 
-    using Tag = int;
+    using Tag = unsigned int;
 
     class ConnectHandle {
 
@@ -114,7 +114,8 @@ class Endpoint : public Buffer {
     // but creates new notifications
     Endpoint(Endpoint const&);
 
-    ~Endpoint();
+    Endpoint& operator=(const Endpoint&) = delete;
+    virtual ~Endpoint() override = default;
 
     void
     setRemotePartner

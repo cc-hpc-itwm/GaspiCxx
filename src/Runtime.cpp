@@ -145,7 +145,7 @@ Runtime
 
     std::vector<char> buffer;
 
-    int srcRank;
+    unsigned int srcRank;
 
     _ppassive->recvMessg
       ( buffer

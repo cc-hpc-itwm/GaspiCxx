@@ -41,7 +41,7 @@ class Barrier : public Collective
   public:
 
     Barrier(gaspi::group::Group const&);
-    ~Barrier() = default;
+    ~Barrier() override = default;
 
     void execute();
 
