@@ -1,14 +1,30 @@
-|
-`GaspiCxx <https://github.com/cc-hpc-itwm/GaspiCxx>`_
-is an open-source, distributed Deep Learning framework built on top of TensorFlow,
-providing scalable Deep Neural Network training on CPU and GPU compute clusters.
+GaspiCxx
+========
 
-GaspiCxx is easy-to-use, allows to re-use existing TensorFlow models,
-and does not require any knowledge of parallel computing.
+`GaspiCxx <https://github.com/cc-hpc-itwm/GaspiCxx>`_
+is a high-performance communication library, designed as a high-level abstraction layer
+on top of `GPI-2 <https://github.com/cc-hpc-itwm/GPI-2>`_.
+
+
+GaspiCxx Goals
+^^^^^^^^^^^^^^
+
+* Scalable and efficient communication primitives
+* High performance
+* High productivity
+* Ease of use
+* Transparent management of resources
+
 
 
 Table of contents
-=================
+^^^^^^^^^^^^^^^^^
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Overview
+
+  overview
 
 .. toctree::
   :maxdepth: 2
